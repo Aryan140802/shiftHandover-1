@@ -19,5 +19,5 @@ export const dummyShifts = [
     startTime: '22:00',
     endTime: '07:00',
     description: 'Maintenance and cleaning shift'
-  }
+  } 
 ];

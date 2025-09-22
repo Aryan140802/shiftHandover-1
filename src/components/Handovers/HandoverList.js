@@ -52,12 +52,7 @@ const HandoverList = ({ handovers = [], onHandoversUpdate }) => {
     <div className="handover-container">
       <div className="handover-header">
         <h2>Shift Handovers</h2>
-        <button 
-          className="create-handover-btn"
-          onClick={() => navigate('/create')}
-        >
-          Create New Handover
-        </button>
+       
       </div>
 
       <div className="task-statistics">

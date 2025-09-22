@@ -1,0 +1,106 @@
+.task-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  margin-bottom: 24px;
+  padding: 20px 24px;
+  transition: box-shadow 0.2s;
+  border: 1px solid #e5e7eb;
+}
+.task-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.task-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: #222;
+}
+.task-priority {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  text-transform: uppercase;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.task-description {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 15px;
+  color: #444;
+  margin-bottom: 10px;
+  border: 1px solid #e5e7eb;
+}
+.task-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.task-team {
+  color: #888;
+  font-weight: 500;
+}
+.task-status {
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.task-status.incomplete {
+  color: #dc3545;
+}
+.task-status.in_progress {
+  color: #ffc107;
+}
+.task-status.completed {
+  color: #28a745;
+}
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  margin-top: 8px;
+}
+.task-date {
+  color: #888;
+}
+.view-details {
+  background: #f1f5f9;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 6px;
+  color: #222;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: 8px;
+}
+.view-details:hover {
+  background: #e2e8f0;
+}
+.acknowledge-btn {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  transition: background 0.2s;
+}
+.acknowledge-btn:hover {
+  background: #0056b3;
+}
