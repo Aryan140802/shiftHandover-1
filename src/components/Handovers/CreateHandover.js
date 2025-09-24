@@ -208,7 +208,6 @@ const CreateHandover = ({ shifts, onSubmit }) => {
                       ...formData,
                       tasks: [...formData.tasks, {
                         ...newTask,
-                        id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
                         title: newTask.title.trim(),
                         description: newTask.description.trim(),
                         createdAt: new Date().toISOString()
@@ -244,7 +243,7 @@ const CreateHandover = ({ shifts, onSubmit }) => {
                 </thead>
                 <tbody>
                   {formData.tasks.map((task, index) => (
-                    <tr key={task.id}>
+                    <tr key={index}>
                       <td>{task.title}</td>
                       <td>{task.description || '-'}</td>
                       <td>

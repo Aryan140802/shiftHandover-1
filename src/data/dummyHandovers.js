@@ -1,249 +1,151 @@
 export const dummyHandovers = [
   {
     id: '1',
-    title: 'MQ team',
-    
+    title: 'MQ upgradation',
+    fromShift: {
+      id: '3',
+      name: 'Night Shift',
+      time: '22:00 - 06:00'
+    },
+    toShift: {
+      id: '1',
+      name: 'Morning Shift',
+      time: '06:00 - 14:00'
+    },
     createdBy: {
       id: 'user2',
-      name: 'Mansi Arya',
+      name: 'Aryan Purohit'
     },
-    
+    createdAt: '2025-08-04T22:30:00Z',
     tasks: [
       {
-        id: 'task-1-1',
         title: 'ACE Upgradation',
         description: 'ACE 12 to ACE 13',
         priority: 'high',
         status: 'completed',
         createdAt: '2025-08-04T22:30:00Z',
-        lastUpdated: '2025-08-04T23:15:00Z',
+        lastUpdated: '2025-08-04T23:15:00Z'
       },
       {
-        id: 'task-1-2',
         title: 'ds agent status check',
         description: 'Check running status of DS agent',
         priority: 'critical',
         status: 'in-progress',
         createdAt: '2025-08-04T22:30:00Z',
-        lastUpdated: '2025-08-04T23:30:00Z',
+        lastUpdated: '2025-08-04T23:30:00Z'
       },
       {
-        id: 'task-1-3',
         title: 'Update System Log',
         description: 'Document all maintenance activities in the system',
         priority: 'medium',
         status: 'pending',
-        createdAt: '2025-08-04T22:30:00Z',
-      },
+        createdAt: '2025-08-04T22:30:00Z'
+      }
     ],
-    attachments: [],
+    attachments: []
   },
-  
   {
-    id: '4',
-    title: 'IIB Handover',
-    
-    createdBy: { id: 'user4', name: 'Siddhart Nair' },
-  
+    id: '2',
+    title: 'Server Inventory Update',
+    fromShift: {
+      id: '1',
+      name: 'Morning Shift',
+      time: '06:00 - 14:00'
+    },
+    toShift: {
+      id: '2',
+      name: 'Afternoon Shift',
+      time: '14:00 - 22:00'
+    },
+    createdBy: {
+      id: 'user1',
+      name: 'Avinash Chaurasia'
+    },
+    createdAt: '2025-08-04T13:45:00Z',
     tasks: [
       {
-        id: 'task-4-1',
-        title: 'Flow Deployment',
-        description: 'Deploy latest IIB message flow to production',
+        title: 'Update Inventory System',
+        description: 'Record 50 new units in the inventory management system',
         priority: 'high',
         status: 'completed',
-        createdAt: '2025-08-05T12:00:00Z',
+        createdAt: '2025-08-04T13:45:00Z',
+        lastUpdated: '2025-08-04T14:30:00Z'
       },
       {
-        id: 'task-4-2',
-        title: 'Queue Monitoring',
-        description: 'Check message queues for stuck messages',
-        priority: 'critical',
-        status: 'pending',
-        createdAt: '2025-08-05T12:00:00Z',
-      },
-    ],
-    attachments: [],
-  },
-  {
-    id: '5',
-    title: 'Linux Handover',
-   
-    createdBy: { id: 'user5', name: 'Ashish' },
-    
-    tasks: [
-      {
-        id: 'task-5-1',
-        title: 'Kernel Patch Update',
-        description: 'Apply latest kernel security patch',
-        priority: 'high',
-        status: 'in-progress',
-        createdAt: '2025-08-05T20:30:00Z',
-      },
-      {
-        id: 'task-5-2',
-        title: 'Log Rotation',
-        description: 'Rotate and archive system logs',
+        title: 'Perform Physical Count',
+        description: 'Verify inventory matches system count',
         priority: 'medium',
         status: 'pending',
-        createdAt: '2025-08-05T20:30:00Z',
-      },
-    ],
-    attachments: [],
-  },
-  {
-    id: '6',
-    title: 'Portal Handover',
-    
-    createdBy: { id: 'user6', name: 'Meghna' },
-    
-    tasks: [
-      {
-        id: 'task-6-1',
-        title: 'UI Bug Fix',
-        description: 'Resolve login form rendering issue',
-        priority: 'medium',
-        status: 'completed',
-        createdAt: '2025-08-06T04:00:00Z',
+        createdAt: '2025-08-04T13:45:00Z'
       },
       {
-        id: 'task-6-2',
-        title: 'Content Update',
-        description: 'Update banner text for new release',
+        title: 'File Delivery Documentation',
+        description: 'Scan and upload all delivery receipts and documents',
         priority: 'low',
         status: 'pending',
-        createdAt: '2025-08-06T04:00:00Z',
-      },
+        createdAt: '2025-08-04T13:45:00Z'
+      }
     ],
-    attachments: [],
+    attachments: [
+      { name: 'inventory_list.pdf', type: 'pdf' },
+      { name: 'delivery_photo.jpg', type: 'image' }
+    ]
   },
   {
-    id: '7',
-    title: 'Non-Prod Handover',
-    
-    createdBy: { id: 'user7', name: 'Freeda' },
-  
+    id: '3',
+    title: 'Server Inspection',
+    fromShift: {
+      id: '2',
+      name: 'Afternoon Shift',
+      time: '14:00 - 22:00'
+    },
+    toShift: {
+      id: '3',
+      name: 'Night Shift',
+      time: '22:00 - 06:00'
+    },
+    createdBy: {
+      id: 'user3',
+      name: 'Affan MD'
+    },
+    createdAt: '2025-08-04T21:15:00Z',
     tasks: [
       {
-        id: 'task-7-1',
-        title: 'Environment Refresh',
-        description: 'Refresh staging environment with latest prod data',
-        priority: 'high',
-        status: 'pending',
-        createdAt: '2025-08-06T11:30:00Z',
-      },
-      {
-        id: 'task-7-2',
-        title: 'Deploy Test Build',
-        description: 'Deploy build v1.2.5 to QA environment',
-        priority: 'medium',
-        status: 'in-progress',
-        createdAt: '2025-08-06T11:30:00Z',
-      },
-    ],
-    attachments: [],
-  },
-  {
-    id: '8',
-    title: 'DB Handover',
-    
-    createdBy: { id: 'user8', name: 'Prathamesh' },
-    
-    tasks: [
-      {
-        id: 'task-8-1',
-        title: 'Backup Verification',
-        description: 'Check daily backup completion logs',
+        title: 'Server Inspection',
+        description: 'Inspect all server equipment and emergency response',
         priority: 'critical',
         status: 'completed',
-        createdAt: '2025-08-06T18:45:00Z',
+        createdAt: '2025-08-04T21:15:00Z',
+        lastUpdated: '2025-08-04T21:45:00Z'
       },
       {
-        id: 'task-8-2',
-        title: 'DB Health Check',
-        description: 'Monitor DB CPU/Memory usage',
+        title: 'Disaster Recovery System Check',
+        description: 'Test Disaster Recovery systems and document findings',
         priority: 'high',
-        status: 'pending',
-        createdAt: '2025-08-06T18:45:00Z',
-      },
-    ],
-    attachments: [],
-  },
-  {
-    id: '9',
-    title: 'Windows Handover',
-   
-    createdBy: { id: 'user9', name: 'Pratap Chandan' },
-
-    tasks: [
-      {
-        id: 'task-9-1',
-        title: 'Patch Tuesday Updates',
-        description: 'Apply Microsoft updates to servers',
-        priority: 'high',
-        status: 'in-progress',
-        createdAt: '2025-08-07T05:00:00Z',
-      },
-      {
-        id: 'task-9-2',
-        title: 'Service Restart',
-        description: 'Restart IIS services after patching',
-        priority: 'medium',
-        status: 'pending',
-        createdAt: '2025-08-07T05:00:00Z',
-      },
-    ],
-    attachments: [],
-  },
-  {
-    id: '10',
-    title: 'Config Handover',
-   
-    createdBy: { id: 'user10', name: 'Mitul' },
-    
-    tasks: [
-      {
-        id: 'task-10-1',
-        title: 'Configuration Sync',
-        description: 'Sync latest configs across servers',
-        priority: 'high',
-        status: 'pending',
-        createdAt: '2025-08-07T10:15:00Z',
-      },
-      {
-        id: 'task-10-2',
-        title: 'Rollback Plan',
-        description: 'Prepare rollback configs for new deployment',
-        priority: 'medium',
-        status: 'pending',
-        createdAt: '2025-08-07T10:15:00Z',
-      },
-    ],
-    attachments: [],
-  },
-  {
-    id: '11',
-    title: 'IRT Handover',
-    
-    createdBy: { id: 'user11', name: 'Rohit Jaybhaye' },
-    tasks: [
-      {
-        id: 'task-11-1',
-        title: 'Incident Review',
-        description: 'Review last 24 hours incidents and resolutions',
-        priority: 'critical',
         status: 'completed',
-        createdAt: '2025-08-07T19:00:00Z',
+        createdAt: '2025-08-04T21:15:00Z',
+        lastUpdated: '2025-08-04T22:00:00Z'
       },
       {
-        id: 'task-11-2',
-        title: 'Escalation Follow-up',
-        description: 'Update pending escalations with L3 team',
+        title: 'System Maintenance',
+        description: 'Verify all systems are properly marked and functional',
         priority: 'high',
-        status: 'in-progress',
-        createdAt: '2025-08-07T19:00:00Z',
+        status: 'completed',
+        createdAt: '2025-08-04T21:15:00Z',
+        lastUpdated: '2025-08-04T22:15:00Z'
       },
+      {
+        title: 'Issue Documentation',
+        description: 'Document and tag two identified safety issues for repair',
+        priority: 'medium',
+        status: 'in-progress',
+        createdAt: '2025-08-04T21:15:00Z'
+      }
     ],
-    attachments: [],
-  },
+    attachments: [
+      { name: 'inspection_report.pdf', type: 'pdf' },
+      { name: 'issue_1.jpg', type: 'image' },
+      { name: 'issue_2.jpg', type: 'image' }
+    ]
+  }
 ];
