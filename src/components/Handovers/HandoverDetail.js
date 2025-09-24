@@ -22,7 +22,7 @@ const HandoverDetail = ({ handovers }) => {
   const [tasks, setTasks] = useState(handover.tasks || []);
   const [ackDescription, setAckDescription] = useState('');
   const [ackStatus, setAckStatus] = useState('');
-  const [showStatusSelect, setShowStatusSelect] = useState(false);
+  const [setShowStatusSelect] = useState(false);
   const [error, setError] = useState('');
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
@@ -43,14 +43,7 @@ const HandoverDetail = ({ handovers }) => {
     setError('');
   };
 
-  const handleAcknowledgeNext = () => {
-    if (!ackDescription.trim()) {
-      setError('Description is required.');
-      return;
-    }
-    setError('');
-    setShowStatusSelect(true);
-  };
+
 
   const handleAcknowledgeSubmit = () => {
     if (!ackDescription.trim()) {
