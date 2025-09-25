@@ -174,10 +174,12 @@
 
 .handover-actions {
   display: flex;
+  margin-top: 0.5rem;
   gap: 1rem;
 }
 
 .view-btn, .edit-btn {
+ 
   padding: 0.5rem 1rem;
   border-radius: 4px;
   font-size: 0.9rem;
