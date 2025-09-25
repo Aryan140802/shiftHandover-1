@@ -20,7 +20,8 @@ const HandoverItem = ({ handover }) => {
     description = 'No description available',
     priority = 'medium',
     
-    
+    fromShift = { name: 'Unknown Shift', time: '' },
+    toShift = { name: 'Unknown Shift', time: '' },
     createdBy = { name: 'Unknown User' },
     createdAt = new Date().toISOString(),
     attachments = []
@@ -78,8 +79,14 @@ const HandoverItem = ({ handover }) => {
       </div>
       
       <div className="handover-meta">
-      
-       
+        <div className="meta-item">
+          <span className="meta-label">From:</span>
+          <span>{fromShift.name} ({fromShift.time})</span>
+        </div>
+        <div className="meta-item">
+          <span className="meta-label">To:</span>
+          <span>{toShift.name} ({toShift.time})</span>
+        </div>
         <div className="meta-item">
           <span className="meta-label">Created:</span>
           <span>{format(new Date(createdAt), 'MMM d, yyyy h:mm a')}</span>
