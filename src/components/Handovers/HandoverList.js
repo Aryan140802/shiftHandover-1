@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HandoverItem from './HandoverItem';
-import { getHandovers } from './api'; // Import the API function
+import { getHandovers } from '../../Api/HandOverApi'; // Corrected import path
 import './HandoverList.css';
 
 const HandoverList = ({ handovers = [], onHandoversUpdate }) => {
