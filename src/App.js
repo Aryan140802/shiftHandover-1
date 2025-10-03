@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState } from 'react';
-import { dummyHandovers } from './data/dummyHandovers';
+// import { dummyHandovers } from './data/dummyHandovers'; // Commented out to use API data
 import { dummyShifts } from './data/dummyShifts';
 
 // Import Components
@@ -18,7 +18,8 @@ import './App.css';
 
 function App() {
   // State for handovers and shifts
-  const [handovers, setHandovers] = useState(dummyHandovers);
+  // Start with empty array to force API call
+  const [handovers, setHandovers] = useState([]);
   const [shifts, setShifts] = useState(dummyShifts);
 
   // Function to add new handover
