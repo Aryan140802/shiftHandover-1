@@ -17,14 +17,14 @@ const HandoverList = ({ handovers = [], onHandoversUpdate }) => {
   }, []);
 
   const fetchHandovers = async () => {
-    // If handovers are provided via props, don't fetch
-    if (handovers.length > 0) return;
-    
     setLoading(true);
     setError(null);
     
     try {
+      console.log('Fetching handovers from API...');
       const response = await getHandovers();
+      
+      console.log('API Response:', response);
       
       // Assuming the API response has a data property containing handovers
       // You might need to adjust this based on your actual API response structure
@@ -32,7 +32,7 @@ const HandoverList = ({ handovers = [], onHandoversUpdate }) => {
         onHandoversUpdate(response.data);
       }
     } catch (err) {
-      setError('Failed to fetch handovers. Please try again.');
+      setError(`Failed to fetch handovers: ${err.message}`);
       console.error('Error fetching handovers:', err);
     } finally {
       setLoading(false);
