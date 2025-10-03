@@ -1,12 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HandoverItem from './HandoverItem';
+import { getHandovers } from './api'; // Import the API function
 import './HandoverList.css';
 
 const HandoverList = ({ handovers = [], onHandoversUpdate }) => {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch handovers when component mounts
+  useEffect(() => {
+    fetchHandovers();
+  }, []);
+
+  const fetchHandovers = async () => {
+    // If handovers are provided via props, don't fetch
+    if (handovers.length > 0) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await getHandovers();
+      
+      // Assuming the API response has a data property containing handovers
+      // You might need to adjust this based on your actual API response structure
+      if (response.data && typeof onHandoversUpdate === 'function') {
+        onHandoversUpdate(response.data);
+      }
+    } catch (err) {
+      setError('Failed to fetch handovers. Please try again.');
+      console.error('Error fetching handovers:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Calculate task statistics
   const taskStats = {
@@ -52,8 +83,20 @@ const HandoverList = ({ handovers = [], onHandoversUpdate }) => {
     <div className="handover-container">
       <div className="handover-header">
         <h2>Shift Handovers</h2>
-       
+        <button 
+          onClick={fetchHandovers} 
+          disabled={loading}
+          className="refresh-btn"
+        >
+          {loading ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
 
       <div className="task-statistics">
         <div className="stat-card pending">
@@ -98,24 +141,30 @@ const HandoverList = ({ handovers = [], onHandoversUpdate }) => {
         </div>
       </div>
 
-      <div className="handover-list">
-        {filteredHandovers.length > 0 ? (
-          filteredHandovers.map((handover) => (
-            <HandoverItem
-              key={handover.id}
-              handover={{
-                ...handover,
-                onTaskUpdate: handleTaskUpdate
-              }}
-              onClick={() => navigate(`/handover/${handover.id}`)}
-            />
-          ))
-        ) : (
-          <div className="no-handovers">
-            <p>No handovers found matching the selected filters.</p>
-          </div>
-        )}
-      </div>
+      {loading && handovers.length === 0 ? (
+        <div className="loading-message">
+          <p>Loading handovers...</p>
+        </div>
+      ) : (
+        <div className="handover-list">
+          {filteredHandovers.length > 0 ? (
+            filteredHandovers.map((handover) => (
+              <HandoverItem
+                key={handover.id}
+                handover={{
+                  ...handover,
+                  onTaskUpdate: handleTaskUpdate
+                }}
+                onClick={() => navigate(`/handover/${handover.id}`)}
+              />
+            ))
+          ) : (
+            <div className="no-handovers">
+              <p>No handovers found matching the selected filters.</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
