@@ -11,7 +11,7 @@ const statusOptions = [
   { value: 'completed', label: 'Completed' }
 ];
 
-const HandoverDetail = ({ credentials }) => {
+const HandoverDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
@@ -31,30 +31,36 @@ const HandoverDetail = ({ credentials }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (credentials) {
-      fetchHandoverData();
-    }
-  }, [id, credentials]);
+    fetchHandoverData();
+  }, [id]);
 
   const fetchHandoverData = async () => {
     setLoading(true);
     try {
       console.log('Fetching handover data for ID:', id);
-      const data = await getHandovers(credentials.uid, credentials.password);
+      const data = await getHandovers();
       
       console.log('Fetched data:', data);
       
       if (data && data.TeamHandoverDetails && data.Tasksdata) {
-        // Filter data for this specific handover
-        const filteredData = {
-          TeamHandoverDetails: data.TeamHandoverDetails.filter(
-            h => h.handover_id_id === parseInt(id)
-          ),
-          Tasksdata: data.Tasksdata.filter(
-            t => t.handover_id_id === parseInt(id)
-          )
-        };
-        setBackendData(filteredData);
+        // Find the specific handover by ID
+        const handoverDetail = data.TeamHandoverDetails.find(
+          h => h.handover_id_id === parseInt(id)
+        );
+        
+        // Filter tasks for this specific handover
+        const handoverTasks = data.Tasksdata.filter(
+          t => t.handover_id_id === parseInt(id)
+        );
+        
+        if (handoverDetail) {
+          setBackendData({
+            TeamHandoverDetails: [handoverDetail],
+            Tasksdata: handoverTasks
+          });
+        } else {
+          setBackendData(null);
+        }
       } else {
         throw new Error('Invalid data structure');
       }
@@ -99,7 +105,7 @@ const HandoverDetail = ({ credentials }) => {
     setSelectedTask(task);
     setModalOpen(true);
     setAckDescription(task.acknowledgeDesc || '');
-    setAckStatus(task.status);
+    setAckStatus(task.status || 'open');
     setError('');
   };
 
@@ -216,7 +222,7 @@ const HandoverDetail = ({ credentials }) => {
           </div>
         </div>
 
-        {tasks && tasks.length > 0 && (
+        {tasks && tasks.length > 0 ? (
           <div className="detail-section">
             <h3>Tasks ({tasks.length})</h3>
             <table className="tasks-table" style={{ width: '100%', borderCollapse: 'collapse', marginTop: 16 }}>
@@ -269,6 +275,30 @@ const HandoverDetail = ({ credentials }) => {
                 ))}
               </tbody>
             </table>
+            <div style={{ marginTop: 24, textAlign: 'right' }}>
+              <button
+                style={{
+                  padding: '10px 22px',
+                  background: '#2ecc71',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  fontSize: '16px',
+                  boxShadow: '0 1px 4px rgba(44,62,80,0.08)',
+                  transition: 'background 0.2s',
+                  cursor: 'pointer'
+                }}
+                onClick={handleCreateTask}
+              >
+                + Create New Task
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="detail-section">
+            <h3>Tasks (0)</h3>
+            <p>No tasks found for this handover.</p>
             <div style={{ marginTop: 24, textAlign: 'right' }}>
               <button
                 style={{
