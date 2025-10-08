@@ -48,11 +48,13 @@ function App() {
           <Sidebar />
           <div className="content-area">
             <Routes>
+              {/* Add root route that redirects to dashboard */}
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              
               <Route
                 path="/dashboard"
                 element={
                   <HandoverList
-                    handovers={handovers}
                     onHandoversUpdate={updateHandovers}
                   />
                 }
