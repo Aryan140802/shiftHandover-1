@@ -1,3 +1,7 @@
+
+
+// original data
+
 {
     "TeamHandoverDetails": [
         {
@@ -25,3 +29,53 @@
         }
     ]
 }
+
+
+
+
+
+// dummy data
+
+ id: '1',
+    title: 'MQ team',
+
+    createdBy: {
+      id: 'user2',
+      name: 'Mansi Arya',
+    },
+
+    tasks: [
+      {
+        id: 'task-1-1',
+        title: 'ACE Upgradation',
+        description: 'ACE 12 to ACE 13',
+        priority: 'high',
+        status: 'completed',
+        createdAt: '2025-08-04T22:30:00Z',
+        lastUpdated: '2025-08-04T23:15:00Z',
+      },
+      {
+        id: 'task-1-2',
+        title: 'ds agent status check',
+        description: 'Check running status of DS agent',
+        priority: 'critical',
+        status: 'in-progress',
+        createdAt: '2025-08-04T22:30:00Z',
+        lastUpdated: '2025-08-04T23:30:00Z',
+      },
+      {
+        id: 'task-1-3',
+        title: 'Update System Log',
+        description: 'Document all maintenance activities in the system',
+        priority: 'medium',
+        status: 'pending',
+        createdAt: '2025-08-04T22:30:00Z',
+      },
+    ],
+    attachments: [],
+  },
+
+
+
+
+
