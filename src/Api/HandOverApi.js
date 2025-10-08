@@ -11,21 +11,18 @@ const api = axios.create({
 
 /**
  * Fetches handovers from the API
- * Retrieves uid and password from localStorage and sends them in the request body
+ * Retrieves uid and password from memory (passed as parameters)
+ * @param {string} uid - User ID
+ * @param {string} password - User password
  * @returns {Promise} API response containing handover data
- * @throws {Error} If credentials are not found or API call fails
+ * @throws {Error} If credentials are not provided or API call fails
  */
-export const getHandovers = async () => {
+export const getHandovers = async (uid, password) => {
   try {
-    console.log('Getting credentials from localStorage...');
-    const uid = localStorage.getItem('uidd');
-    const password = localStorage.getItem('password');
-    
-    console.log('UID:', uid ? 'Found' : 'Not found');
-    console.log('Password:', password ? 'Found' : 'Not found');
+    console.log('Getting handovers with credentials...');
     
     if (!uid || !password) {
-      throw new Error('Authentication credentials not found in localStorage');
+      throw new Error('Authentication credentials are required');
     }
     
     const payload = {
@@ -43,8 +40,10 @@ export const getHandovers = async () => {
       }
     });
     
-    console.log('API Response received:', response);
-    return response;
+    console.log('API Response received:', response.data);
+    
+    // Return the data directly
+    return response.data;
   } catch (error) {
     console.error('Could not fetch handovers:', error);
     console.error('Error details:', {
@@ -54,4 +53,22 @@ export const getHandovers = async () => {
     });
     throw error;
   }
+};
+
+/**
+ * Helper function to store credentials in memory
+ * This should be called after user login
+ */
+let storedCredentials = null;
+
+export const setCredentials = (uid, password) => {
+  storedCredentials = { uid, password };
+};
+
+export const getStoredCredentials = () => {
+  return storedCredentials;
+};
+
+export const clearCredentials = () => {
+  storedCredentials = null;
 };
