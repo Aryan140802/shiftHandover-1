@@ -1,0 +1,27 @@
+{
+    "TeamHandoverDetails": [
+        {
+            "TeamId": 1,
+            "teamName": "MQ",
+            "teamLead_id": 2162544,
+            "handover_id_id": 1
+        }
+    ],
+    "Tasksdata": [
+        {
+            "Taskid": 1,
+            "taskDesc": "Check server health",
+            "priority": "High",
+            "userCreated_id": null,
+            "status": "open",
+            "userAccepted_id": null,
+            "creationTime": "",
+            "acknowledgeStatus": "Pending",
+            "acknowledgeDesc": "Task acknowledged and now completed",
+            "acknowledgeTime": "",
+            "statusUpdateTime": "",
+            "taskTitle": null,
+            "handover_id_id": 1
+        }
+    ]
+}
