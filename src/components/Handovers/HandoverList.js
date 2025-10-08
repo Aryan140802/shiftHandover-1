@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { getHandovers } from '../../Api/HandOverApi';
 import './HandoverList.css';
 
-const HandoverList = ({ onHandoversUpdate }) => {
+const HandoverList = () => {
   const navigate = useNavigate();
   const [backendData, setBackendData] = useState({ TeamHandoverDetails: [], Tasksdata: [] });
   const [statusFilter, setStatusFilter] = useState('all');
@@ -29,9 +29,6 @@ const HandoverList = ({ onHandoversUpdate }) => {
       // Ensure the data has the expected structure
       if (data && data.TeamHandoverDetails && data.Tasksdata) {
         setBackendData(data);
-        if (typeof onHandoversUpdate === 'function') {
-          onHandoversUpdate(data);
-        }
       } else {
         throw new Error('Invalid data structure from API');
       }
@@ -331,16 +328,12 @@ const HandoverList = ({ onHandoversUpdate }) => {
                   )}
                   
                   <div className="handover-actions">
-                    <a 
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigate(`/handover/${handover.handover_id_id}`);
-                      }}
+                    <button
+                      onClick={() => navigate(`/handover/${handover.handover_id_id}`)}
                       className="view-btn"
                     >
                       View Details
-                    </a>
+                    </button>
                   </div>
                 </div>
               );
