@@ -25,19 +25,21 @@ ChartJS.register(
   Legend
 );
 
-const HandoverReports = () => {
+const HandoverReports = ({ credentials }) => {
   const [dateRange, setDateRange] = useState('7');
   const [backendData, setBackendData] = useState({ TeamHandoverDetails: [], Tasksdata: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchReportsData();
-  }, []);
+    if (credentials) {
+      fetchReportsData();
+    }
+  }, [credentials]);
 
   const fetchReportsData = async () => {
     setLoading(true);
     try {
-      const data = await getHandovers();
+      const data = await getHandovers(credentials.uid, credentials.password);
       if (data && data.TeamHandoverDetails && data.Tasksdata) {
         setBackendData(data);
       }
