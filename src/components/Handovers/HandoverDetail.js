@@ -11,7 +11,7 @@ const statusOptions = [
   { value: 'completed', label: 'Completed' }
 ];
 
-const HandoverDetail = () => {
+const HandoverDetail = ({ credentials }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   
@@ -31,14 +31,16 @@ const HandoverDetail = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchHandoverData();
-  }, [id]);
+    if (credentials) {
+      fetchHandoverData();
+    }
+  }, [id, credentials]);
 
   const fetchHandoverData = async () => {
     setLoading(true);
     try {
       console.log('Fetching handover data for ID:', id);
-      const data = await getHandovers();
+      const data = await getHandovers(credentials.uid, credentials.password);
       
       console.log('Fetched data:', data);
       
@@ -82,7 +84,7 @@ const HandoverDetail = () => {
       <div className="handover-detail-container">
         <div className="not-found">
           <h2>Handover not found</h2>
-          <button onClick={() => navigate('/')} className="back-button">
+          <button onClick={() => navigate('/dashboard')} className="back-button">
             Back to List
           </button>
         </div>
@@ -186,7 +188,7 @@ const HandoverDetail = () => {
     <div className="handover-detail-container">
       <div className="handover-detail-header">
         <h2>{handover.teamName} Team Handover</h2>
-        <button onClick={() => navigate('/')} className="back-button">
+        <button onClick={() => navigate('/dashboard')} className="back-button">
           Back to List
         </button>
       </div>
@@ -235,7 +237,7 @@ const HandoverDetail = () => {
                   <tr key={task.Taskid}>
                     <td style={{ padding: '10px', border: '1px solid #e5e7eb' }}>{task.Taskid}</td>
                     <td style={{ padding: '10px', border: '1px solid #e5e7eb', fontWeight: 600 }}>
-                      {task.taskTitle || task.taskDesc || 'Untitled'}
+                      {task.taskTitle || 'Untitled'}
                     </td>
                     <td style={{ padding: '10px', border: '1px solid #e5e7eb' }}>{task.taskDesc || '-'}</td>
                     <td style={{ padding: '10px', border: '1px solid #e5e7eb' }}>
@@ -317,12 +319,16 @@ const HandoverDetail = () => {
               </h2>
               
               <div style={{ marginBottom: '18px', background: '#f0f4f8', padding: '12px', borderRadius: '8px' }}>
-                <strong>Task:</strong> {selectedTask.taskTitle || selectedTask.taskDesc}
+                <strong>Task ID:</strong> {selectedTask.Taskid}
+                <br />
+                <strong>Title:</strong> {selectedTask.taskTitle || 'Untitled'}
+                <br />
+                <strong>Description:</strong> {selectedTask.taskDesc || '-'}
               </div>
 
               <div style={{ marginBottom: '22px' }}>
                 <label style={{ fontWeight: 600, color: '#34495e', marginBottom: 8, display: 'block', fontSize: '16px' }}>
-                  Description <span style={{ color: '#e74c3c' }}>*</span>
+                  Acknowledgment Description <span style={{ color: '#e74c3c' }}>*</span>
                 </label>
                 <textarea
                   value={ackDescription}
