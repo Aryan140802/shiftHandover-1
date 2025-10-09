@@ -1,4 +1,4 @@
-
+curl -X POST https://10.191.171.12:5443/PyPortal/saveNew_task/ -H "Content-Type: application/json" -d {"uid": "2743582","password": "Magician@123","tascdec": "Check server health","status": "open","priority": "High","acknowledgeStatus": "Pending","acknowledgeDesc": "Task acknowledged buyt not completed"}
 
 // original data
 
