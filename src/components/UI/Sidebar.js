@@ -16,9 +16,15 @@ const Sidebar = () => {
        
         
         <li>
-          <NavLink to="/reports" className="nav-link">
-            <FiBarChart2 className="nav-icon" />
+          <NavLink to="/reports" className={({ isActive }) => isActive ? 'active' : ''}>
+            <i className="fas fa-chart-bar"></i>
             <span>Reports</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/billing-analysis" className={({ isActive }) => isActive ? 'active' : ''}>
+            <i className="fa-solid fa-money-bill-trend-up"></i>
+            <span>Billing Analysis</span>
           </NavLink>
         </li>
       </ul>

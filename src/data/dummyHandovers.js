@@ -2,12 +2,21 @@ export const dummyHandovers = [
   {
     id: '1',
     title: 'MQ team',
-    
+    fromShift: {
+      id: '3',
+      name: 'Night Shift',
+      time: '22:00 - 06:00',
+    },
+    toShift: {
+      id: '1',
+      name: 'Morning Shift',
+      time: '06:00 - 14:00',
+    },
     createdBy: {
       id: 'user2',
       name: 'Mansi Arya',
     },
-    
+    createdAt: '2025-08-04T22:30:00Z',
     tasks: [
       {
         id: 'task-1-1',
@@ -42,9 +51,10 @@ export const dummyHandovers = [
   {
     id: '4',
     title: 'IIB Handover',
-    
+    fromShift: { id: '1', name: 'Morning Shift', time: '06:00 - 14:00' },
+    toShift: { id: '2', name: 'Afternoon Shift', time: '14:00 - 22:00' },
     createdBy: { id: 'user4', name: 'Siddhart Nair' },
-  
+    createdAt: '2025-08-05T12:00:00Z',
     tasks: [
       {
         id: 'task-4-1',
@@ -68,9 +78,10 @@ export const dummyHandovers = [
   {
     id: '5',
     title: 'Linux Handover',
-   
+    fromShift: { id: '2', name: 'Afternoon Shift', time: '14:00 - 22:00' },
+    toShift: { id: '3', name: 'Night Shift', time: '22:00 - 06:00' },
     createdBy: { id: 'user5', name: 'Ashish' },
-    
+    createdAt: '2025-08-05T20:30:00Z',
     tasks: [
       {
         id: 'task-5-1',
@@ -94,9 +105,10 @@ export const dummyHandovers = [
   {
     id: '6',
     title: 'Portal Handover',
-    
+    fromShift: { id: '3', name: 'Night Shift', time: '22:00 - 06:00' },
+    toShift: { id: '1', name: 'Morning Shift', time: '06:00 - 14:00' },
     createdBy: { id: 'user6', name: 'Meghna' },
-    
+    createdAt: '2025-08-06T04:00:00Z',
     tasks: [
       {
         id: 'task-6-1',
@@ -120,9 +132,10 @@ export const dummyHandovers = [
   {
     id: '7',
     title: 'Non-Prod Handover',
-    
+    fromShift: { id: '1', name: 'Morning Shift', time: '06:00 - 14:00' },
+    toShift: { id: '2', name: 'Afternoon Shift', time: '14:00 - 22:00' },
     createdBy: { id: 'user7', name: 'Freeda' },
-  
+    createdAt: '2025-08-06T11:30:00Z',
     tasks: [
       {
         id: 'task-7-1',
@@ -146,9 +159,10 @@ export const dummyHandovers = [
   {
     id: '8',
     title: 'DB Handover',
-    
+    fromShift: { id: '2', name: 'Afternoon Shift', time: '14:00 - 22:00' },
+    toShift: { id: '3', name: 'Night Shift', time: '22:00 - 06:00' },
     createdBy: { id: 'user8', name: 'Prathamesh' },
-    
+    createdAt: '2025-08-06T18:45:00Z',
     tasks: [
       {
         id: 'task-8-1',
@@ -172,9 +186,10 @@ export const dummyHandovers = [
   {
     id: '9',
     title: 'Windows Handover',
-   
+    fromShift: { id: '3', name: 'Night Shift', time: '22:00 - 06:00' },
+    toShift: { id: '1', name: 'Morning Shift', time: '06:00 - 14:00' },
     createdBy: { id: 'user9', name: 'Pratap Chandan' },
-
+    createdAt: '2025-08-07T05:00:00Z',
     tasks: [
       {
         id: 'task-9-1',
@@ -198,9 +213,10 @@ export const dummyHandovers = [
   {
     id: '10',
     title: 'Config Handover',
-   
+    fromShift: { id: '1', name: 'Morning Shift', time: '06:00 - 14:00' },
+    toShift: { id: '2', name: 'Afternoon Shift', time: '14:00 - 22:00' },
     createdBy: { id: 'user10', name: 'Mitul' },
-    
+    createdAt: '2025-08-07T10:15:00Z',
     tasks: [
       {
         id: 'task-10-1',
@@ -224,8 +240,10 @@ export const dummyHandovers = [
   {
     id: '11',
     title: 'IRT Handover',
-    
+    fromShift: { id: '2', name: 'Afternoon Shift', time: '14:00 - 22:00' },
+    toShift: { id: '3', name: 'Night Shift', time: '22:00 - 06:00' },
     createdBy: { id: 'user11', name: 'Rohit Jaybhaye' },
+    createdAt: '2025-08-07T19:00:00Z',
     tasks: [
       {
         id: 'task-11-1',
