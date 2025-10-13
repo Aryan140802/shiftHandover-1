@@ -7,6 +7,7 @@ const BillingAnalysis = () => {
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
   const [billingData, setBillingData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -16,6 +17,29 @@ const BillingAnalysis = () => {
       setBillingData(dummyBillingData);
       setIsLoading(false);
     }, 1000);
+  };
+
+  // Dummy API upload function
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+
+    try {
+      // Simulate API call to upload file
+      // You can replace this with your real API endpoint:
+      // const formData = new FormData();
+      // formData.append('file', file);
+      // await fetch('/api/billing/upload', { method: 'POST', body: formData });
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      alert('File uploaded successfully!');
+    } catch (error) {
+      alert('Upload failed!');
+    } finally {
+      setUploading(false);
+      // Optionally reset the input value here if needed
+      e.target.value = '';
+    }
   };
 
   const filteredData = billingData.filter(item => {
@@ -28,6 +52,28 @@ const BillingAnalysis = () => {
     <div className="billing-analysis">
       <h2>Billing Analysis</h2>
       
+      {/* Upload Button */}
+      <div className="upload-section" style={{ marginBottom: '16px' }}>
+        <label htmlFor="billing-upload" className="upload-label">
+          <input
+            id="billing-upload"
+            type="file"
+            accept=".csv, .xlsx, .xls"
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
+            disabled={uploading}
+          />
+          <button
+            type="button"
+            disabled={uploading}
+            onClick={() => document.getElementById('billing-upload').click()}
+            className="upload-btn"
+          >
+            {uploading ? 'Uploading...' : 'Upload Billing Data'}
+          </button>
+        </label>
+      </div>
+
       <form onSubmit={handleSearch} className="search-form">
         <div className="form-group">
           <input
