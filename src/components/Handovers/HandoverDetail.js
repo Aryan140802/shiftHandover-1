@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import './HandoverDetail.css';
 import Modal from '../UI/Modal';
-import { getHandovers } from '../../Api/HandOverApi';
+import { getHandovers, saveTask } from '../../Api/HandOverApi';
 
 const statusOptions = [
   { value: 'open', label: 'Open' },
@@ -32,27 +32,22 @@ const HandoverDetail = () => {
 
   useEffect(() => {
     fetchHandoverData();
+    // eslint-disable-next-line
   }, [id]);
 
   const fetchHandoverData = async () => {
     setLoading(true);
     try {
-      console.log('Fetching handover data for ID:', id);
       const data = await getHandovers();
-
-      console.log('Fetched data:', data);
-
       if (data && data.TeamHandoverDetails && data.Tasksdata) {
         // Find the specific handover by ID
         const handoverDetail = data.TeamHandoverDetails.find(
           h => h.handover_id_id === parseInt(id)
         );
-
         // Filter tasks for this specific handover
         const handoverTasks = data.Tasksdata.filter(
           t => t.handover_id_id === parseInt(id)
         );
-
         if (handoverDetail) {
           setBackendData({
             TeamHandoverDetails: [handoverDetail],
@@ -65,7 +60,6 @@ const HandoverDetail = () => {
         throw new Error('Invalid data structure');
       }
     } catch (err) {
-      console.error('Error fetching handover:', err);
       setError('Failed to load handover details');
     } finally {
       setLoading(false);
@@ -78,6 +72,118 @@ const HandoverDetail = () => {
       return format(new Date(dateString), 'MMM d, yyyy h:mm a');
     } catch (e) {
       return '-';
+    }
+  };
+
+  // Handle acknowledge modal open
+  const handleAcknowledgeClick = (task) => {
+    setSelectedTask(task);
+    setModalOpen(true);
+    setAckDescription(task.acknowledgeDesc || '');
+    setAckStatus(task.status || 'open');
+    setError('');
+  };
+
+  // Handle acknowledge submission (calls saveTask API)
+  const handleAcknowledgeSubmit = async () => {
+    if (!ackDescription.trim()) {
+      setError('Description is required.');
+      return;
+    }
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    if (!uid || !password) {
+      setError('Missing user credentials!');
+      return;
+    }
+    // Compose payload for saveTask
+    const payload = {
+      uid,
+      password,
+      Taskid: selectedTask.Taskid,
+      tascdec: selectedTask.taskDesc || '', // or use .tascdec if that's your backend key
+      status: ackStatus,
+      priority: selectedTask.priority,
+      acknowledgeStatus: 'Acknowledged',
+      acknowledgeDesc: ackDescription,
+      handover_id_id: selectedTask.handover_id_id
+    };
+    try {
+      await saveTask(payload);
+      // Update local state
+      const updatedTasks = backendData.Tasksdata.map(t =>
+        t.Taskid === selectedTask.Taskid
+          ? {
+              ...t,
+              status: ackStatus,
+              acknowledgeStatus: 'Acknowledged',
+              acknowledgeDesc: ackDescription,
+              acknowledgeTime: new Date().toISOString(),
+              statusUpdateTime: new Date().toISOString()
+            }
+          : t
+      );
+      setBackendData({
+        ...backendData,
+        Tasksdata: updatedTasks
+      });
+      setModalOpen(false);
+      setSelectedTask(null);
+      setAckDescription('');
+      setAckStatus('');
+      setError('');
+    } catch (err) {
+      setError('Failed to update task on server!');
+    }
+  };
+
+  // Show create task modal
+  const handleCreateTask = () => {
+    setShowCreateTaskModal(true);
+    setNewTask({
+      taskTitle: '',
+      taskDesc: '',
+      priority: 'Medium',
+      status: 'open'
+    });
+  };
+
+  // Create a new task (calls saveTask API)
+  const handleCreateTaskSubmit = async (e) => {
+    e.preventDefault();
+    if (!newTask.taskTitle.trim() && !newTask.taskDesc.trim()) return;
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    if (!uid || !password) {
+      setError('Missing user credentials!');
+      return;
+    }
+    const payload = {
+      uid,
+      password,
+      tascdec: newTask.taskDesc,
+      status: newTask.status,
+      priority: newTask.priority,
+      acknowledgeStatus: 'Pending',
+      acknowledgeDesc: '',
+      handover_id_id: parseInt(id),
+      taskTitle: newTask.taskTitle // If your backend supports this, otherwise remove
+    };
+    try {
+      await saveTask(payload);
+      const maxTaskId = Math.max(...(backendData.Tasksdata.map(t => t.Taskid)), 0);
+      const newTaskData = {
+        Taskid: maxTaskId + 1,
+        ...payload,
+        creationTime: new Date().toISOString()
+      };
+      setBackendData({
+        ...backendData,
+        Tasksdata: [...backendData.Tasksdata, newTaskData]
+      });
+      setShowCreateTaskModal(false);
+    } catch (err) {
+      setError('Failed to create task on server!');
     }
   };
 
@@ -100,95 +206,6 @@ const HandoverDetail = () => {
 
   const handover = backendData.TeamHandoverDetails[0];
   const tasks = backendData.Tasksdata || [];
-
-  const handleAcknowledgeClick = (task) => {
-    setSelectedTask(task);
-    setModalOpen(true);
-    setAckDescription(task.acknowledgeDesc || '');
-    setAckStatus(task.status || 'open');
-    setError('');
-  };
-
-  const handleAcknowledgeSubmit = () => {
-    if (!ackDescription.trim()) {
-      setError('Description is required.');
-      return;
-    }
-
-    const updatedTasks = backendData.Tasksdata.map(t =>
-      t.Taskid === selectedTask.Taskid
-        ? {
-            ...t,
-            status: ackStatus,
-            acknowledgeStatus: 'Acknowledged',
-            acknowledgeDesc: ackDescription,
-            acknowledgeTime: new Date().toISOString(),
-            statusUpdateTime: new Date().toISOString()
-          }
-        : t
-    );
-
-    setBackendData({
-      ...backendData,
-      Tasksdata: updatedTasks
-    });
-
-    setModalOpen(false);
-    setSelectedTask(null);
-    setAckDescription('');
-    setAckStatus('');
-    setError('');
-
-    // TODO: Send update to backend API
-    console.log('Task acknowledged:', {
-      taskId: selectedTask.Taskid,
-      status: ackStatus,
-      acknowledgeDesc: ackDescription
-    });
-  };
-
-  const handleCreateTask = () => {
-    setShowCreateTaskModal(true);
-    setNewTask({
-      taskTitle: '',
-      taskDesc: '',
-      priority: 'Medium',
-      status: 'open'
-    });
-  };
-
-  const handleCreateTaskSubmit = (e) => {
-    e.preventDefault();
-    if (!newTask.taskTitle.trim() && !newTask.taskDesc.trim()) return;
-
-    const maxTaskId = Math.max(...backendData.Tasksdata.map(t => t.Taskid), 0);
-
-    const newTaskData = {
-      Taskid: maxTaskId + 1,
-      taskTitle: newTask.taskTitle,
-      taskDesc: newTask.taskDesc,
-      priority: newTask.priority,
-      status: newTask.status,
-      userCreated_id: null,
-      userAccepted_id: null,
-      creationTime: new Date().toISOString(),
-      acknowledgeStatus: 'Pending',
-      acknowledgeDesc: '',
-      acknowledgeTime: '',
-      statusUpdateTime: '',
-      handover_id_id: parseInt(id)
-    };
-
-    setBackendData({
-      ...backendData,
-      Tasksdata: [...backendData.Tasksdata, newTaskData]
-    });
-
-    setShowCreateTaskModal(false);
-
-    // TODO: Send new task to backend API
-    console.log('New task created:', newTaskData);
-  };
 
   return (
     <div className="handover-detail-container">
@@ -247,7 +264,7 @@ const HandoverDetail = () => {
                     </td>
                     <td style={{ padding: '10px', border: '1px solid #e5e7eb' }}>{task.taskDesc || '-'}</td>
                     <td style={{ padding: '10px', border: '1px solid #e5e7eb' }}>
-                      <span className={`priority-badge priority-${task.priority?.toLowerCase() || 'medium'}`}>
+                      <span className={`priority-badge priority-${(task.priority || 'medium').toLowerCase()}`}>
                         {task.priority || 'Medium'}
                       </span>
                     </td>
