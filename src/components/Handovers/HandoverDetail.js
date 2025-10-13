@@ -14,7 +14,7 @@ const statusOptions = [
 const HandoverDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [backendData, setBackendData] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -39,20 +39,20 @@ const HandoverDetail = () => {
     try {
       console.log('Fetching handover data for ID:', id);
       const data = await getHandovers();
-      
+
       console.log('Fetched data:', data);
-      
+
       if (data && data.TeamHandoverDetails && data.Tasksdata) {
         // Find the specific handover by ID
         const handoverDetail = data.TeamHandoverDetails.find(
           h => h.handover_id_id === parseInt(id)
         );
-        
+
         // Filter tasks for this specific handover
         const handoverTasks = data.Tasksdata.filter(
           t => t.handover_id_id === parseInt(id)
         );
-        
+
         if (handoverDetail) {
           setBackendData({
             TeamHandoverDetails: [handoverDetail],
@@ -117,8 +117,8 @@ const HandoverDetail = () => {
 
     const updatedTasks = backendData.Tasksdata.map(t =>
       t.Taskid === selectedTask.Taskid
-        ? { 
-            ...t, 
+        ? {
+            ...t,
             status: ackStatus,
             acknowledgeStatus: 'Acknowledged',
             acknowledgeDesc: ackDescription,
@@ -138,7 +138,7 @@ const HandoverDetail = () => {
     setAckDescription('');
     setAckStatus('');
     setError('');
-    
+
     // TODO: Send update to backend API
     console.log('Task acknowledged:', {
       taskId: selectedTask.Taskid,
@@ -162,7 +162,7 @@ const HandoverDetail = () => {
     if (!newTask.taskTitle.trim() && !newTask.taskDesc.trim()) return;
 
     const maxTaskId = Math.max(...backendData.Tasksdata.map(t => t.Taskid), 0);
-    
+
     const newTaskData = {
       Taskid: maxTaskId + 1,
       taskTitle: newTask.taskTitle,
@@ -185,7 +185,7 @@ const HandoverDetail = () => {
     });
 
     setShowCreateTaskModal(false);
-    
+
     // TODO: Send new task to backend API
     console.log('New task created:', newTaskData);
   };
@@ -347,7 +347,7 @@ const HandoverDetail = () => {
               >
                 Acknowledge Task
               </h2>
-              
+
               <div style={{ marginBottom: '18px', background: '#f0f4f8', padding: '12px', borderRadius: '8px' }}>
                 <strong>Task ID:</strong> {selectedTask.Taskid}
                 <br />
@@ -379,7 +379,7 @@ const HandoverDetail = () => {
                   placeholder="Add your acknowledgment details..."
                 />
               </div>
-              
+
               <div style={{ marginBottom: '22px', display: 'flex', gap: '32px' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontWeight: 600, color: '#34495e', marginBottom: 8, display: 'block', fontSize: '16px' }}>
@@ -433,13 +433,13 @@ const HandoverDetail = () => {
                   )}
                 </div>
               </div>
-              
+
               {error && (
                 <div style={{ color: '#e74c3c', marginBottom: 16, fontWeight: 500, textAlign: 'center' }}>
                   {error}
                 </div>
               )}
-              
+
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
                 <button
                   onClick={() => setModalOpen(false)}
