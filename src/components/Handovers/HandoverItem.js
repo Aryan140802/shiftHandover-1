@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import './HandoverItem.css';
 
-const HandoverItem = ({ handover }) => {
+const HandoverItem = ({ handover, tasks = [] }) => {
   // Add null checks for handover and its properties
-  if (!handover || !handover.id) {
-    console.error('Invalid handover data:', handover);
+  if (!handover || !handover.handover_id_id) {
     return (
       <div className="handover-item error">
         <p>Error: Invalid handover data</p>
@@ -14,6 +13,7 @@ const HandoverItem = ({ handover }) => {
     );
   }
 
+<<<<<<< HEAD
   // Safe property access with defaults
   const {
     title = 'Untitled Handover',
@@ -39,46 +39,40 @@ const HandoverItem = ({ handover }) => {
 
 
 
+=======
+  // Format date safely
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    try {
+      return format(new Date(dateString), 'MMM d, yyyy h:mm a');
+    } catch (e) {
+      return '-';
+>>>>>>> 8e8aaabae9a61ef5aec6e9c002fc06ce360bee81
     }
   };
 
- 
-
-  const handleTaskStatusChange = (taskIndex, newStatus) => {
-    if (handover.onTaskUpdate) {
-      const updatedTasks = [...handover.tasks];
-      updatedTasks[taskIndex] = {
-        ...updatedTasks[taskIndex],
-        status: newStatus,
-        lastUpdated: new Date().toISOString()
-      };
-      
-      // Update overall handover status based on tasks
-      let newHandoverStatus = 'completed';
-      for (const task of updatedTasks) {
-        if (task.status === 'pending') {
-          newHandoverStatus = 'pending';
-          break;
-        } else if (task.status === 'in-progress') {
-          newHandoverStatus = 'in-progress';
-          break;
-        }
-      }
-      handover.status = newHandoverStatus;
-      handover.onTaskUpdate(handover.id, updatedTasks);
-    }
+  // Get priority class based on tasks
+  const getPriorityClass = () => {
+    const priorities = tasks.map(task => task.priority?.toLowerCase());
+    if (priorities.includes('critical')) return 'priority-critical';
+    if (priorities.includes('high')) return 'priority-high';
+    if (priorities.includes('medium')) return 'priority-medium';
+    if (priorities.includes('low')) return 'priority-low';
+    return '';
   };
 
   return (
     <div className={`handover-item ${getPriorityClass()}`}>
       <div className="handover-header">
         <h3>
-          <Link to={`/handover/${handover.id}`}>{title}</Link>
+          <Link to={`/handover/${handover.handover_id_id}`}>
+            {handover.teamName} Team Handover
+          </Link>
         </h3>
-        
       </div>
       
       <div className="handover-meta">
+<<<<<<< HEAD
         <div className="meta-item">
           <span className="meta-label">From:</span>
           <span>{fromShift.name} ({fromShift.time})</span>
@@ -87,55 +81,63 @@ const HandoverItem = ({ handover }) => {
           <span className="meta-label">To:</span>
           <span>{toShift.name} ({toShift.time})</span>
         </div>
+=======
+>>>>>>> 8e8aaabae9a61ef5aec6e9c002fc06ce360bee81
         <div className="meta-item">
-          <span className="meta-label">Created:</span>
-          <span>{format(new Date(createdAt), 'MMM d, yyyy h:mm a')}</span>
+          <span className="meta-label">Team:</span>
+          <span>{handover.teamName}</span>
         </div>
         <div className="meta-item">
-          <span className="meta-label">By:</span>
-          <span>{createdBy.name}</span>
+          <span className="meta-label">Team ID:</span>
+          <span>{handover.TeamId}</span>
         </div>
-      </div>
-      
-      <div className="handover-description">
-        <p>{description}</p>
+        <div className="meta-item">
+          <span className="meta-label">Team Lead ID:</span>
+          <span>{handover.teamLead_id}</span>
+        </div>
+        <div className="meta-item">
+          <span className="meta-label">Handover ID:</span>
+          <span>{handover.handover_id_id}</span>
+        </div>
       </div>
 
-      {handover.tasks && handover.tasks.length > 0 && (
+      {tasks.length > 0 && (
         <div className="handover-tasks">
-          <h4>Tasks</h4>
+          <h4>Tasks ({tasks.length})</h4>
           <div className="tasks-table-wrapper">
             <table className="tasks-table">
               <thead>
                 <tr>
-                  <th>Title</th>
-                  <th>Description</th>
+                  <th>Title/Description</th>
                   <th>Priority</th>
                   <th>Status</th>
-                  <th>Last Updated</th>
+                  <th>Acknowledge Status</th>
+                  <th>Created</th>
                 </tr>
               </thead>
               <tbody>
-                {handover.tasks.map((task, index) => (
-                  <tr key={index}>
-                    <td>{task.title}</td>
-                    <td>{task.description || '-'}</td>
+                {tasks.map((task) => (
+                  <tr key={task.Taskid}>
+                    <td style={{ fontWeight: 500 }}>
+                      {task.taskTitle || task.taskDesc || 'Untitled'}
+                    </td>
                     <td>
-                      <span className={`priority-badge priority-${task.priority || 'medium'}`}>
-                        {task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : 'Medium'}
+                      <span className={`priority-badge priority-${task.priority?.toLowerCase() || 'medium'}`}>
+                        {task.priority || 'Medium'}
                       </span>
                     </td>
                     <td>
-                      {/* Remove status select, show status as badge */}
                       <span className={`status-badge ${task.status}`}>
-                        {task.status === 'in-progress' ? 'In Progress' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                        {task.status === 'in-progress' ? 'In Progress' : 
+                         task.status.charAt(0).toUpperCase() + task.status.slice(1)}
                       </span>
                     </td>
                     <td>
-                      {task.lastUpdated 
-                        ? format(new Date(task.lastUpdated), 'MMM d, yyyy h:mm a')
-                        : format(new Date(task.createdAt), 'MMM d, yyyy h:mm a')}
+                      <span className={`status-badge ${task.acknowledgeStatus?.toLowerCase() === 'pending' ? 'pending' : 'completed'}`}>
+                        {task.acknowledgeStatus || 'Pending'}
+                      </span>
                     </td>
+                    <td>{formatDate(task.creationTime)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -144,15 +146,8 @@ const HandoverItem = ({ handover }) => {
         </div>
       )}
       
-      {attachments.length > 0 && (
-        <div className="handover-attachments">
-          <span className="attachment-icon"></span>
-          <span>{attachments.length} attachment(s)</span>
-        </div>
-      )}
-      
       <div className="handover-actions">
-        <Link to={`/handover/${handover.id}`} className="view-btn">
+        <Link to={`/handover/${handover.handover_id_id}`} className="view-btn">
           View Details
         </Link>
       </div>
