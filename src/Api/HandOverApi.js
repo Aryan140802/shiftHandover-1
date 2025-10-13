@@ -11,38 +11,39 @@ const api = axios.create({
 
 /**
  * Fetches handovers from the API
- * Retrieves uid and password from memory (passed as parameters)
- * @param {string} uid - User ID
- * @param {string} password - User password
+ * Retrieves uid and password from localStorage and sends them in the request body
  * @returns {Promise} API response containing handover data
- * @throws {Error} If credentials are not provided or API call fails
+ * @throws {Error} If credentials are not found or API call fails
  */
-export const getHandovers = async (uid, password) => {
+export const getHandovers = async () => {
   try {
-    console.log('Getting handovers with credentials...');
-    
+    console.log('Getting credentials from localStorage...');
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+
+    console.log('UID:', uid ? 'Found' : 'Not found');
+    console.log('Password:', password ? 'Found' : 'Not found');
+
     if (!uid || !password) {
-      throw new Error('Authentication credentials are required');
+      throw new Error('Authentication credentials not found in localStorage');
     }
-    
+
     const payload = {
       uid,
       password,
     };
-    
+
     console.log('Making API call to:', api.defaults.baseURL + '/get_Handover/');
     console.log('Payload:', { uid, password: '***' }); // Hide password in logs
-    
+
     const response = await api.post('/get_Handover/', payload, {
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
       }
     });
-    
-    console.log('API Response received:', response.data);
-    
-    // Return the data directly
+
+    console.log('API Response received:', response);
     return response.data;
   } catch (error) {
     console.error('Could not fetch handovers:', error);
@@ -53,22 +54,4 @@ export const getHandovers = async (uid, password) => {
     });
     throw error;
   }
-};
-
-/**
- * Helper function to store credentials in memory
- * This should be called after user login
- */
-let storedCredentials = null;
-
-export const setCredentials = (uid, password) => {
-  storedCredentials = { uid, password };
-};
-
-export const getStoredCredentials = () => {
-  return storedCredentials;
-};
-
-export const clearCredentials = () => {
-  storedCredentials = null;
 };
