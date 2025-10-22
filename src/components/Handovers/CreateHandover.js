@@ -1,18 +1,20 @@
+/*
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ShiftSelector from '../Shifts/ShiftSelector';
+//import ShiftSelector from '../Shifts/ShiftSelector';
 import Modal from '../UI/Modal';
 import './CreateHandover.css';
 
-const CreateHandover = ({ shifts, onSubmit }) => {
-  const [formData, setFormData] = useState({
-    title: '',
-    fromShift: null,
-    toShift: null,
-    attachments: [],
-    tasks: [],
-    date: new Date().toISOString().split('T')[0]
-  });
+//const CreateHandover = ({ shifts, onSubmit }) => {
+  //const [formData, setFormData] = useState({
+    //title: '',
+    //fromShift: null,
+    //toShift: null,
+    //attachments: [],
+    //tasks: [],
+    //date: new Date().toISOString().split('T')[0]
+  //});
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [shiftType, setShiftType] = useState('');
   const [newTask, setNewTask] = useState({
@@ -64,13 +66,13 @@ const CreateHandover = ({ shifts, onSubmit }) => {
   return (
     <div className="create-handover-container">
       <h2>Create New Shift Handover</h2>
-      
+
       {success && (
         <div className="alert success">
           Handover created successfully! Redirecting...
         </div>
       )}
-      
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Title*</label>
@@ -82,7 +84,7 @@ const CreateHandover = ({ shifts, onSubmit }) => {
             required
           />
         </div>
-        
+
         <div className="form-group">
           <label>Description</label>
           <textarea
@@ -91,7 +93,7 @@ const CreateHandover = ({ shifts, onSubmit }) => {
             onChange={handleInputChange}
           />
         </div>
-        
+
         <div className="form-row">
           <div className="form-group">
             <label>From Shift*</label>
@@ -103,7 +105,7 @@ const CreateHandover = ({ shifts, onSubmit }) => {
                 placeholder="Select shift"
                 required
               />
-              <button 
+              <button
                 type="button"
                 className="select-shift-btn"
                 onClick={() => {
@@ -115,7 +117,7 @@ const CreateHandover = ({ shifts, onSubmit }) => {
               </button>
             </div>
           </div>
-          
+
           <div className="form-group">
             <label>To Shift*</label>
             <div className="shift-selector">
@@ -126,7 +128,7 @@ const CreateHandover = ({ shifts, onSubmit }) => {
                 placeholder="Select shift"
                 required
               />
-              <button 
+              <button
                 type="button"
                 className="select-shift-btn"
                 onClick={() => {
@@ -139,7 +141,7 @@ const CreateHandover = ({ shifts, onSubmit }) => {
             </div>
           </div>
         </div>
-        
+
         <div className="form-group">
           <label>Attachments</label>
           <input
@@ -314,21 +316,21 @@ const CreateHandover = ({ shifts, onSubmit }) => {
             </div>
           )}
         </div>
-        
+
         <div className="form-actions">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="submit-btn"
           >
             Submit Handover
           </button>
         </div>
       </form>
-      
+
       <Modal show={showShiftModal} onClose={() => setShowShiftModal(false)}>
-        <ShiftSelector 
-          shifts={shifts} 
-          onSelect={handleShiftSelect} 
+        <ShiftSelector
+          shifts={shifts}
+          onSelect={handleShiftSelect}
         />
       </Modal>
     </div>
@@ -336,3 +338,4 @@ const CreateHandover = ({ shifts, onSubmit }) => {
 };
 
 export default CreateHandover;
+*/
