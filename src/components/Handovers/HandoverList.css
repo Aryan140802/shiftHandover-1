@@ -1,7 +1,7 @@
 .handover-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0;
 }
 
 .handover-header {
@@ -9,75 +9,111 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .handover-header h2 {
   margin: 0;
-  color: #2c3e50;
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #2ed5ff 0%, #8a2be2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.create-handover-btn {
-  background: #2ecc71;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.create-handover-btn:hover {
-  background: #27ae60;
-}
-
+/* Task Statistics Cards */
 .task-statistics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
 .stat-card {
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  padding: 1.75rem;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(2,6,23,0.4);
   text-align: center;
-  color: white;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.2s ease;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+  animation: rotate 8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.stat-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(2,6,23,0.5);
 }
 
 .stat-card h3 {
-  margin: 0 0 1rem;
-  color: white;
-  font-size: 1rem;
-  color: #7f8c8d;
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 1;
+  opacity: 0.9;
 }
 
 .stat-number {
-  font-size: 2.5rem;
-  font-weight: bold;
+  font-size: 2.75rem;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 0 20px currentColor;
 }
 
 .stat-card.pending {
-  background: #f1c40f;
+  background: linear-gradient(135deg, rgba(241,196,15,0.15) 0%, rgba(241,196,15,0.08) 100%);
+  color: #ffeaa7;
+  border-color: rgba(241,196,15,0.2);
 }
 
 .stat-card.in-progress {
-  background: #3498db;
+  background: linear-gradient(135deg, rgba(52,152,219,0.15) 0%, rgba(52,152,219,0.08) 100%);
+  color: #c7e7ff;
+  border-color: rgba(52,152,219,0.2);
 }
 
 .stat-card.completed {
-  background: #2ecc71;
+  background: linear-gradient(135deg, rgba(46,204,113,0.15) 0%, rgba(46,204,113,0.08) 100%);
+  color: #bbf7d0;
+  border-color: rgba(46,204,113,0.2);
 }
 
+/* Filters Section */
 .filters {
   display: flex;
   gap: 1.5rem;
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(2,6,23,0.3);
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(12px);
+  flex-wrap: wrap;
 }
 
 .filter-group {
@@ -88,74 +124,255 @@
 
 .filter-group label {
   font-weight: 600;
-  color: #2c3e50;
+  color: #2ed5ff;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .filter-group select {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  min-width: 150px;
-}
-
-.handover-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.no-handovers {
-  text-align: center;
-  padding: 3rem;
-  background: white;
+  padding: 0.65rem 1rem;
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  color: #7f8c8d;
-}
-
-
-/* Add to HandoverList.css */
-.handover-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.refresh-btn {
-  padding: 8px 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
+  font-size: 0.95rem;
+  min-width: 160px;
+  background: rgba(255,255,255,0.03);
+  color: #e6eef8;
   cursor: pointer;
 }
 
-.refresh-btn:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
+.filter-group select:hover {
+  border-color: rgba(46, 213, 255, 0.3);
+  background: rgba(255,255,255,0.05);
 }
 
+/* Handover List */
+.handover-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Handover Item Card */
+.handover-item {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border-radius: 14px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 16px rgba(2,6,23,0.3);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-left: 4px solid;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.handover-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top right, rgba(46, 213, 255, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.handover-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(2,6,23,0.4);
+  border-left-color: #2ed5ff !important;
+}
+
+.handover-item.priority-low {
+  border-left-color: #a5d6a7;
+}
+
+.handover-item.priority-medium {
+  border-left-color: #ffd54f;
+}
+
+.handover-item.priority-high {
+  border-left-color: #ffab91;
+}
+
+.handover-item.priority-critical {
+  border-left-color: #f48fb1;
+}
+
+/* Handover Header */
+.handover-item .handover-header {
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.handover-item .handover-header h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+
+.handover-item .handover-header h3 a {
+  color: #e6eef8;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.handover-item .handover-header h3 a:hover {
+  color: #2ed5ff;
+  transform: translateX(4px);
+}
+
+/* Handover Meta */
+.handover-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  color: rgba(230,238,248,0.7);
+  position: relative;
+  z-index: 1;
+}
+
+.meta-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.meta-label {
+  font-weight: 600;
+  color: #2ed5ff;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+/* Handover Tasks Section */
+.handover-tasks {
+  margin-top: 1.5rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.handover-tasks h4 {
+  margin: 0 0 1rem 0;
+  color: #2ed5ff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Tasks Table Wrapper */
+.tasks-table-wrapper {
+  overflow-x: auto;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Handover Actions */
+.handover-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.view-btn {
+  padding: 0.65rem 1.25rem;
+  background: linear-gradient(90deg, rgba(52,152,219,0.2), rgba(41,128,185,0.15));
+  color: #c7e7ff;
+  border: 1px solid rgba(52,152,219,0.3);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.view-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52,152,219,0.2);
+  background: linear-gradient(90deg, rgba(52,152,219,0.3), rgba(41,128,185,0.2));
+}
+
+/* No Handovers State */
+.no-handovers {
+  text-align: center;
+  padding: 3rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(2,6,23,0.3);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: rgba(230,238,248,0.7);
+}
+
+.no-handovers p {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+/* Error Message */
 .error-message {
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 12px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  border: 1px solid #f5c6cb;
+  background: linear-gradient(90deg, rgba(231,76,60,0.12), rgba(231,76,60,0.06));
+  border: 1px solid rgba(231,76,60,0.3);
+  color: #ffc4c4;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
+.error-message strong {
+  font-weight: 700;
+}
+
+.error-message button {
+  padding: 0.5rem 1rem;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(231,76,60,0.5);
+  color: #ffc4c4;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.error-message button:hover {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+
+/* Loading Message */
 .loading-message {
   text-align: center;
-  padding: 40px;
-  font-size: 18px;
-  color: #6c757d;
+  padding: 3rem;
+  font-size: 1.25rem;
+  color: #2ed5ff;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border-radius: 14px;
+  border: 1px solid rgba(46, 213, 255, 0.2);
 }
 
-@media (max-width: 768px) {
+/* Responsive */
+@media (max-width: 900px) {
   .handover-container {
-    padding: 1rem;
+    padding: 0;
   }
 
   .filters {
@@ -170,5 +387,33 @@
 
   .filter-group select {
     width: 100%;
+  }
+
+  .task-statistics {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .handover-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .handover-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .handover-item {
+    padding: 1.25rem;
+  }
+
+  .handover-meta {
+    gap: 1rem;
+  }
+
+  .tasks-table-wrapper {
+    margin: 0 -1.25rem;
+    border-radius: 0;
   }
 }
