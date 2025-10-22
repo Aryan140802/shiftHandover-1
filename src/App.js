@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route,Navigate } from 'react-router-dom';
 import { useState } from 'react';
 // import { dummyHandovers } from './data/dummyHandovers'; // Commented out to use API data
 import { dummyShifts } from './data/dummyShifts';
@@ -12,7 +12,6 @@ import CreateHandover from './components/Handovers/CreateHandover';
 import HandoverDetail from './components/Handovers/HandoverDetail';
 // import ShiftManager from './components/Shifts/ShiftManager';
 import HandoverReports from './components/Reports/HandoverReports';
-import BillingAnalysis from './components/BillingAnalysis/BillingAnalysis';
 
 // Main CSS
 import './App.css';
@@ -51,33 +50,7 @@ function App() {
             <Routes>
               {/* Add root route that redirects to dashboard */}
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              
-<<<<<<< HEAD
-              <Route path="/create" element={
-                <CreateHandover 
-                  shifts={shifts} 
-                  onSubmit={addHandover} 
-                />
-              } />
-              
-              <Route path="/handover/:id" element={
-                <HandoverDetail handovers={handovers} />
-              } />
-              
-              <Route path="/shifts" element={
-                <ShiftManager 
-                  shifts={shifts} 
-                  setShifts={setShifts} 
-                />
-              } />
-              
-              <Route path="/reports" element={
-                <HandoverReports handovers={handovers} />
-              } />
-              <Route path="/billing-analysis" element={
-                <BillingAnalysis />
-              } />
-=======
+
               <Route
                 path="/dashboard"
                 element={
@@ -113,7 +86,6 @@ function App() {
                   <HandoverReports handovers={handovers} />
                 }
               />
->>>>>>> 8e8aaabae9a61ef5aec6e9c002fc06ce360bee81
             </Routes>
           </div>
         </div>
