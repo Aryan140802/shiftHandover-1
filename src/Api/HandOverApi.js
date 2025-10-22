@@ -9,12 +9,6 @@ const api = axios.create({
   }
 });
 
-/**
- * Fetches handovers from the API
- * Retrieves uid and password from localStorage and sends them in the request body
- * @returns {Promise} API response containing handover data
- * @throws {Error} If credentials are not found or API call fails
- */
 export const getHandovers = async () => {
   try {
     const uid = localStorage.getItem('uidd');
@@ -35,11 +29,6 @@ export const getHandovers = async () => {
   }
 };
 
-/**
- * Creates or updates a task via the backend API
- * @param {Object} taskData - Task data object
- * @returns {Promise} API response
- */
 export const saveTask = async (taskData) => {
   try {
     const response = await api.post('/saveNew_task/', taskData, {
