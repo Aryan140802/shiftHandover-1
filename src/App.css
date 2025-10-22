@@ -264,3 +264,228 @@ input:focus, select:focus, textarea:focus {
     font-size: 1.2rem;
   }
 }
+
+
+
+/* ADD: Glassmorphism theme + component overrides (append to end of src/App.css) */
+
+/* Theme tokens */
+:root {
+  --bg-900: #0b1220;
+  --bg-800: #0f1724;
+  --card-bg: rgba(255,255,255,0.03);
+  --glass-border: rgba(255,255,255,0.06);
+  --muted: rgba(230,238,248,0.72);
+  --accent-start: #7c3aed; /* violet */
+  --accent-end: #06b6d4;   /* cyan */
+  --glass-blur: 12px;
+  --glass-radius: 12px;
+  --shadow-lg: 0 18px 40px rgba(2,6,23,0.65);
+}
+
+/* Make sure the page base is dark and consistent (keeps existing gradient but increases contrast) */
+body {
+  background: linear-gradient(180deg, var(--bg-900) 0%, var(--bg-800) 100%);
+  color: var(--muted);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Glass card base (non-invasive — components that are card-like will benefit) */
+.card,
+.stat-card,
+.tasks-table-wrapper,
+.attachments-preview,
+.handover-detail-header,
+.results-table,
+.shift-manager,
+.handover-container,
+.handover-detail-container,
+.create-handover-form,
+.modal,
+.modal .card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow-lg);
+}
+
+/* Lift on hover for card-like containers */
+.card:hover,
+.stat-card:hover,
+.tasks-table-wrapper:hover,
+.attachments-preview:hover {
+  transform: translateY(-6px);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+/* Icon bubble for folder/file icons or stat icons */
+.icon-bubble,
+.folder-icon,
+.stat .icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 8px 24px rgba(12,8,20,0.5);
+  flex-shrink: 0;
+}
+
+/* Sidebar-ish nav override (if you have a left navigation) */
+.sidebar,
+.nav {
+  background: linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.008));
+  border-right: 1px solid rgba(255,255,255,0.03);
+}
+
+.nav-item,
+.create-handover-btn,
+.add-task-btn,
+.upload-btn,
+.remove-task-btn,
+.select-shift-btn {
+  transition: background .18s, transform .18s, color .18s;
+}
+
+/* Active / hover state for nav items */
+.nav-item.active,
+.nav-item:hover {
+  background: linear-gradient(90deg, rgba(124,58,237,0.12), rgba(6,182,212,0.06));
+  color: #fff;
+  transform: translateX(6px);
+}
+
+/* Storage indicator */
+.storage {
+  width: 100%;
+  height: 8px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.02);
+}
+.storage > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+  width: 40%; /* change inline or via JS to reflect real usage */
+  transition: width .5s ease;
+}
+
+/* Avatar group overlap */
+.avatar-group {
+  display: flex;
+  align-items: center;
+}
+.avatar-group img {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 2px solid rgba(11,17,28,0.55);
+  margin-left: -10px;
+  transition: transform .12s ease;
+}
+.avatar-group img:hover { transform: translateY(-4px); }
+
+/* Tables: subdued background with glass border and alternating rows */
+.tasks-table,
+.results-table table {
+  background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+  color: var(--muted);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.tasks-table th,
+.results-table th {
+  background: rgba(255,255,255,0.02);
+  color: #d7eaff;
+  font-weight: 600;
+  padding: 0.9rem;
+}
+.tasks-table td,
+.results-table td {
+  padding: 0.7rem;
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+}
+.tasks-table tr:hover,
+.results-table tr:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+/* Buttons — softened with glassy look */
+.create-handover-btn,
+.add-task-btn,
+.upload-btn,
+.select-shift-btn {
+  background: linear-gradient(90deg, rgba(124,58,237,0.16), rgba(6,182,212,0.12));
+  color: #ffffff;
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.create-handover-btn:hover,
+.add-task-btn:hover,
+.upload-btn:hover,
+.select-shift-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(6,182,212,0.08);
+}
+
+/* Status badges: more subtle, color-coded but glassy */
+.status-select.pending,
+.status-badge.pending { background: linear-gradient(90deg, rgba(241,196,15,0.12), rgba(241,196,15,0.06)); color: #ffeaa7; }
+.status-select.in-progress,
+.status-badge.in-progress { background: linear-gradient(90deg, rgba(52,152,219,0.12), rgba(52,152,219,0.06)); color: #c7e7ff; }
+.status-select.completed,
+.status-badge.completed { background: linear-gradient(90deg, rgba(46,204,113,0.12), rgba(46,204,113,0.06)); color: #bbf7d0; }
+
+/* Alerts — soft glass */
+.alert {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.02);
+  color: var(--muted);
+  padding: 0.9rem;
+  border-radius: 10px;
+}
+
+/* Modal backdrop and centered modal (overrides any existing modal CSS) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2,6,23,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.modal {
+  width: min(720px, 95%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 1.25rem;
+  border-radius: 14px;
+}
+
+/* Small utilities */
+.row { display:flex; gap:1rem; align-items:center; }
+.col { display:flex; flex-direction:column; gap:0.5rem; }
+.pulse { animation: pulse 2s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+/* Floating/animated icons */
+.stat .icon { animation: float 4s ease-in-out infinite; }
+@keyframes float { 0%{ transform: translateY(0); } 50%{ transform: translateY(-6px); } 100%{ transform: translateY(0); } }
+
+/* Responsive: compress sidebar controls on small screens */
+@media (max-width: 900px){
+  .sidebar { width: 72px; padding: .75rem; }
+  .nav-item span { display:none; }
+}
