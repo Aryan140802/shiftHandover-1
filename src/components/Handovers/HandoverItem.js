@@ -13,33 +13,6 @@ const HandoverItem = ({ handover, tasks = [] }) => {
     );
   }
 
-<<<<<<< HEAD
-  // Safe property access with defaults
-  const {
-    title = 'Untitled Handover',
-    description = 'No description available',
-    priority = 'medium',
-    
-    fromShift = { name: 'Unknown Shift', time: '' },
-    toShift = { name: 'Unknown Shift', time: '' },
-    createdBy = { name: 'Unknown User' },
-    createdAt = new Date().toISOString(),
-    attachments = []
-  } = handover;
-
-  const getPriorityClass = () => {
-    switch (priority) {
-      case 'low': return 'priority-low';
-      case 'medium': return 'priority-medium';
-      case 'high': return 'priority-high';
-      case 'critical': return 'priority-critical';
-      default: return '';
-      
-
-
-
-
-=======
   // Format date safely
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -47,7 +20,6 @@ const HandoverItem = ({ handover, tasks = [] }) => {
       return format(new Date(dateString), 'MMM d, yyyy h:mm a');
     } catch (e) {
       return '-';
->>>>>>> 8e8aaabae9a61ef5aec6e9c002fc06ce360bee81
     }
   };
 
@@ -70,19 +42,8 @@ const HandoverItem = ({ handover, tasks = [] }) => {
           </Link>
         </h3>
       </div>
-      
+
       <div className="handover-meta">
-<<<<<<< HEAD
-        <div className="meta-item">
-          <span className="meta-label">From:</span>
-          <span>{fromShift.name} ({fromShift.time})</span>
-        </div>
-        <div className="meta-item">
-          <span className="meta-label">To:</span>
-          <span>{toShift.name} ({toShift.time})</span>
-        </div>
-=======
->>>>>>> 8e8aaabae9a61ef5aec6e9c002fc06ce360bee81
         <div className="meta-item">
           <span className="meta-label">Team:</span>
           <span>{handover.teamName}</span>
@@ -128,7 +89,7 @@ const HandoverItem = ({ handover, tasks = [] }) => {
                     </td>
                     <td>
                       <span className={`status-badge ${task.status}`}>
-                        {task.status === 'in-progress' ? 'In Progress' : 
+                        {task.status === 'in-progress' ? 'In Progress' :
                          task.status.charAt(0).toUpperCase() + task.status.slice(1)}
                       </span>
                     </td>
@@ -145,7 +106,7 @@ const HandoverItem = ({ handover, tasks = [] }) => {
           </div>
         </div>
       )}
-      
+
       <div className="handover-actions">
         <Link to={`/handover/${handover.handover_id_id}`} className="view-btn">
           View Details
