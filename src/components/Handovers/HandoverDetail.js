@@ -100,8 +100,8 @@ const HandoverDetail = () => {
     const payload = {
       uid,
       password,
-      Taskid: selectedTask.Taskid,
-      tascdec: selectedTask.taskDesc || '', // or use .tascdec if that's your backend key
+      task_id: selectedTask.Taskid,
+      taskDesc: selectedTask.taskDesc || '', // or use .tascdec if that's your backend key
       status: ackStatus,
       priority: selectedTask.priority,
       acknowledgeStatus: 'Acknowledged',
@@ -161,7 +161,7 @@ const HandoverDetail = () => {
     const payload = {
       uid,
       password,
-      tascdec: newTask.taskDesc,
+      taskDesc: newTask.taskDesc,
       status: newTask.status,
       priority: newTask.priority,
       acknowledgeStatus: 'Pending',
@@ -630,6 +630,7 @@ const HandoverDetail = () => {
                 </button>
                 <button
                   type="submit"
+                   onSubmit={handleCreateTaskSubmit}
                   style={{
                     padding: '10px 22px',
                     background: '#2ecc71',
