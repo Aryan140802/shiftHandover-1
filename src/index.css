@@ -7,7 +7,33 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ADD: small global resets for glass theme (append to end of src/index.css) */
+
+/* make root container spanning full height and using dark background */
 #root {
   min-height: 100vh;
-  background-color: #f0f2f5;
+  background: linear-gradient(180deg, #0b1220 0%, #0f1724 100%);
+  color: rgba(230,238,248,0.9);
 }
+
+/* focus outline for keyboard accessibility (tinted to theme) */
+:focus {
+  outline: 3px solid rgba(124,58,237,0.18);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* slightly reduce default form control glare to fit glass theme */
+input, select, textarea {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.03);
+  color: rgba(230,238,248,0.95);
+  border-radius: 8px;
+  padding: .5rem .6rem;
+}
+
+/* file input / upload button visual alignment */
+.upload-btn { display: inline-flex; align-items: center; gap: .5rem; }
+
+/* subtle transition for interactive elements */
+button, a, input, select, textarea { transition: all 160ms ease; }
