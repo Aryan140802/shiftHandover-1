@@ -19,13 +19,13 @@ const HandoverList = () => {
   const fetchHandovers = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       console.log('Fetching handovers from API...');
       const data = await getHandovers();
-      
+
       console.log('API Response:', data);
-      
+
       // Ensure the data has the expected structure
       if (data && data.TeamHandoverDetails && data.Tasksdata) {
         setBackendData(data);
@@ -88,21 +88,21 @@ const HandoverList = () => {
   // Filter handovers based on selected filters
   const filteredHandovers = TeamHandoverDetails.filter(handover => {
     const handoverTasks = tasksByHandover[handover.handover_id_id] || [];
-    
+
     if (statusFilter !== 'all') {
-      const hasMatchingStatus = handoverTasks.some(task => 
+      const hasMatchingStatus = handoverTasks.some(task =>
         getStatusDisplay(task.status) === statusFilter
       );
       if (!hasMatchingStatus) return false;
     }
-    
+
     if (priorityFilter !== 'all') {
-      const hasMatchingPriority = handoverTasks.some(task => 
+      const hasMatchingPriority = handoverTasks.some(task =>
         task.priority?.toLowerCase() === priorityFilter
       );
       if (!hasMatchingPriority) return false;
     }
-    
+
     return true;
   });
 
@@ -118,7 +118,7 @@ const HandoverList = () => {
       }
       return task;
     });
-    
+
     setBackendData({
       ...backendData,
       Tasksdata: updatedTasks
@@ -140,14 +140,14 @@ const HandoverList = () => {
       <div className="handover-header">
         <h2>Shift Handovers</h2>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <button 
-            onClick={fetchHandovers} 
+          <button
+            onClick={fetchHandovers}
             disabled={loading}
             className="refresh-btn"
           >
             {loading ? 'Refreshing...' : '🔄 Refresh'}
           </button>
-          <button 
+          <button
             onClick={() => navigate('/create')}
             className="create-handover-btn"
           >
@@ -159,7 +159,7 @@ const HandoverList = () => {
       {error && (
         <div className="error-message">
           <strong>Error:</strong> {error}
-          <button 
+          <button
             onClick={fetchHandovers}
             style={{
               marginLeft: '1rem',
@@ -193,8 +193,8 @@ const HandoverList = () => {
       <div className="filters">
         <div className="filter-group">
           <label>Status:</label>
-          <select 
-            value={statusFilter} 
+          <select
+            value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="all">All</option>
@@ -205,8 +205,8 @@ const HandoverList = () => {
         </div>
         <div className="filter-group">
           <label>Priority:</label>
-          <select 
-            value={priorityFilter} 
+          <select
+            value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
           >
             <option value="all">All</option>
@@ -227,7 +227,7 @@ const HandoverList = () => {
           {filteredHandovers.length > 0 ? (
             filteredHandovers.map((handover) => {
               const handoverTasks = tasksByHandover[handover.handover_id_id] || [];
-              
+
               // Calculate highest priority from tasks
               const highestPriority = handoverTasks.reduce((highest, task) => {
                 if (!task.priority) return highest;
@@ -238,14 +238,14 @@ const HandoverList = () => {
               }, 'Medium');
 
               return (
-                <div 
-                  key={handover.handover_id_id} 
+                <div
+                  key={handover.handover_id_id}
                   className={`handover-item ${getPriorityClass(highestPriority)}`}
                 >
                   <div className="handover-header">
                     <h3>
-                      <a 
-                        href="#" 
+                      <a
+                        href="#"
                         onClick={(e) => {
                           e.preventDefault();
                           navigate(`/handover/${handover.handover_id_id}`);
@@ -255,7 +255,7 @@ const HandoverList = () => {
                       </a>
                     </h3>
                   </div>
-                  
+
                   <div className="handover-meta">
                     <div className="meta-item">
                       <span className="meta-label">Team:</span>
@@ -326,7 +326,7 @@ const HandoverList = () => {
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="handover-actions">
                     <button
                       onClick={() => navigate(`/handover/${handover.handover_id_id}`)}
@@ -342,7 +342,7 @@ const HandoverList = () => {
             <div className="no-handovers">
               <p>No handovers found matching the selected filters.</p>
               {TeamHandoverDetails.length === 0 && !loading && (
-                <button 
+                <button
                   onClick={() => navigate('/create')}
                   style={{
                     marginTop: '1rem',
