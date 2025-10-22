@@ -56,6 +56,66 @@ body::before {
   position: relative;
 }
 
+
+/* --- ADD: layout fixes so sidebar and content align on same page --- */
+/* Place this near the other layout rules, or append to the end of src/App.css */
+
+.main-content {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 0;
+  min-height: 100vh;
+}
+
+/* .app-sidebar already exists, ensure it does not collapse and fills vertical space */
+.app-sidebar {
+  flex-shrink: 0;
+  height: 100vh; /* full viewport height so it aligns to content */
+  position: sticky;
+  top: 0;
+}
+
+/* content area to take remaining space and keep internal scroll */
+.content-area {
+  flex: 1;
+  padding: 1.75rem;
+  min-height: 100vh;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+/* Ensure header + content layout doesn't overlap with sidebar */
+.app-container > header,
+.app-header {
+  z-index: 10;
+}
+
+/* Read-only status display styling (used on the list view) */
+.status-display {
+  display: inline-block;
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
+  text-transform: capitalize;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #e6eef8;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+/* color variants for status-display */
+.status-display.pending { background: linear-gradient(90deg, rgba(241,196,15,0.12), rgba(241,196,15,0.06)); color: #ffeaa7; }
+.status-display['in-progress'], .status-display.in-progress { background: linear-gradient(90deg, rgba(52,152,219,0.12), rgba(52,152,219,0.06)); color: #c7e7ff; }
+.status-display.completed { background: linear-gradient(90deg, rgba(46,204,113,0.12), rgba(46,204,113,0.06)); color: #bbf7d0; }
+
+/* Small responsive tweak so layout remains usable on narrow screens */
+@media (max-width: 900px) {
+  .app-sidebar { position: relative; height: auto; width: 100%; }
+  .main-content { flex-direction: column; }
+  .content-area { padding: 1rem; }
+}
+
 /* Sidebar Futuristic Design */
 .app-sidebar {
   width: 280px;
