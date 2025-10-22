@@ -360,6 +360,7 @@ textarea::placeholder {
   color: var(--text-muted);
 }
 
+
 /* ==================== STATUS & PRIORITY BADGES ==================== */
 .status-badge,
 .status-select,
@@ -626,4 +627,58 @@ textarea::placeholder {
   .results-table td {
     padding: 0.6rem 0.8rem;
   }
+}
+/* Enhanced Select/Dropdown Styling */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(46, 213, 255, 0.8)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25rem;
+  padding-right: 2.75rem;
+  cursor: pointer;
+}
+
+select:hover {
+  background-color: rgba(255,255,255,0.05);
+  border-color: rgba(46, 213, 255, 0.25);
+}
+
+select option {
+  background: #1a1a3e;
+  color: #e6eef8;
+  padding: 0.75rem;
+  border-radius: 4px;
+}
+
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Filter Group Selects */
+.filter-group select {
+  padding: 0.65rem 2.5rem 0.65rem 1rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  min-width: 160px;
+  background-color: rgba(255,255,255,0.03);
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(46, 213, 255, 0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  color: #e6eef8;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.filter-group select:hover {
+  border-color: rgba(46, 213, 255, 0.3);
+  background-color: rgba(255,255,255,0.05);
+}
+
+.filter-group select:focus {
+  border-color: rgba(46, 213, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(46, 213, 255, 0.12);
 }
