@@ -204,11 +204,14 @@ const BillingAnalysis = () => {
 
   return (
     <div className="billing-analysis">
-      <h2>Billing Analysis</h2>
-
-      <div className="controls-row">
-        <button type="button" onClick={() => setShowUploadModal(true)} className="upload-btn">
-          Upload Roster & Attendance (3 files)
+      <div className="header-section">
+        <h2>Billing Analysis</h2>
+        <button 
+          type="button" 
+          onClick={() => setShowUploadModal(true)} 
+          className="upload-btn"
+        >
+          📁 Upload Roster & Attendance
         </button>
       </div>
 
