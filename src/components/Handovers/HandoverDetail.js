@@ -11,6 +11,50 @@ const statusOptions = [
   { value: 'completed', label: 'Completed' }
 ];
 
+// Timeline Component
+const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
+  if (!acknowledgeDetails || acknowledgeDetails.length === 0) {
+    return (
+      <div className="timeline-container">
+        <div className="no-timeline-data">
+          <p>No acknowledgment history available</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="timeline-container">
+      <h4 className="timeline-title">Acknowledgment History</h4>
+      <div className="timeline-horizontal">
+        {acknowledgeDetails.map((ack, index) => (
+          <div key={ack.ackId} className="timeline-item">
+            <div className="timeline-marker">
+              <div className="timeline-dot"></div>
+              {index < acknowledgeDetails.length - 1 && (
+                <div className="timeline-connector"></div>
+              )}
+            </div>
+            <div className="timeline-content">
+              <div className="timeline-header">
+                <span className="timeline-time">
+                  {format(new Date(ack.acknowledgeTime), 'MMM d, yyyy h:mm a')}
+                </span>
+                <span className="timeline-user">
+                  User ID: {ack.userAcknowleged_id}
+                </span>
+              </div>
+              <div className="timeline-description">
+                {ack.ackDesc}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const HandoverDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -334,6 +378,9 @@ const HandoverDetail = () => {
                 <div className="info-row">
                   <strong>Description:</strong> <span>{selectedTask.taskDesc || '-'}</span>
                 </div>
+                
+                {/* Timeline Component */}
+                <AcknowledgeTimeline acknowledgeDetails={selectedTask.acknowledgeDetails} />
               </div>
 
               <div className="form-group">
