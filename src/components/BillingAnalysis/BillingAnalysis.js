@@ -206,109 +206,83 @@ const BillingAnalysis = () => {
     <div className="billing-analysis">
       <h2>Billing Analysis</h2>
 
-      <div className="controls-row" style={{ display: 'flex', gap: '12px', marginBottom: 12 }}>
+      <div className="controls-row">
         <button type="button" onClick={() => setShowUploadModal(true)} className="upload-btn">
           Upload Roster & Attendance (3 files)
         </button>
       </div>
 
       {/* Search / filter form */}
-      <form onSubmit={handleSearch} className="search-form" style={{ marginBottom: 16 }}>
-        <div className="horizontal-form-grid" style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(4, 1fr)', 
-          gap: '12px',
-          alignItems: 'end',
-          marginBottom: '12px'
-        }}>
-          <div className="form-field">
-            <label>Search Name</label>
-            <input
-              type="text"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Name search"
-            />
-          </div>
-
-          <div className="form-field">
-            <label>Employee ID</label>
-            <input
-              type="text"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              placeholder="ID search"
-            />
-          </div>
-
-          <div className="form-field">
-            <label>Start Date</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </div>
-
-          <div className="form-field">
-            <label>End Date</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-          </div>
-
-          <div className="form-field">
-            <label>Team Name</label>
-            <input
-              type="text"
-              value={teamname}
-              onChange={(e) => setTeamname(e.target.value)}
-              placeholder="Team name"
-            />
-          </div>
-
-          <div className="form-field">
-            <label>Shift</label>
-            <input
-              type="text"
-              value={shift}
-              onChange={(e) => setShift(e.target.value)}
-              placeholder="Shift"
-            />
-          </div>
-
-          <div className="form-field">
-            <label>Action</label>
-            <select value={action} onChange={(e) => setAction(e.target.value)}>
-              <option value="">-- Select Action --</option>
-              <option value="count">Count (total working days)</option>
-              <option value="low_hours">Low Hours (&lt; 8 hours)</option>
-            </select>
-          </div>
-
-          <div className="form-field">
-            <button type="submit" disabled={isLoading} className="search-btn" style={{ width: '100%', padding: '8px' }}>
-              {isLoading ? 'Searching...' : 'Search'}
-            </button>
-          </div>
+      <form onSubmit={handleSearch} className="search-form">
+        <div className="horizontal-form-grid">
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="🔍 Name"
+            className="form-input"
+          />
+          <input
+            type="text"
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+            placeholder="👤 ID"
+            className="form-input"
+          />
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="form-input"
+          />
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="form-input"
+          />
+          <input
+            type="text"
+            value={teamname}
+            onChange={(e) => setTeamname(e.target.value)}
+            placeholder="👥 Team"
+            className="form-input"
+          />
+          <input
+            type="text"
+            value={shift}
+            onChange={(e) => setShift(e.target.value)}
+            placeholder="🕒 Shift"
+            className="form-input"
+          />
+          <select 
+            value={action} 
+            onChange={(e) => setAction(e.target.value)}
+            className="form-select"
+          >
+            <option value="">📊 All Actions</option>
+            <option value="count">Count Working Days</option>
+            <option value="low_hours">Low Hours Check</option>
+          </select>
+          <button type="submit" disabled={isLoading} className="search-btn">
+            {isLoading ? '⏳ Searching...' : '🚀 Search'}
+          </button>
         </div>
       </form>
 
-      {error && <div className="error" style={{ color: 'red' }}>Error: {error}</div>}
+      {error && <div className="error">Error: {error}</div>}
 
       {/* Dynamic results table */}
       <div className="results-area">
         {flattenedData.length === 0 ? (
-          <div>No results to display.</div>
+          <div className="no-results">No results to display.</div>
         ) : (
           <>
-            <div className="table-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div>
+            <div className="table-controls">
+              <div className="table-info">
                 Rows: {totalRows} &nbsp;|&nbsp; Page {page} of {totalPages}
               </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div className="pagination-controls">
                 <label>
                   Page size:
                   <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
@@ -321,15 +295,15 @@ const BillingAnalysis = () => {
                 </label>
 
                 <button disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                  Prev
+                  ← Prev
                 </button>
                 <button disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
-                  Next
+                  Next →
                 </button>
               </div>
             </div>
 
-            <div className="results-table" style={{ overflowX: 'auto' }}>
+            <div className="results-table">
               <table>
                 <thead>
                   <tr>
@@ -358,13 +332,11 @@ const BillingAnalysis = () => {
 
       {/* Upload modal */}
       {showUploadModal && (
-        <div className="upload-modal" style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div style={{ background: '#fff', padding: 20, borderRadius: 6, width: 600, maxWidth: '95%' }}>
+        <div className="upload-modal">
+          <div className="upload-modal-content">
             <h3>Upload Roster & Attendance Sheets</h3>
             <form onSubmit={handleUploadSubmit}>
-              <div style={{ display: 'grid', gap: 8 }}>
+              <div className="upload-fields">
                 <label>
                   Roster file (required for roster uploads):
                   <input
@@ -372,7 +344,7 @@ const BillingAnalysis = () => {
                     accept=".csv,.xlsx,.xls"
                     onChange={(e) => setRosterFile(e.target.files && e.target.files[0])}
                   />
-                  {rosterFile && <div style={{ fontSize: 12 }}>{rosterFile.name}</div>}
+                  {rosterFile && <div className="file-name">{rosterFile.name}</div>}
                 </label>
 
                 <label>
@@ -382,7 +354,7 @@ const BillingAnalysis = () => {
                     accept=".csv,.xlsx,.xls"
                     onChange={(e) => setAttendance1File(e.target.files && e.target.files[0])}
                   />
-                  {attendance1File && <div style={{ fontSize: 12 }}>{attendance1File.name}</div>}
+                  {attendance1File && <div className="file-name">{attendance1File.name}</div>}
                 </label>
 
                 <label>
@@ -392,11 +364,11 @@ const BillingAnalysis = () => {
                     accept=".csv,.xlsx,.xls"
                     onChange={(e) => setAttendance2File(e.target.files && e.target.files[0])}
                   />
-                  {attendance2File && <div style={{ fontSize: 12 }}>{attendance2File.name}</div>}
+                  {attendance2File && <div className="file-name">{attendance2File.name}</div>}
                 </label>
               </div>
 
-              <div style={{ marginTop: 12, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <div className="upload-actions">
                 <button type="button" onClick={() => setShowUploadModal(false)} disabled={uploading}>
                   Cancel
                 </button>
