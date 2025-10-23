@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import './HandoverDetail.css';
 import Modal from '../UI/Modal';
-import { getHandovers, saveTask } from '../../Api/HandOverApi';
+import { getHandovers, createTask, updateTask } from '../../Api/HandOverApi';
 
 const statusOptions = [
   { value: 'open', label: 'Open' },
@@ -32,7 +32,6 @@ const HandoverDetail = () => {
 
   useEffect(() => {
     fetchHandoverData();
-    // eslint-disable-next-line
   }, [id]);
 
   const fetchHandoverData = async () => {
@@ -40,11 +39,9 @@ const HandoverDetail = () => {
     try {
       const data = await getHandovers();
       if (data && data.TeamHandoverDetails && data.Tasksdata) {
-        // Find the specific handover by ID
         const handoverDetail = data.TeamHandoverDetails.find(
           h => h.handover_id_id === parseInt(id)
         );
-        // Filter tasks for this specific handover
         const handoverTasks = data.Tasksdata.filter(
           t => t.handover_id_id === parseInt(id)
         );
@@ -75,58 +72,51 @@ const HandoverDetail = () => {
     }
   };
 
-  // Handle acknowledge modal open
   const handleAcknowledgeClick = (task) => {
     setSelectedTask(task);
     setModalOpen(true);
-    setAckDescription(task.acknowledgeDesc || '');
+    setAckDescription(task.ackDesc || '');
     setAckStatus(task.status || 'open');
     setError('');
   };
 
-  // Handle acknowledge submission (calls saveTask API)
   const handleAcknowledgeSubmit = async () => {
     if (!ackDescription.trim()) {
       setError('Description is required.');
       return;
     }
-    const uid = localStorage.getItem('uidd');
-    const password = localStorage.getItem('password');
-    if (!uid || !password) {
-      setError('Missing user credentials!');
-      return;
-    }
-    // Compose payload for saveTask
+
     const payload = {
-      uid,
-      password,
       task_id: selectedTask.Taskid,
-      taskDesc: selectedTask.taskDesc || '', // or use .tascdec if that's your backend key
+      taskTitle: selectedTask.taskTitle || '',
+      taskDesc: selectedTask.taskDesc || '',
       status: ackStatus,
-      priority: selectedTask.priority,
+      priority: selectedTask.priority || 'Medium',
       acknowledgeStatus: 'Acknowledged',
-      acknowledgeDesc: ackDescription,
-      handover_id_id: selectedTask.handover_id_id
+      ackDesc: ackDescription
     };
+
     try {
-      await saveTask(payload);
-      // Update local state
+      await updateTask(payload);
+
       const updatedTasks = backendData.Tasksdata.map(t =>
         t.Taskid === selectedTask.Taskid
           ? {
               ...t,
               status: ackStatus,
               acknowledgeStatus: 'Acknowledged',
-              acknowledgeDesc: ackDescription,
+              ackDesc: ackDescription,
               acknowledgeTime: new Date().toISOString(),
               statusUpdateTime: new Date().toISOString()
             }
           : t
       );
+
       setBackendData({
         ...backendData,
         Tasksdata: updatedTasks
       });
+
       setModalOpen(false);
       setSelectedTask(null);
       setAckDescription('');
@@ -137,7 +127,6 @@ const HandoverDetail = () => {
     }
   };
 
-  // Show create task modal
   const handleCreateTask = () => {
     setShowCreateTaskModal(true);
     setNewTask({
@@ -146,49 +135,58 @@ const HandoverDetail = () => {
       priority: 'Medium',
       status: 'open'
     });
+    setError('');
   };
 
-  // Create a new task (calls saveTask API)
   const handleCreateTaskSubmit = async (e) => {
     e.preventDefault();
-    if (!newTask.taskTitle.trim() && !newTask.taskDesc.trim()) return;
-    const uid = localStorage.getItem('uidd');
-    const password = localStorage.getItem('password');
-    if (!uid || !password) {
-      setError('Missing user credentials!');
+    if (!newTask.taskTitle.trim() && !newTask.taskDesc.trim()) {
+      setError('Please provide at least a title or description');
       return;
     }
+
     const payload = {
-      uid,
-      password,
+      taskTitle: newTask.taskTitle,
       taskDesc: newTask.taskDesc,
       status: newTask.status,
       priority: newTask.priority,
       acknowledgeStatus: 'Pending',
-      acknowledgeDesc: '',
-      handover_id_id: parseInt(id),
-      taskTitle: newTask.taskTitle // If your backend supports this, otherwise remove
+      ackDesc: '',
+      handover_id_id: parseInt(id)
     };
+
     try {
-      await saveTask(payload);
-      const maxTaskId = Math.max(...(backendData.Tasksdata.map(t => t.Taskid)), 0);
-      const newTaskData = {
-        Taskid: maxTaskId + 1,
-        ...payload,
-        creationTime: new Date().toISOString()
-      };
-      setBackendData({
-        ...backendData,
-        Tasksdata: [...backendData.Tasksdata, newTaskData]
-      });
+      await createTask(payload);
+
+      // Refresh data after creating task
+      await fetchHandoverData();
+
       setShowCreateTaskModal(false);
+      setError('');
     } catch (err) {
+      console.error('Create task error:', err);
       setError('Failed to create task on server!');
     }
   };
 
+  // Calculate task statistics
+  const getTaskStats = (tasks) => {
+    return {
+      pending: tasks.filter(t => t.status === 'open' || t.status === 'pending').length,
+      inProgress: tasks.filter(t => t.status === 'in progress' || t.status === 'in-progress').length,
+      completed: tasks.filter(t => t.status === 'completed' || t.status === 'closed').length
+    };
+  };
+
   if (loading) {
-    return <div className="loading-message">Loading handover details...</div>;
+    return (
+      <div className="handover-detail-container">
+        <div className="loading-message">
+          <div className="loading-spinner"></div>
+          <p>Loading handover details...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!backendData || !backendData.TeamHandoverDetails || backendData.TeamHandoverDetails.length === 0) {
@@ -206,85 +204,106 @@ const HandoverDetail = () => {
 
   const handover = backendData.TeamHandoverDetails[0];
   const tasks = backendData.Tasksdata || [];
+  const taskStats = getTaskStats(tasks);
 
   return (
     <div className="handover-detail-container">
       <div className="handover-detail-header">
         <h2>{handover.teamName} Team Handover</h2>
         <button onClick={() => navigate('/dashboard')} className="back-button">
-          Back to List
+          ← Back to List
         </button>
       </div>
 
       <div className="handover-detail-content">
+        {/* Task Statistics */}
+        {tasks.length > 0 && (
+          <div className="task-stats">
+            <div className="task-stat-card pending">
+              <h4>Pending</h4>
+              <div className="number">{taskStats.pending}</div>
+            </div>
+            <div className="task-stat-card in-progress">
+              <h4>In Progress</h4>
+              <div className="number">{taskStats.inProgress}</div>
+            </div>
+            <div className="task-stat-card completed">
+              <h4>Completed</h4>
+              <div className="number">{taskStats.completed}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Handover Details */}
         <div className="detail-section">
-          <h3>Handover Details</h3>
+          <h3>Handover Information</h3>
           <div className="detail-grid">
             <div className="detail-item">
-              <span className="detail-label">Team Name:</span>
+              <span className="detail-label">Team Name</span>
               <span className="detail-value">{handover.teamName}</span>
             </div>
             <div className="detail-item">
-              <span className="detail-label">Team ID:</span>
+              <span className="detail-label">Team ID</span>
               <span className="detail-value">{handover.TeamId}</span>
             </div>
             <div className="detail-item">
-              <span className="detail-label">Team Lead ID:</span>
+              <span className="detail-label">Team Lead ID</span>
               <span className="detail-value">{handover.teamLead_id}</span>
             </div>
             <div className="detail-item">
-              <span className="detail-label">Handover ID:</span>
+              <span className="detail-label">Handover ID</span>
               <span className="detail-value">{handover.handover_id_id}</span>
             </div>
           </div>
         </div>
 
-        {tasks && tasks.length > 0 ? (
-          <div className="detail-section">
+        {/* Tasks Section */}
+        <div className="detail-section">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <h3>Tasks ({tasks.length})</h3>
-            <table className="tasks-table" style={{ width: '100%', borderCollapse: 'collapse', marginTop: 16 }}>
+            <button className="create-task-btn" onClick={handleCreateTask}>
+              + Create New Task
+            </button>
+          </div>
+
+          {tasks.length > 0 ? (
+            <table className="tasks-table">
               <thead>
-                <tr style={{ background: '#f8f9fa' }}>
-                  <th style={{ padding: '10px', border: '1px solid #e5e7eb' }}>Task ID</th>
-                  <th style={{ padding: '10px', border: '1px solid #e5e7eb' }}>Title</th>
-                  <th style={{ padding: '10px', border: '1px solid #e5e7eb' }}>Description</th>
-                  <th style={{ padding: '10px', border: '1px solid #e5e7eb' }}>Priority</th>
-                  <th style={{ padding: '10px', border: '1px solid #e5e7eb' }}>Status</th>
-                  <th style={{ padding: '10px', border: '1px solid #e5e7eb' }}>Ack Status</th>
-                  <th style={{ padding: '10px', border: '1px solid #e5e7eb' }}>Created</th>
-                  <th style={{ padding: '10px', border: '1px solid #e5e7eb' }}>Action</th>
+                <tr>
+                  <th>ID</th>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Ack Status</th>
+                  <th>Created</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {tasks.map(task => (
                   <tr key={task.Taskid}>
-                    <td style={{ padding: '10px', border: '1px solid #e5e7eb' }}>{task.Taskid}</td>
-                    <td style={{ padding: '10px', border: '1px solid #e5e7eb', fontWeight: 600 }}>
-                      {task.taskTitle || 'Untitled'}
-                    </td>
-                    <td style={{ padding: '10px', border: '1px solid #e5e7eb' }}>{task.taskDesc || '-'}</td>
-                    <td style={{ padding: '10px', border: '1px solid #e5e7eb' }}>
+                    <td>{task.Taskid}</td>
+                    <td style={{ fontWeight: 600 }}>{task.taskTitle || 'Untitled'}</td>
+                    <td>{task.taskDesc || '-'}</td>
+                    <td>
                       <span className={`priority-badge priority-${(task.priority || 'medium').toLowerCase()}`}>
                         {task.priority || 'Medium'}
                       </span>
                     </td>
-                    <td style={{ padding: '10px', border: '1px solid #e5e7eb', textTransform: 'capitalize', fontWeight: 500 }}>
-                      {task.status || 'open'}
+                    <td>
+                      <span className={`status-badge ${task.status === 'in progress' ? 'in-progress' : task.status}`}>
+                        {task.status === 'in progress' ? 'In Progress' : task.status}
+                      </span>
                     </td>
-                    <td style={{ padding: '10px', border: '1px solid #e5e7eb' }}>
+                    <td>
                       <span className={`status-badge ${task.acknowledgeStatus?.toLowerCase() === 'pending' ? 'pending' : 'completed'}`}>
                         {task.acknowledgeStatus || 'Pending'}
                       </span>
                     </td>
-                    <td style={{ padding: '10px', border: '1px solid #e5e7eb' }}>
-                      {formatDate(task.creationTime)}
-                    </td>
-                    <td style={{ padding: '10px', border: '1px solid #e5e7eb' }}>
-                      <button
-                        className="acknowledge-btn"
-                        style={{ padding: '7px 16px', background: '#007bff', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 500, cursor: 'pointer' }}
-                        onClick={() => handleAcknowledgeClick(task)}
-                      >
+                    <td>{formatDate(task.creationTime)}</td>
+                    <td>
+                      <button className="acknowledge-btn" onClick={() => handleAcknowledgeClick(task)}>
                         Acknowledge
                       </button>
                     </td>
@@ -292,151 +311,57 @@ const HandoverDetail = () => {
                 ))}
               </tbody>
             </table>
-            <div style={{ marginTop: 24, textAlign: 'right' }}>
-              <button
-                style={{
-                  padding: '10px 22px',
-                  background: '#2ecc71',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '16px',
-                  boxShadow: '0 1px 4px rgba(44,62,80,0.08)',
-                  transition: 'background 0.2s',
-                  cursor: 'pointer'
-                }}
-                onClick={handleCreateTask}
-              >
-                + Create New Task
-              </button>
+          ) : (
+            <div className="no-tasks">
+              <p>No tasks found for this handover.</p>
             </div>
-          </div>
-        ) : (
-          <div className="detail-section">
-            <h3>Tasks (0)</h3>
-            <p>No tasks found for this handover.</p>
-            <div style={{ marginTop: 24, textAlign: 'right' }}>
-              <button
-                style={{
-                  padding: '10px 22px',
-                  background: '#2ecc71',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '16px',
-                  boxShadow: '0 1px 4px rgba(44,62,80,0.08)',
-                  transition: 'background 0.2s',
-                  cursor: 'pointer'
-                }}
-                onClick={handleCreateTask}
-              >
-                + Create New Task
-              </button>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
 
+        {/* Acknowledge Modal */}
         {modalOpen && selectedTask && (
           <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
-            <div
-              style={{
-                padding: '40px',
-                minWidth: '480px',
-                maxWidth: '600px',
-                background: 'linear-gradient(135deg, #f8fafc 0%, #e3eafc 100%)',
-                borderRadius: '18px',
-                boxShadow: '0 12px 36px rgba(44,62,80,0.16)',
-                fontFamily: 'Segoe UI, Arial, sans-serif',
-                position: 'relative'
-              }}
-            >
-              <h2
-                style={{
-                  marginBottom: '24px',
-                  fontSize: '26px',
-                  fontWeight: 700,
-                  color: '#2c3e50',
-                  letterSpacing: '0.5px',
-                  textAlign: 'center'
-                }}
-              >
-                Acknowledge Task
-              </h2>
+            <div className="modal-form-container">
+              <h2 className="modal-title">Acknowledge Task</h2>
 
-              <div style={{ marginBottom: '18px', background: '#f0f4f8', padding: '12px', borderRadius: '8px' }}>
-                <strong>Task ID:</strong> {selectedTask.Taskid}
-                <br />
-                <strong>Title:</strong> {selectedTask.taskTitle || 'Untitled'}
-                <br />
-                <strong>Description:</strong> {selectedTask.taskDesc || '-'}
+              <div className="task-info-box">
+                <div className="info-row">
+                  <strong>Task ID:</strong> <span>{selectedTask.Taskid}</span>
+                </div>
+                <div className="info-row">
+                  <strong>Title:</strong> <span>{selectedTask.taskTitle || 'Untitled'}</span>
+                </div>
+                <div className="info-row">
+                  <strong>Description:</strong> <span>{selectedTask.taskDesc || '-'}</span>
+                </div>
               </div>
 
-              <div style={{ marginBottom: '22px' }}>
-                <label style={{ fontWeight: 600, color: '#34495e', marginBottom: 8, display: 'block', fontSize: '16px' }}>
-                  Acknowledgment Description <span style={{ color: '#e74c3c' }}>*</span>
+              <div className="form-group">
+                <label>
+                  Acknowledgment Description <span className="required">*</span>
                 </label>
                 <textarea
                   value={ackDescription}
                   onChange={e => setAckDescription(e.target.value)}
                   rows={4}
-                  style={{
-                    width: '100%',
-                    marginTop: 8,
-                    borderRadius: '10px',
-                    border: '1.5px solid #bcdffb',
-                    padding: '14px',
-                    fontSize: '17px',
-                    background: '#f5f7fa',
-                    color: '#222',
-                    boxShadow: '0 1px 6px rgba(44,62,80,0.06)',
-                    resize: 'vertical'
-                  }}
                   placeholder="Add your acknowledgment details..."
+                  className="form-textarea"
                 />
               </div>
 
-              <div style={{ marginBottom: '22px', display: 'flex', gap: '32px' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontWeight: 600, color: '#34495e', marginBottom: 8, display: 'block', fontSize: '16px' }}>
-                    Current Status
-                  </label>
-                  <div
-                    style={{
-                      marginTop: 8,
-                      fontWeight: 600,
-                      color: '#007bff',
-                      fontSize: '17px',
-                      letterSpacing: '0.5px',
-                      background: '#eaf6ff',
-                      borderRadius: '8px',
-                      padding: '8px 14px',
-                      textAlign: 'center',
-                      textTransform: 'capitalize'
-                    }}
-                  >
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Current Status</label>
+                  <div className="current-status">
                     {selectedTask.status || 'open'}
                   </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontWeight: 600, color: '#34495e', marginBottom: 8, display: 'block', fontSize: '16px' }}>
-                    Change Status
-                  </label>
+                <div className="form-group">
+                  <label>Change Status</label>
                   <select
                     value={ackStatus}
                     onChange={e => setAckStatus(e.target.value)}
-                    style={{
-                      width: '100%',
-                      marginTop: 8,
-                      borderRadius: '10px',
-                      border: '1.5px solid #bcdffb',
-                      padding: '14px',
-                      fontSize: '17px',
-                      background: ackDescription.trim() ? '#f5f7fa' : '#f0f0f0',
-                      color: '#222',
-                      boxShadow: '0 1px 6px rgba(44,62,80,0.06)'
-                    }}
+                    className="form-select"
                     disabled={!ackDescription.trim()}
                   >
                     {statusOptions.map(opt => (
@@ -444,52 +369,22 @@ const HandoverDetail = () => {
                     ))}
                   </select>
                   {!ackDescription.trim() && (
-                    <div style={{ color: '#e74c3c', fontSize: '13px', marginTop: '6px' }}>
+                    <div className="form-hint">
                       Please fill description to enable status change.
                     </div>
                   )}
                 </div>
               </div>
 
-              {error && (
-                <div style={{ color: '#e74c3c', marginBottom: 16, fontWeight: 500, textAlign: 'center' }}>
-                  {error}
-                </div>
-              )}
+              {error && <div className="error-message">{error}</div>}
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
-                <button
-                  onClick={() => setModalOpen(false)}
-                  style={{
-                    padding: '12px 28px',
-                    background: '#f1f5f9',
-                    color: '#222',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontWeight: 600,
-                    fontSize: '17px',
-                    boxShadow: '0 1px 6px rgba(44,62,80,0.06)',
-                    transition: 'background 0.2s',
-                    cursor: 'pointer'
-                  }}
-                >
+              <div className="modal-actions">
+                <button onClick={() => setModalOpen(false)} className="btn-secondary">
                   Cancel
                 </button>
                 <button
                   onClick={handleAcknowledgeSubmit}
-                  style={{
-                    padding: '12px 28px',
-                    background: '#3498db',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontWeight: 600,
-                    fontSize: '17px',
-                    boxShadow: '0 1px 6px rgba(44,62,80,0.12)',
-                    transition: 'background 0.2s',
-                    opacity: ackDescription.trim() ? 1 : 0.6,
-                    cursor: ackDescription.trim() ? 'pointer' : 'not-allowed'
-                  }}
+                  className="btn-primary"
                   disabled={!ackDescription.trim()}
                 >
                   Submit
@@ -499,86 +394,44 @@ const HandoverDetail = () => {
           </Modal>
         )}
 
+        {/* Create Task Modal */}
         {showCreateTaskModal && (
           <Modal open={showCreateTaskModal} onClose={() => setShowCreateTaskModal(false)}>
-            <form
-              onSubmit={handleCreateTaskSubmit}
-              style={{
-                padding: '32px',
-                minWidth: '400px',
-                maxWidth: '500px',
-                background: 'linear-gradient(135deg, #f8fafc 0%, #e3eafc 100%)',
-                borderRadius: '16px',
-                boxShadow: '0 8px 32px rgba(44,62,80,0.12)',
-                fontFamily: 'Segoe UI, Arial, sans-serif',
-                position: 'relative'
-              }}
-            >
-              <h2 style={{
-                marginBottom: '18px',
-                fontSize: '22px',
-                fontWeight: 700,
-                color: '#2c3e50',
-                letterSpacing: '0.5px'
-              }}>
-                Create New Task
-              </h2>
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, color: '#34495e', marginBottom: 6, display: 'block' }}>
-                  Title <span style={{ color: '#e74c3c' }}>*</span>
+            <form onSubmit={handleCreateTaskSubmit} className="modal-form-container">
+              <h2 className="modal-title">Create New Task</h2>
+
+              <div className="form-group">
+                <label>
+                  Title <span className="required">*</span>
                 </label>
                 <input
                   type="text"
                   value={newTask.taskTitle}
                   onChange={e => setNewTask({ ...newTask, taskTitle: e.target.value })}
-                  style={{
-                    width: '100%',
-                    borderRadius: '8px',
-                    border: '1px solid #dbeafe',
-                    padding: '12px',
-                    fontSize: '16px',
-                    background: '#f5f7fa',
-                    color: '#222'
-                  }}
+                  className="form-input"
+                  placeholder="Enter task title"
                   required
                 />
               </div>
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ fontWeight: 600, color: '#34495e', marginBottom: 6, display: 'block' }}>
-                  Description
-                </label>
+
+              <div className="form-group">
+                <label>Description</label>
                 <textarea
                   value={newTask.taskDesc}
                   onChange={e => setNewTask({ ...newTask, taskDesc: e.target.value })}
                   rows={3}
-                  style={{
-                    width: '100%',
-                    borderRadius: '8px',
-                    border: '1px solid #dbeafe',
-                    padding: '12px',
-                    fontSize: '16px',
-                    background: '#f5f7fa',
-                    color: '#222'
-                  }}
+                  className="form-textarea"
+                  placeholder="Enter task description (optional)"
                 />
               </div>
-              <div style={{ marginBottom: '18px', display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontWeight: 600, color: '#34495e', marginBottom: 6, display: 'block' }}>
-                    Priority
-                  </label>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Priority</label>
                   <select
                     value={newTask.priority}
                     onChange={e => setNewTask({ ...newTask, priority: e.target.value })}
-                    style={{
-                      width: '100%',
-                      borderRadius: '8px',
-                      border: '1px solid #dbeafe',
-                      padding: '12px',
-                      fontSize: '16px',
-                      background: '#f5f7fa',
-                      color: '#222'
-                    }}
+                    className="form-select"
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -586,22 +439,12 @@ const HandoverDetail = () => {
                     <option value="Critical">Critical</option>
                   </select>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontWeight: 600, color: '#34495e', marginBottom: 6, display: 'block' }}>
-                    Status
-                  </label>
+                <div className="form-group">
+                  <label>Status</label>
                   <select
                     value={newTask.status}
                     onChange={e => setNewTask({ ...newTask, status: e.target.value })}
-                    style={{
-                      width: '100%',
-                      borderRadius: '8px',
-                      border: '1px solid #dbeafe',
-                      padding: '12px',
-                      fontSize: '16px',
-                      background: '#f5f7fa',
-                      color: '#222'
-                    }}
+                    className="form-select"
                   >
                     <option value="open">Open</option>
                     <option value="in progress">In Progress</option>
@@ -609,40 +452,20 @@ const HandoverDetail = () => {
                   </select>
                 </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+
+              {error && <div className="error-message">{error}</div>}
+
+              <div className="modal-actions">
                 <button
                   type="button"
                   onClick={() => setShowCreateTaskModal(false)}
-                  style={{
-                    padding: '10px 22px',
-                    background: '#f1f5f9',
-                    color: '#222',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    fontSize: '16px',
-                    boxShadow: '0 1px 4px rgba(44,62,80,0.04)',
-                    transition: 'background 0.2s',
-                    cursor: 'pointer'
-                  }}
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                   onSubmit={handleCreateTaskSubmit}
-                  style={{
-                    padding: '10px 22px',
-                    background: '#2ecc71',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    fontSize: '16px',
-                    boxShadow: '0 1px 4px rgba(44,62,80,0.08)',
-                    transition: 'background 0.2s',
-                    cursor: 'pointer'
-                  }}
+                  className="btn-primary"
                   disabled={!newTask.taskTitle.trim()}
                 >
                   Create Task
