@@ -1,143 +1,396 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { dummyBillingData } from '../../data/dummyBillingData';
 import './BillingAnalysis.css';
 
+
+
+const API_BASE = 'https://10.191.171.12:5443/EISHOME_TEST/projectRoster/search/';
+
+
 const BillingAnalysis = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [dateRange, setDateRange] = useState({ from: '', to: '' });
+  // Search / filters
+  const [q, setQ] = useState('');
+  const [id, setId] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [teamname, setTeamname] = useState('');
+  const [shift, setShift] = useState('');
+  const [action, setAction] = useState(''); // '', 'count', 'low_hours'
+
+  // data + UI state
   const [billingData, setBillingData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+
+  // upload modal
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [rosterFile, setRosterFile] = useState(null);
+  const [attendance1File, setAttendance1File] = useState(null);
+  const [attendance2File, setAttendance2File] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setBillingData(dummyBillingData);
-      setIsLoading(false);
-    }, 1000);
+  // Helper to build query string
+  const buildQueryString = () => {
+    const params = new URLSearchParams();
+    if (q) params.append('q', q);
+    if (id) params.append('id', id);
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    if (teamname) params.append('teamname', teamname);
+    if (shift) params.append('shift', shift);
+    if (action) params.append('action', action);
+    return params.toString();
   };
 
-  // Dummy API upload function
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploading(true);
+  // Flatten attendance nested object into top-level keys with attendance_ prefix.
+  const flattenItem = (item) => {
+    const flat = { ...item };
+    if (item.attendance && typeof item.attendance === 'object') {
+      Object.keys(item.attendance).forEach((k) => {
+        const key = `attendance_${k}`;
+        flat[key] = item.attendance[k];
+      });
+      // remove original attendance object to avoid nested object rendering
+      delete flat.attendance;
+    }
+    return flat;
+  };
+
+  // Convert received raw data into flat objects and derive columns
+  const flattenedData = useMemo(() => {
+    if (!billingData || billingData.length === 0) return [];
+    return billingData.map(flattenItem);
+  }, [billingData]);
+
+  const columns = useMemo(() => {
+    const set = new Set();
+    flattenedData.forEach((row) => {
+      Object.keys(row).forEach((k) => set.add(k));
+    });
+    // Ensure some predictable order: common columns first if present
+    const preferred = [
+      'date',
+      'name',
+      'id',
+      'team',
+      'teamname',
+      'schedule',
+      'department',
+      'attendance_first_in',
+      'attendance_last_out',
+      'attendance_gross_time',
+      'attendance_net_office_time',
+      'attendance_out_of_office_time',
+      'attendance_out_of_office_count',
+    ];
+    const ordered = preferred.filter((p) => set.has(p));
+    const remaining = Array.from(set).filter((c) => !ordered.includes(c));
+    return [...ordered, ...remaining];
+  }, [flattenedData]);
+
+  // pagination slicing
+  const totalRows = flattenedData.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+  const pagedData = flattenedData.slice((page - 1) * pageSize, page * pageSize);
+
+  // Search handler -> hits API
+  const handleSearch = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    setPage(1);
 
     try {
-      // Simulate API call to upload file
-      // You can replace this with your real API endpoint:
-      // const formData = new FormData();
-      // formData.append('file', file);
-      // await fetch('/api/billing/upload', { method: 'POST', body: formData });
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      alert('File uploaded successfully!');
-    } catch (error) {
-      alert('Upload failed!');
+      const qs = buildQueryString();
+      // If you have trouble with TLS in browser, use a dev proxy endpoint on your server instead of API_BASE.
+      const url = qs ? `${API_BASE}?${qs}` : API_BASE;
+      // Example fetch. The backend must return JSON array of objects or an object with a list (adjust accordingly).
+      const resp = await fetch(url, {
+        method: 'GET',
+        // include credentials or headers if required:
+        // credentials: 'include',
+        // headers: { 'Authorization': 'Bearer ...' },
+      });
+
+      if (!resp.ok) {
+        // Try to extract JSON error message
+        let msg = `${resp.status} ${resp.statusText}`;
+        try {
+          const errJson = await resp.json();
+          msg = errJson.message || JSON.stringify(errJson);
+        } catch (err) {
+          // ignore
+        }
+        throw new Error(`Server error: ${msg}`);
+      }
+
+      const json = await resp.json();
+
+      // The API may return different shapes:
+      // - an array of items -> use it directly
+      // - { results: [...], count: N } -> use results
+      // - action=count -> may return a number or object
+      if (Array.isArray(json)) {
+        setBillingData(json);
+      } else if (Array.isArray(json.results)) {
+        setBillingData(json.results);
+      } else if (json.data && Array.isArray(json.data)) {
+        setBillingData(json.data);
+      } else if (typeof json === 'object' && json !== null) {
+        // fallback: try to find first array in payload
+        const firstArray = Object.values(json).find(Array.isArray);
+        if (firstArray) {
+          setBillingData(firstArray);
+        } else {
+          // nothing to render as rows: show a single-row summary object
+          setBillingData([json]);
+        }
+      } else {
+        // unexpected shape: show dummy or empty
+        setBillingData([]);
+      }
+    } catch (err) {
+      console.error('Search failed', err);
+      setError(err.message || 'Unknown error');
+      // fallback to dummy data if desired:
+      // setBillingData(dummyBillingData);
     } finally {
-      setUploading(false);
-      // Optionally reset the input value here if needed
-      e.target.value = '';
+      setIsLoading(false);
     }
   };
 
-  const filteredData = billingData.filter(item => {
-    const matchesDate = (!dateRange.from || item.date >= dateRange.from) &&
-                       (!dateRange.to || item.date <= dateRange.to);
-    return matchesDate;
-  });
+  // Upload handling for three files
+  const handleUploadSubmit = async (e) => {
+    e.preventDefault();
+    if (!rosterFile && !attendance1File && !attendance2File) {
+      alert('Please select at least one file to upload (roster and/or attendance sheets).');
+      return;
+    }
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      if (rosterFile) formData.append('roster', rosterFile);
+      if (attendance1File) formData.append('attendance_sheet_1', attendance1File);
+      if (attendance2File) formData.append('attendance_sheet_2', attendance2File);
+
+      // TODO: replace with your real upload endpoint and add any auth headers required.
+      const uploadUrl = '/api/billing/upload'; // <-- change me
+      const resp = await fetch(uploadUrl, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!resp.ok) {
+        const errText = await resp.text();
+        throw new Error(errText || `${resp.status} ${resp.statusText}`);
+      }
+
+      const result = await resp.json().catch(() => null);
+      alert('Files uploaded successfully.');
+      // Optionally refresh data or close modal
+      setShowUploadModal(false);
+      setRosterFile(null);
+      setAttendance1File(null);
+      setAttendance2File(null);
+    } catch (err) {
+      console.error('Upload failed', err);
+      alert(`Upload failed: ${err.message || err}`);
+      setError(err.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Option to load dummy data quickly (dev)
+  const loadDummyData = () => {
+    setBillingData(dummyBillingData);
+    setPage(1);
+  };
 
   return (
     <div className="billing-analysis">
       <h2>Billing Analysis</h2>
-      
-      {/* Upload Button */}
-      <div className="upload-section" style={{ marginBottom: '16px' }}>
-        <label htmlFor="billing-upload" className="upload-label">
-          <input
-            id="billing-upload"
-            type="file"
-            accept=".csv, .xlsx, .xls"
-            onChange={handleFileUpload}
-            style={{ display: 'none' }}
-            disabled={uploading}
-          />
-          <button
-            type="button"
-            disabled={uploading}
-            onClick={() => document.getElementById('billing-upload').click()}
-            className="upload-btn"
-          >
-            {uploading ? 'Uploading...' : 'Upload Billing Data'}
-          </button>
-        </label>
+
+      <div className="controls-row" style={{ display: 'flex', gap: '12px', marginBottom: 12 }}>
+        <button type="button" onClick={() => setShowUploadModal(true)} className="upload-btn">
+          Upload Roster & Attendance (3 files)
+        </button>
+
+        <button type="button" onClick={loadDummyData}>
+          Load Dummy Data
+        </button>
       </div>
 
-      <form onSubmit={handleSearch} className="search-form">
-        <div className="form-group">
+      {/* Search / filter form */}
+      <form onSubmit={handleSearch} className="search-form" style={{ marginBottom: 16 }}>
+        <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 8 }}>
           <input
             type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Enter Employee Name or ADID"
-            required
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="q (name search)"
           />
-        </div>
-        <div className="form-group date-range">
+          <input
+            type="text"
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+            placeholder="id (id search)"
+          />
           <input
             type="date"
-            value={dateRange.from}
-            onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            placeholder="start_date"
           />
-          <span>to</span>
           <input
             type="date"
-            value={dateRange.to}
-            onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            placeholder="end_date"
           />
+          <input
+            type="text"
+            value={teamname}
+            onChange={(e) => setTeamname(e.target.value)}
+            placeholder="teamname"
+          />
+          <input
+            type="text"
+            value={shift}
+            onChange={(e) => setShift(e.target.value)}
+            placeholder="shift"
+          />
+          <select value={action} onChange={(e) => setAction(e.target.value)}>
+            <option value="">-- action (none) --</option>
+            <option value="count">action=count (total working days)</option>
+            <option value="low_hours">action=low_hours (employees with &lt; 8 hours)</option>
+          </select>
         </div>
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? 'Loading...' : 'Search'}
-        </button>
+
+        <div style={{ marginTop: 10 }}>
+          <button type="submit" disabled={isLoading} className="search-btn">
+            {isLoading ? 'Searching...' : 'Search'}
+          </button>
+        </div>
       </form>
 
-      {billingData.length > 0 && (
-        <div className="results-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Name</th>
-                <th>Team</th>
-                <th>Schedule</th>
-                <th>Department</th>
-                <th>First In</th>
-                <th>Last Out</th>
-                <th>Gross Time</th>
-                <th>Net Office Time</th>
-                <th>OOO Time</th>
-                <th>OOO Count</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((item, index) => (
-                <tr key={index}>
-                  <td>{item.date}</td>
-                  <td>{item.name}</td>
-                  <td>{item.team}</td>
-                  <td>{item.schedule}</td>
-                  <td>{item.attendance.department || '-'}</td>
-                  <td>{item.attendance.first_in || '-'}</td>
-                  <td>{item.attendance.last_out || '-'}</td>
-                  <td>{item.attendance.gross_time || '-'}</td>
-                  <td>{item.attendance.net_office_time || '-'}</td>
-                  <td>{item.attendance.out_of_office_time || '-'}</td>
-                  <td>{item.attendance.out_of_office_count || '-'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {error && <div className="error" style={{ color: 'red' }}>Error: {error}</div>}
+
+      {/* Dynamic results table */}
+      <div className="results-area">
+        {flattenedData.length === 0 ? (
+          <div>No results to display.</div>
+        ) : (
+          <>
+            <div className="table-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div>
+                Rows: {totalRows} &nbsp;|&nbsp; Page {page} of {totalPages}
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <label>
+                  Page size:
+                  <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                    <option value={totalRows}>All</option>
+                  </select>
+                </label>
+
+                <button disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                  Prev
+                </button>
+                <button disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                  Next
+                </button>
+              </div>
+            </div>
+
+            <div className="results-table" style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    {columns.map((col) => (
+                      <th key={col}>{col}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedData.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {columns.map((col) => (
+                        <td key={col}>
+                          {/* show '-' for null/undefined */}
+                          {row[col] === null || row[col] === undefined || row[col] === '' ? '-' : String(row[col])}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Upload modal */}
+      {showUploadModal && (
+        <div className="upload-modal" style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{ background: '#fff', padding: 20, borderRadius: 6, width: 600, maxWidth: '95%' }}>
+            <h3>Upload Roster & Attendance Sheets</h3>
+            <form onSubmit={handleUploadSubmit}>
+              <div style={{ display: 'grid', gap: 8 }}>
+                <label>
+                  Roster file (required for roster uploads):
+                  <input
+                    type="file"
+                    accept=".csv,.xlsx,.xls"
+                    onChange={(e) => setRosterFile(e.target.files && e.target.files[0])}
+                  />
+                  {rosterFile && <div style={{ fontSize: 12 }}>{rosterFile.name}</div>}
+                </label>
+
+                <label>
+                  Attendance sheet 1:
+                  <input
+                    type="file"
+                    accept=".csv,.xlsx,.xls"
+                    onChange={(e) => setAttendance1File(e.target.files && e.target.files[0])}
+                  />
+                  {attendance1File && <div style={{ fontSize: 12 }}>{attendance1File.name}</div>}
+                </label>
+
+                <label>
+                  Attendance sheet 2:
+                  <input
+                    type="file"
+                    accept=".csv,.xlsx,.xls"
+                    onChange={(e) => setAttendance2File(e.target.files && e.target.files[0])}
+                  />
+                  {attendance2File && <div style={{ fontSize: 12 }}>{attendance2File.name}</div>}
+                </label>
+              </div>
+
+              <div style={{ marginTop: 12, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setShowUploadModal(false)} disabled={uploading}>
+                  Cancel
+                </button>
+                <button type="submit" disabled={uploading}>
+                  {uploading ? 'Uploading...' : 'Upload Files'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
