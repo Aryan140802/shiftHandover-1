@@ -1,81 +1,78 @@
-curl -X POST https://10.191.171.12:5443/PyPortal/saveNew_task/ -H "Content-Type: application/json" -d {"uid": "2743582","password": "Magician@123","tascdec": "Check server health","status": "open","priority": "High","acknowledgeStatus": "Pending","acknowledgeDesc": "Task acknowledged buyt not completed"}
-
-// original data
-
-{
-    "TeamHandoverDetails": [
-        {
-            "TeamId": 1,
-            "teamName": "MQ",
-            "teamLead_id": 2162544,
-            "handover_id_id": 1
-        }
-    ],
-    "Tasksdata": [
-        {
-            "Taskid": 1,
-            "taskDesc": "Check server health",
-            "priority": "High",
-            "userCreated_id": null,
-            "status": "open",
-            "userAccepted_id": null,
-            "creationTime": "",
-            "acknowledgeStatus": "Pending",
-            "acknowledgeDesc": "Task acknowledged and now completed",
-            "acknowledgeTime": "",
-            "statusUpdateTime": "",
-            "taskTitle": null,
-            "handover_id_id": 1
-        }
-    ]
-}
-
-
-
-
-
-// dummy data
-
- id: '1',
-    title: 'MQ team',
-
-    createdBy: {
-      id: 'user2',
-      name: 'Mansi Arya',
-    },
-
-    tasks: [
-      {
-        id: 'task-1-1',
-        title: 'ACE Upgradation',
-        description: 'ACE 12 to ACE 13',
-        priority: 'high',
-        status: 'completed',
-        createdAt: '2025-08-04T22:30:00Z',
-        lastUpdated: '2025-08-04T23:15:00Z',
-      },
-      {
-        id: 'task-1-2',
-        title: 'ds agent status check',
-        description: 'Check running status of DS agent',
-        priority: 'critical',
-        status: 'in-progress',
-        createdAt: '2025-08-04T22:30:00Z',
-        lastUpdated: '2025-08-04T23:30:00Z',
-      },
-      {
-        id: 'task-1-3',
-        title: 'Update System Log',
-        description: 'Document all maintenance activities in the system',
-        priority: 'medium',
-        status: 'pending',
-        createdAt: '2025-08-04T22:30:00Z',
-      },
-    ],
-    attachments: [],
-  },
-
-
-
-
-
+Tasksdata
+: 
+[{Taskid: 1, taskDesc: "Check server health", priority: "High", userCreated_id: null,…},…]
+0
+: 
+{Taskid: 1, taskDesc: "Check server health", priority: "High", userCreated_id: null,…}
+Taskid
+: 
+1
+acknowledgeDetails
+: 
+[{ackId: 1, ackDesc: "the description is added", userAcknowleged_id: 2743582,…},…]
+0
+: 
+{ackId: 1, ackDesc: "the description is added", userAcknowleged_id: 2743582,…}
+ackDesc
+: 
+"the description is added"
+ackId
+: 
+1
+ackTask_id_id
+: 
+1
+acknowledgeTime
+: 
+"2025-10-16 08:39:22"
+userAcknowleged_id
+: 
+2743582
+1
+: 
+{ackId: 2, ackDesc: "the description is added", userAcknowleged_id: 2743582,…}
+2
+: 
+{ackId: 3, ackDesc: "the description is added", userAcknowleged_id: 2743582,…}
+3
+: 
+{ackId: 4, ackDesc: "the description is added", userAcknowleged_id: 2743582,…}
+acknowledgeStatus
+: 
+"Pending"
+creationTime
+: 
+""
+handover_id_id
+: 
+1
+priority
+: 
+"High"
+status
+: 
+"Completed"
+statusUpdateTime
+: 
+""
+taskDesc
+: 
+"Check server health"
+taskTitle
+: 
+"create handowver"
+userAccepted_id
+: 
+2743582
+userCreated_id
+: 
+null
+1
+: 
+{Taskid: 13, taskDesc: null, priority: "Medium", userCreated_id: null, status: "in progress",…}
+2
+: 
+{Taskid: 14, taskDesc: null, priority: "Critical", userCreated_id: null, status: "completed",…}
+3
+: 
+{Taskid: 15, taskDesc: null, priority: "High", userCreated_id: null, status: "in progress",…}
