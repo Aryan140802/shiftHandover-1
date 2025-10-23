@@ -214,54 +214,85 @@ const BillingAnalysis = () => {
 
       {/* Search / filter form */}
       <form onSubmit={handleSearch} className="search-form" style={{ marginBottom: 16 }}>
-        <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 8 }}>
-          <input
-            type="text"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="q (name search)"
-          />
-          <input
-            type="text"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
-            placeholder="id (id search)"
-          />
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            placeholder="start_date"
-          />
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            placeholder="end_date"
-          />
-          <input
-            type="text"
-            value={teamname}
-            onChange={(e) => setTeamname(e.target.value)}
-            placeholder="teamname"
-          />
-          <input
-            type="text"
-            value={shift}
-            onChange={(e) => setShift(e.target.value)}
-            placeholder="shift"
-          />
-          <select value={action} onChange={(e) => setAction(e.target.value)}>
-            <option value="">-- action (none) --</option>
-            <option value="count">action=count (total working days)</option>
-            <option value="low_hours">action=low_hours (employees with &lt; 8 hours)</option>
-          </select>
-        </div>
+        <div className="horizontal-form-grid" style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(4, 1fr)', 
+          gap: '12px',
+          alignItems: 'end',
+          marginBottom: '12px'
+        }}>
+          <div className="form-field">
+            <label>Search Name</label>
+            <input
+              type="text"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Name search"
+            />
+          </div>
 
-        <div style={{ marginTop: 10 }}>
-          <button type="submit" disabled={isLoading} className="search-btn">
-            {isLoading ? 'Searching...' : 'Search'}
-          </button>
+          <div className="form-field">
+            <label>Employee ID</label>
+            <input
+              type="text"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              placeholder="ID search"
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Start Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
+
+          <div className="form-field">
+            <label>End Date</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Team Name</label>
+            <input
+              type="text"
+              value={teamname}
+              onChange={(e) => setTeamname(e.target.value)}
+              placeholder="Team name"
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Shift</label>
+            <input
+              type="text"
+              value={shift}
+              onChange={(e) => setShift(e.target.value)}
+              placeholder="Shift"
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Action</label>
+            <select value={action} onChange={(e) => setAction(e.target.value)}>
+              <option value="">-- Select Action --</option>
+              <option value="count">Count (total working days)</option>
+              <option value="low_hours">Low Hours (&lt; 8 hours)</option>
+            </select>
+          </div>
+
+          <div className="form-field">
+            <button type="submit" disabled={isLoading} className="search-btn" style={{ width: '100%', padding: '8px' }}>
+              {isLoading ? 'Searching...' : 'Search'}
+            </button>
+          </div>
         </div>
       </form>
 
