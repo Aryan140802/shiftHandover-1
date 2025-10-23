@@ -1,11 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { dummyBillingData } from '../../data/dummyBillingData';
 import './BillingAnalysis.css';
 
-
-
 const API_BASE = 'https://10.191.171.12:5443/EISHOME_TEST/projectRoster/search/';
-
 
 const BillingAnalysis = () => {
   // Search / filters
@@ -133,7 +129,8 @@ const BillingAnalysis = () => {
       // The API may return different shapes:
       // - an array of items -> use it directly
       // - { results: [...], count: N } -> use results
-      // - action=count -> may return a number or object
+      // - { data: [...] } -> use data
+      // - else: try to find first array in payload, or show the object as a single-row summary
       if (Array.isArray(json)) {
         setBillingData(json);
       } else if (Array.isArray(json.results)) {
@@ -141,23 +138,20 @@ const BillingAnalysis = () => {
       } else if (json.data && Array.isArray(json.data)) {
         setBillingData(json.data);
       } else if (typeof json === 'object' && json !== null) {
-        // fallback: try to find first array in payload
         const firstArray = Object.values(json).find(Array.isArray);
         if (firstArray) {
           setBillingData(firstArray);
         } else {
-          // nothing to render as rows: show a single-row summary object
+          // show the object as a single-row summary (useful for action=count etc)
           setBillingData([json]);
         }
       } else {
-        // unexpected shape: show dummy or empty
+        // unexpected shape: set empty
         setBillingData([]);
       }
     } catch (err) {
       console.error('Search failed', err);
       setError(err.message || 'Unknown error');
-      // fallback to dummy data if desired:
-      // setBillingData(dummyBillingData);
     } finally {
       setIsLoading(false);
     }
@@ -208,12 +202,6 @@ const BillingAnalysis = () => {
     }
   };
 
-  // Option to load dummy data quickly (dev)
-  const loadDummyData = () => {
-    setBillingData(dummyBillingData);
-    setPage(1);
-  };
-
   return (
     <div className="billing-analysis">
       <h2>Billing Analysis</h2>
@@ -221,10 +209,6 @@ const BillingAnalysis = () => {
       <div className="controls-row" style={{ display: 'flex', gap: '12px', marginBottom: 12 }}>
         <button type="button" onClick={() => setShowUploadModal(true)} className="upload-btn">
           Upload Roster & Attendance (3 files)
-        </button>
-
-        <button type="button" onClick={loadDummyData}>
-          Load Dummy Data
         </button>
       </div>
 
