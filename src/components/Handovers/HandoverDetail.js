@@ -81,6 +81,20 @@ const HandoverDetail = () => {
     fetchHandoverData();
   }, [id]);
 
+  // Modal scroll control
+  useEffect(() => {
+    if (modalOpen || showCreateTaskModal) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    
+    // Cleanup on component unmount
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [modalOpen, showCreateTaskModal]);
+
   const fetchHandoverData = async () => {
     setLoading(true);
     try {
@@ -125,6 +139,19 @@ const HandoverDetail = () => {
     setModalOpen(true);
     setAckDescription(task.ackDesc || '');
     setAckStatus(task.status || 'open');
+    setError('');
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedTask(null);
+    setAckDescription('');
+    setAckStatus('');
+    setError('');
+  };
+
+  const handleCloseCreateModal = () => {
+    setShowCreateTaskModal(false);
     setError('');
   };
 
@@ -175,11 +202,7 @@ const HandoverDetail = () => {
         Tasksdata: updatedTasks
       });
 
-      setModalOpen(false);
-      setSelectedTask(null);
-      setAckDescription('');
-      setAckStatus('');
-      setError('');
+      handleCloseModal();
     } catch (err) {
       setError('Failed to update task on server!');
       console.error('Update error:', err);
@@ -221,8 +244,7 @@ const HandoverDetail = () => {
       // Refresh data after creating task
       await fetchHandoverData();
 
-      setShowCreateTaskModal(false);
-      setError('');
+      handleCloseCreateModal();
     } catch (err) {
       console.error('Create task error:', err);
       setError('Failed to create task on server!');
@@ -380,7 +402,7 @@ const HandoverDetail = () => {
 
         {/* Acknowledge Modal with Enhanced Styling */}
         {modalOpen && selectedTask && (
-          <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+          <Modal open={modalOpen} onClose={handleCloseModal}>
             <div className="modal-form-container">
               <h2 className="modal-title">Acknowledge Task</h2>
 
@@ -450,7 +472,7 @@ const HandoverDetail = () => {
               {error && <div className="error-message">{error}</div>}
 
               <div className="modal-actions">
-                <button onClick={() => setModalOpen(false)} className="btn-secondary">
+                <button onClick={handleCloseModal} className="btn-secondary">
                   Cancel
                 </button>
                 <button
@@ -467,7 +489,7 @@ const HandoverDetail = () => {
 
         {/* Create Task Modal */}
         {showCreateTaskModal && (
-          <Modal open={showCreateTaskModal} onClose={() => setShowCreateTaskModal(false)}>
+          <Modal open={showCreateTaskModal} onClose={handleCloseCreateModal}>
             <form onSubmit={handleCreateTaskSubmit} className="modal-form-container">
               <h2 className="modal-title">Create New Task</h2>
 
@@ -529,7 +551,7 @@ const HandoverDetail = () => {
               <div className="modal-actions">
                 <button
                   type="button"
-                  onClick={() => setShowCreateTaskModal(false)}
+                  onClick={handleCloseCreateModal}
                   className="btn-secondary"
                 >
                   Cancel
