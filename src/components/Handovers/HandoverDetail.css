@@ -397,13 +397,13 @@
 .timeline-horizontal::before {
   content: '';
   position: absolute;
-  top: 3.5rem;
+  top: 2.5rem;
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, 
-    rgba(46, 213, 255, 0.6) 0%, 
-    rgba(138, 43, 226, 0.6) 50%, 
+  background: linear-gradient(90deg,
+    rgba(46, 213, 255, 0.6) 0%,
+    rgba(138, 43, 226, 0.6) 50%,
     rgba(46, 213, 255, 0.6) 100%);
   box-shadow: 0 0 15px rgba(46, 213, 255, 0.4);
   z-index: 1;
@@ -435,7 +435,7 @@
   border-radius: 50%;
   background: linear-gradient(135deg, #2ed5ff 0%, #8a2be2 100%);
   border: 3px solid rgba(26, 26, 62, 0.9);
-  box-shadow: 
+  box-shadow:
     0 0 0 3px rgba(46, 213, 255, 0.3),
     0 0 25px rgba(46, 213, 255, 0.7),
     inset 0 0 10px rgba(255, 255, 255, 0.4);
@@ -447,7 +447,7 @@
 
 .timeline-dot:hover {
   transform: scale(1.2);
-  box-shadow: 
+  box-shadow:
     0 0 0 4px rgba(46, 213, 255, 0.4),
     0 0 35px rgba(46, 213, 255, 0.9),
     inset 0 0 15px rgba(255, 255, 255, 0.5);
@@ -455,13 +455,13 @@
 
 @keyframes pulse-dot {
   0%, 100% {
-    box-shadow: 
+    box-shadow:
       0 0 0 3px rgba(46, 213, 255, 0.3),
       0 0 25px rgba(46, 213, 255, 0.7),
       inset 0 0 10px rgba(255, 255, 255, 0.4);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 0 0 5px rgba(46, 213, 255, 0.4),
       0 0 35px rgba(46, 213, 255, 0.9),
       inset 0 0 15px rgba(255, 255, 255, 0.5);
@@ -471,7 +471,7 @@
 /* Individual connector lines between dots */
 .timeline-connector {
   position: absolute;
-  top: 3.5rem;
+  top: 0.5rem;
   left: 50%;
   right: -50%;
   height: 3px;
@@ -824,12 +824,12 @@ body.modal-open {
   .form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .detail-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .task-info-horizontal {
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -854,13 +854,13 @@ body.modal-open {
   .btn-secondary {
     width: 100%;
   }
-  
+
   .modal-content {
     margin: 1rem !important;
     width: calc(100% - 2rem) !important;
     max-width: none !important;
   }
-  
+
   .modal-overlay {
     padding: 1rem 0 !important;
   }
