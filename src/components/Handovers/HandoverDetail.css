@@ -1,3 +1,5 @@
+/* HandoverDetail.css - Enhanced Modal & Timeline Styles */
+
 .handover-detail-container {
   max-width: 1400px;
   margin: 0 auto;
@@ -59,13 +61,66 @@
   overflow: hidden;
 }
 
-/* Modal Form Container Styles - FIXED: No Scroll */
+/* Modal Position Fix - UPDATED */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(8px);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  display: flex !important;
+  align-items: flex-start !important; /* Changed to flex-start to show top */
+  justify-content: center !important;
+  z-index: 9999 !important;
+  overflow-y: auto !important;
+  padding: 2rem 0 !important;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, rgba(26, 26, 62, 0.95) 0%, rgba(15, 15, 35, 0.95) 100%) !important;
+  border: 1px solid rgba(46, 213, 255, 0.3) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 20px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  max-width: 1400px !important; /* Increased to 1400px */
+  width: 95% !important;
+  max-height: 90vh !important;
+  position: relative !important;
+  margin: 0 !important;
+  transform: none !important;
+  top: 0 !important;
+  left: auto !important;
+}
+
+/* Modal Form Container Styles - UPDATED */
 .modal-form-container {
   position: relative;
   z-index: 1;
-  max-height: none;
-  overflow-y: visible;
-  padding-right: 0;
+  max-height: calc(90vh - 4rem) !important;
+  overflow-y: auto !important;
+  padding: 2rem;
+}
+
+/* Custom Scrollbar for Modal */
+.modal-form-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-form-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+}
+
+.modal-form-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(46, 213, 255, 0.4) 0%, rgba(138, 43, 226, 0.4) 100%);
+  border-radius: 10px;
+}
+
+.modal-form-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(46, 213, 255, 0.6) 0%, rgba(138, 43, 226, 0.6) 100%);
 }
 
 .modal-title {
@@ -88,7 +143,7 @@
   margin-bottom: 1.5rem;
 }
 
-/* Task Info Horizontal Grid - IMPROVED */
+/* Task Info Horizontal Grid */
 .task-info-horizontal {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -291,7 +346,7 @@
   transform: translateY(-2px);
 }
 
-/* Enhanced Timeline Styles - FIXED with Connector Lines */
+/* Enhanced Timeline Styles - FIXED */
 .timeline-container {
   margin-top: 1.5rem;
   padding: 1.5rem;
@@ -335,10 +390,11 @@
   padding: 2rem 0 1rem 0;
   gap: 0;
   position: relative;
+  min-height: 200px;
 }
 
-/* Main Timeline Line */
-/* .timeline-horizontal::before {
+/* Main Timeline Line - FIXED POSITION */
+.timeline-horizontal::before {
   content: '';
   position: absolute;
   top: 3.5rem;
@@ -351,7 +407,7 @@
     rgba(46, 213, 255, 0.6) 100%);
   box-shadow: 0 0 15px rgba(46, 213, 255, 0.4);
   z-index: 1;
-} */
+}
 
 .timeline-item {
   display: flex;
@@ -420,7 +476,7 @@
   right: -50%;
   height: 3px;
   background: linear-gradient(90deg, rgba(46, 213, 255, 0.8), rgba(138, 43, 226, 0.8));
-  z-index: 1;
+  z-index: 2;
   opacity: 0.7;
   box-shadow: 0 0 10px rgba(46, 213, 255, 0.4);
 }
@@ -537,8 +593,6 @@
   margin-bottom: 2rem;
 }
 
-
-
 .task-stat-card {
   padding: 1.5rem;
   border-radius: 14px;
@@ -605,7 +659,7 @@
   color: #bbf7d0;
 }
 
-/* Detail Section - FIXED */
+/* Detail Section */
 .detail-section {
   margin-bottom: 2.5rem;
   position: relative;
@@ -636,7 +690,7 @@
   box-shadow: 0 0 10px #2ed5ff;
 }
 
-/* Handover Information Grid - FIXED */
+/* Handover Information Grid */
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -696,7 +750,7 @@
   background: linear-gradient(90deg, rgba(46, 213, 255, 0.3), rgba(138, 43, 226, 0.2));
 }
 
-/* Select Dropdown Icon Enhancement - FIXED */
+/* Select Dropdown Icon Enhancement */
 .form-select {
   position: relative;
   background-color: rgba(255, 255, 255, 0.03);
@@ -741,117 +795,9 @@
   font-size: 1.2rem;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .handover-detail-container {
-    padding: 0;
-  }
-
-  .handover-detail-header {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-    padding: 1.5rem;
-  }
-
-  .handover-detail-header h2 {
-    font-size: 1.5rem;
-  }
-
-  .handover-detail-content {
-    padding: 1.5rem;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-  
-  .detail-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .task-info-horizontal {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .timeline-item {
-    min-width: 280px;
-  }
-
-  .timeline-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .modal-actions {
-    flex-direction: column;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    width: 100%;
-  }
-  
-  .modal-form-container {
-    max-height: calc(85vh - 3rem);
-  }
-}
-
-
-/* Modal Position Fix */
-.modal-overlay {
-  background: rgba(0, 0, 0, 0.8) !important;
-  backdrop-filter: blur(8px);
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  z-index: 9999 !important;
-}
-
-.modal-content {
-  background: linear-gradient(135deg, rgba(26, 26, 62, 0.95) 0%, rgba(15, 15, 35, 0.95) 100%) !important;
-  border: 1px solid rgba(46, 213, 255, 0.3) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
-  border-radius: 20px !important;
-  padding: 0 !important;
-  overflow: visible !important;
-  max-width: 1100px !important;
-  width: 95% !important;
-  max-height: 95vh !important;
-  position: relative !important;
-  margin: 0 !important;
-  transform: none !important;
-  top: auto !important;
-  left: auto !important;
-}
-
 /* Ensure body doesn't scroll when modal is open */
 body.modal-open {
   overflow: hidden !important;
-}
-
-.modal-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #2ed5ff, #8a2be2, transparent);
-  animation: shimmer 3s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
 }
 
 /* Responsive */
@@ -912,5 +858,10 @@ body.modal-open {
   .modal-content {
     margin: 1rem !important;
     width: calc(100% - 2rem) !important;
+    max-width: none !important;
+  }
+  
+  .modal-overlay {
+    padding: 1rem 0 !important;
   }
 }
