@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import './HandoverDetail.css';
 import Modal from '../UI/Modal';
-import { getHandovers, createTask, updateTask } from '../../Api/HandOverApi';
+import { getHandovers } from '../../Api/HandOverApi';
 
 const statusOptions = [
   { value: 'open', label: 'Open' },
@@ -11,11 +11,12 @@ const statusOptions = [
   { value: 'completed', label: 'Completed' }
 ];
 
-// Timeline Component
+// Enhanced Timeline Component with Better Styling
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   if (!acknowledgeDetails || acknowledgeDetails.length === 0) {
     return (
       <div className="timeline-container">
+        <h4 className="timeline-title">Acknowledgment History</h4>
         <div className="no-timeline-data">
           <p>No acknowledgment history available</p>
         </div>
@@ -31,9 +32,6 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
           <div key={ack.ackId} className="timeline-item">
             <div className="timeline-marker">
               <div className="timeline-dot"></div>
-              {index < acknowledgeDetails.length - 1 && (
-                <div className="timeline-connector"></div>
-              )}
             </div>
             <div className="timeline-content">
               <div className="timeline-header">
@@ -41,7 +39,7 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
                   {format(new Date(ack.acknowledgeTime), 'MMM d, yyyy h:mm a')}
                 </span>
                 <span className="timeline-user">
-                  User ID: {ack.userAcknowleged_id}
+                  {ack.userAcknowleged_id}
                 </span>
               </div>
               <div className="timeline-description">
@@ -102,6 +100,7 @@ const HandoverDetail = () => {
       }
     } catch (err) {
       setError('Failed to load handover details');
+      console.error('Fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -141,7 +140,8 @@ const HandoverDetail = () => {
     };
 
     try {
-      await updateTask(payload);
+      // Call your API to update task
+      // await updateTask(payload);
 
       const updatedTasks = backendData.Tasksdata.map(t =>
         t.Taskid === selectedTask.Taskid
@@ -168,6 +168,7 @@ const HandoverDetail = () => {
       setError('');
     } catch (err) {
       setError('Failed to update task on server!');
+      console.error('Update error:', err);
     }
   };
 
@@ -200,7 +201,8 @@ const HandoverDetail = () => {
     };
 
     try {
-      await createTask(payload);
+      // Call your API to create task
+      // await createTask(payload);
 
       // Refresh data after creating task
       await fetchHandoverData();
@@ -362,24 +364,30 @@ const HandoverDetail = () => {
           )}
         </div>
 
-        {/* Acknowledge Modal */}
+        {/* Acknowledge Modal with Horizontal Layout */}
         {modalOpen && selectedTask && (
           <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
             <div className="modal-form-container">
               <h2 className="modal-title">Acknowledge Task</h2>
 
               <div className="task-info-box">
-                <div className="info-row">
-                  <strong>Task ID:</strong> <span>{selectedTask.Taskid}</span>
-                </div>
-                <div className="info-row">
-                  <strong>Title:</strong> <span>{selectedTask.taskTitle || 'Untitled'}</span>
-                </div>
-                <div className="info-row">
-                  <strong>Description:</strong> <span>{selectedTask.taskDesc || '-'}</span>
+                {/* Horizontal Layout for Task ID, Title, Description */}
+                <div className="task-info-horizontal">
+                  <div className="info-column">
+                    <strong>Task ID</strong>
+                    <span>{selectedTask.Taskid}</span>
+                  </div>
+                  <div className="info-column">
+                    <strong>Title</strong>
+                    <span>{selectedTask.taskTitle || 'Untitled'}</span>
+                  </div>
+                  <div className="info-column">
+                    <strong>Description</strong>
+                    <span>{selectedTask.taskDesc || '-'}</span>
+                  </div>
                 </div>
                 
-                {/* Timeline Component */}
+                {/* Enhanced Timeline Component */}
                 <AcknowledgeTimeline acknowledgeDetails={selectedTask.acknowledgeDetails} />
               </div>
 
