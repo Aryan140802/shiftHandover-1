@@ -338,7 +338,7 @@
 }
 
 /* Main Timeline Line */
-.timeline-horizontal::before {
+/* .timeline-horizontal::before {
   content: '';
   position: absolute;
   top: 3.5rem;
@@ -351,7 +351,7 @@
     rgba(46, 213, 255, 0.6) 100%);
   box-shadow: 0 0 15px rgba(46, 213, 255, 0.4);
   z-index: 1;
-}
+} */
 
 .timeline-item {
   display: flex;
@@ -801,10 +801,19 @@
 }
 
 
-/* Enhanced Modal Styling - FIXED */
+/* Modal Position Fix */
 .modal-overlay {
   background: rgba(0, 0, 0, 0.8) !important;
   backdrop-filter: blur(8px);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 9999 !important;
 }
 
 .modal-content {
@@ -813,9 +822,20 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
   border-radius: 20px !important;
   padding: 0 !important;
-  overflow: hidden;
-  max-width: 900px !important;
+  overflow: visible !important;
+  max-width: 1100px !important;
   width: 95% !important;
+  max-height: 95vh !important;
+  position: relative !important;
+  margin: 0 !important;
+  transform: none !important;
+  top: auto !important;
+  left: auto !important;
+}
+
+/* Ensure body doesn't scroll when modal is open */
+body.modal-open {
+  overflow: hidden !important;
 }
 
 .modal-content::before {
