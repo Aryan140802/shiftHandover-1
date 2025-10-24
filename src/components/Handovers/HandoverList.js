@@ -85,6 +85,26 @@ const HandoverList = () => {
     return `priority-badge priority-${priority.toLowerCase()}`;
   };
 
+  // Get status badge class
+  const getStatusBadgeClass = (status) => {
+    const displayStatus = getStatusDisplay(status);
+    return `status-badge ${displayStatus}`;
+  };
+
+  // Get status display text
+  const getStatusText = (status) => {
+    if (!status) return 'Pending';
+    const statusMap = {
+      'open': 'Open',
+      'pending': 'Pending',
+      'in progress': 'In Progress',
+      'in-progress': 'In Progress',
+      'completed': 'Completed',
+      'closed': 'Completed'
+    };
+    return statusMap[status.toLowerCase()] || status;
+  };
+
   // Filter handovers based on selected filters
   const filteredHandovers = TeamHandoverDetails.filter(handover => {
     const handoverTasks = tasksByHandover[handover.handover_id_id] || [];
@@ -105,25 +125,6 @@ const HandoverList = () => {
 
     return true;
   });
-
-  // Handle task status change
-  const handleTaskStatusChange = (taskId, newStatus) => {
-    const updatedTasks = Tasksdata.map(task => {
-      if (task.Taskid === taskId) {
-        return {
-          ...task,
-          status: newStatus,
-          statusUpdateTime: new Date().toISOString()
-        };
-      }
-      return task;
-    });
-
-    setBackendData({
-      ...backendData,
-      Tasksdata: updatedTasks
-    });
-  };
 
   // Format date safely
   const formatDate = (dateString) => {
@@ -303,15 +304,10 @@ const HandoverList = () => {
                                   </span>
                                 </td>
                                 <td>
-                                  <select
-                                    value={task.status}
-                                    onChange={(e) => handleTaskStatusChange(task.Taskid, e.target.value)}
-                                    className={`status-select ${getStatusDisplay(task.status)}`}
-                                  >
-                                    <option value="open">Open</option>
-                                    <option value="in progress">In Progress</option>
-                                    <option value="completed">Completed</option>
-                                  </select>
+                                  {/* Changed from select dropdown to status badge - READ ONLY */}
+                                  <span className={getStatusBadgeClass(task.status)}>
+                                    {getStatusText(task.status)}
+                                  </span>
                                 </td>
                                 <td>
                                   <span className={`status-badge ${task.acknowledgeStatus?.toLowerCase() === 'pending' ? 'pending' : 'completed'}`}>
