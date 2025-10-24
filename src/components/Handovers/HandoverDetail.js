@@ -11,7 +11,7 @@ const statusOptions = [
   { value: 'completed', label: 'Completed' }
 ];
 
-// Enhanced Timeline Component with Better Styling
+// Enhanced Timeline Component with Connector Lines
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   if (!acknowledgeDetails || acknowledgeDetails.length === 0) {
     return (
@@ -30,6 +30,11 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
       <div className="timeline-horizontal">
         {acknowledgeDetails.map((ack, index) => (
           <div key={ack.ackId} className="timeline-item">
+            {/* Connector Line - Only show between items */}
+            {index < acknowledgeDetails.length - 1 && (
+              <div className="timeline-connector"></div>
+            )}
+            
             <div className="timeline-marker">
               <div className="timeline-dot"></div>
             </div>
@@ -151,7 +156,16 @@ const HandoverDetail = () => {
               acknowledgeStatus: 'Acknowledged',
               ackDesc: ackDescription,
               acknowledgeTime: new Date().toISOString(),
-              statusUpdateTime: new Date().toISOString()
+              statusUpdateTime: new Date().toISOString(),
+              acknowledgeDetails: [
+                ...(t.acknowledgeDetails || []),
+                {
+                  ackId: Date.now(),
+                  userAcknowleged_id: 'current_user', // Replace with actual user ID
+                  acknowledgeTime: new Date().toISOString(),
+                  ackDesc: ackDescription
+                }
+              ]
             }
           : t
       );
@@ -364,7 +378,7 @@ const HandoverDetail = () => {
           )}
         </div>
 
-        {/* Acknowledge Modal with Horizontal Layout */}
+        {/* Acknowledge Modal with Enhanced Styling */}
         {modalOpen && selectedTask && (
           <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
             <div className="modal-form-container">
@@ -387,8 +401,10 @@ const HandoverDetail = () => {
                   </div>
                 </div>
                 
-                {/* Enhanced Timeline Component */}
-                <AcknowledgeTimeline acknowledgeDetails={selectedTask.acknowledgeDetails} />
+                {/* Enhanced Timeline Component with Connector Lines */}
+                <AcknowledgeTimeline 
+                  acknowledgeDetails={selectedTask.acknowledgeDetails || []} 
+                />
               </div>
 
               <div className="form-group">
@@ -442,7 +458,7 @@ const HandoverDetail = () => {
                   className="btn-primary"
                   disabled={!ackDescription.trim()}
                 >
-                  Submit
+                  Submit Acknowledgment
                 </button>
               </div>
             </div>
