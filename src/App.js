@@ -12,6 +12,7 @@ import CreateHandover from './components/Handovers/CreateHandover';
 import HandoverDetail from './components/Handovers/HandoverDetail';
 // import ShiftManager from './components/Shifts/ShiftManager';
 import HandoverReports from './components/Reports/HandoverReports';
+import DeploymentLogger from './components/DeploymentLogger/DeploymentLogger';
 
 // Main CSS
 import './App.css';
@@ -85,6 +86,10 @@ function App() {
                 element={
                   <HandoverReports handovers={handovers} />
                 }
+              />
+              <Route
+                path="/deployment-logger"
+                element={<DeploymentLogger />}
               />
             </Routes>
           </div>
