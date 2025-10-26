@@ -1,225 +1,165 @@
-i want add a component with name deployment logger  that search a file which is present in "/home/scripts/deployment_Tracker/"  with file name like this " 10.188.25.163_Deployment.json" i want to user put only 25.163 part of the to search the file after that make a dynamic table with the data present into the file 
+import React, { useState } from 'react';
+import { fetchDeploymentData } from './deploymentService';
+import './DeploymentLogger.css';
 
-[
-  {
-    "Date": "Oct 1",
-    "Time": "19:20:05",
-    "Service Name": "thirdPartyNSEAuth_sys_01102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_06"
-  },
-  {
-    "Date": "Oct 3",
-    "Time": "21:00:12",
-    "Service Name": "thirdPartyGenericServiceIPH_sys_03102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_07"
-  },
-  {
-    "Date": "Oct 3",
-    "Time": "22:48:28",
-    "Service Name": "thirdPartyGenericIVRCalling_sys_PRD_03102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_03"
-  },
-  {
-    "Date": "Oct 3",
-    "Time": "22:49:01",
-    "Service Name": "thirdPartyGenericMobileChangeLeadPush_sys_PRD_03102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_03"
-  },
-  {
-    "Date": "Oct 9",
-    "Time": "20:18:52",
-    "Service Name": "virtualCardATM_sys_09102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_04"
-  },
-  {
-    "Date": "Oct 9",
-    "Time": "20:25:14",
-    "Service Name": "YONO2_VIRTUAL_CARD_ATM_CLIENT_09102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_04"
-  },
-  {
-    "Date": "Oct 9",
-    "Time": "21:30:52",
-    "Service Name": "genericITTSS_sys_091025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_02"
-  },
-  {
-    "Date": "Oct 10",
-    "Time": "19:40:54",
-    "Service Name": "thirdPartyGenericNPS_sys_09102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_07"
-  },
-  {
-    "Date": "Oct 10",
-    "Time": "19:50:04",
-    "Service Name": "thirdPartyAnalyticsSBILife_sys_09102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_07"
-  },
-  {
-    "Date": "Oct 13",
-    "Time": "21:20:57",
-    "Service Name": "thirdPartyGenericDotNet_sys.bar",
-    "Broker": "WEB_APP_BROKER_SYS",
-    "EG": "SGBS_SYS"
-  },
-  {
-    "Date": "Oct 13",
-    "Time": "21:25:17",
-    "Service Name": "hotListSMB_sys_08102025_1.bar",
-    "Broker": "NON_CBS_ACCOUNT_SYS",
-    "EG": "Acc_S_01"
-  },
-  {
-    "Date": "Oct 13",
-    "Time": "21:42:06",
-    "Service Name": "msBalanceEnquiryMicro_sys.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_03"
-  },
-  {
-    "Date": "Oct 14",
-    "Time": "15:26:23",
-    "Service Name": "microserviceDedupe_sys_14102025.bar",
-    "Broker": "YONO_SYS_01",
-    "EG": "Yono_S_01"
-  },
-  {
-    "Date": "Oct 14",
-    "Time": "15:26:27",
-    "Service Name": "TDSEnquiryMicroService_sys_14102025.bar",
-    "Broker": "YONO_SYS_01",
-    "EG": "Yono_S_01"
-  },
-  {
-    "Date": "Oct 14",
-    "Time": "15:26:32",
-    "Service Name": "microserviceCIFEnquiry_sys_14102025.bar",
-    "Broker": "YONO_SYS_01",
-    "EG": "Yono_S_01"
-  },
-  {
-    "Date": "Oct 14",
-    "Time": "15:26:38",
-    "Service Name": "accountStatementMicro_sys_14102025.bar",
-    "Broker": "YONO_SYS_02",
-    "EG": "Yono_S_01"
-  },
-  {
-    "Date": "Oct 14",
-    "Time": "16:28:15",
-    "Service Name": "YONO2_VIRTUAL_CARD_ATM_CLIENT_14102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_05"
-  },
-  {
-    "Date": "Oct 14",
-    "Time": "16:35:43",
-    "Service Name": "YONO2_VIRTUAL_CARD_ATM_CLIENT_14102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_04"
-  },
-  {
-    "Date": "Oct 14",
-    "Time": "21:21:48",
-    "Service Name": "thirdPartySBIGen_sys_14102025_PROD.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_01"
-  },
-  {
-    "Date": "Oct 15",
-    "Time": "21:34:45",
-    "Service Name": "thirdPartyGenericProtean_NPS_sys_PROD_15102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_05"
-  },
-  {
-    "Date": "Oct 16",
-    "Time": "12:01:18",
-    "Service Name": "thirdPartySBIGen_sys_14102025_PROD.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_07"
-  },
-  {
-    "Date": "Oct 16",
-    "Time": "20:58:59",
-    "Service Name": "thirdPartyDLC_sys.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_05"
-  },
-  {
-    "Date": "Oct 16",
-    "Time": "21:00:54",
-    "Service Name": "thirdPartyGenericKREDX_sys_PROD_16102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_05"
-  },
-  {
-    "Date": "Oct 16",
-    "Time": "21:22:37",
-    "Service Name": "ThirdPartyBASEGetAccDetailsReq_sys_PROD_16102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_05"
-  },
-  {
-    "Date": "Oct 16",
-    "Time": "21:26:25",
-    "Service Name": "ThirdPartyBASEGetAccDetailsResp_sys_PROD_16102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_05"
-  },
-  {
-    "Date": "Oct 16",
-    "Time": "23:15:30",
-    "Service Name": "thirdPartyGenericCIMS_sys_16102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_04"
-  },
-  {
-    "Date": "Oct 17",
-    "Time": "18:10:35",
-    "Service Name": "thirdPartyGenericCIMS_sys_17102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_03"
-  },
-  {
-    "Date": "Oct 17",
-    "Time": "18:14:02",
-    "Service Name": "thirdPartyGenericCIMS_sys_17102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_03"
-  },
-  {
-    "Date": "Oct 24",
-    "Time": "19:59:49",
-    "Service Name": "thirdPartyLLMSdisbursement_sys_24102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_04"
-  },
-  {
-    "Date": "Oct 24",
-    "Time": "20:01:26",
-    "Service Name": "thirdPartyMCXCCL_sys_PROD_24102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_04"
-  },
-  {
-    "Date": "Oct 24",
-    "Time": "20:01:59",
-    "Service Name": "thirdPartyCINB_sys_PROD_24102025.bar",
-    "Broker": "MISC_SYS",
-    "EG": "Misc_S_04"
+const DeploymentLogger = () => {
+  const [ipSuffix, setIpSuffix] = useState('');
+  const [deploymentData, setDeploymentData] = useState([]);
+  const [error, setError] = useState('');
+
+  const handleSearch = async (e) => {
+    const value = e.target.value;
+    setIpSuffix(value);
+
+    if (value.match(/^\d{2,3}\.\d{1,3}$/)) {
+      try {
+        const data = await fetchDeploymentData(value);
+        setDeploymentData(data);
+        setError('');
+      } catch (err) {
+        setError('Could not find deployment file for the given IP');
+        setDeploymentData([]);
+      }
+    }
+  };
+
+  return (
+    <div className="deployment-logger">
+      <h2>Deployment Logger</h2>
+      
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="Enter IP Suffix (e.g., 25.163)"
+          value={ipSuffix}
+          onChange={handleSearch}
+          className="search-input"
+        />
+      </div>
+
+      {error && <div className="error-message">{error}</div>}
+
+      {deploymentData.length > 0 && (
+        <div className="table-container">
+          <table className="deployment-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Service Name</th>
+                <th>Broker</th>
+                <th>EG</th>
+              </tr>
+            </thead>
+            <tbody>
+              {deploymentData.map((row, index) => (
+                <tr key={index}>
+                  <td>{row.Date}</td>
+                  <td>{row.Time}</td>
+                  <td>{row['Service Name']}</td>
+                  <td>{row.Broker}</td>
+                  <td>{row.EG}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default DeploymentLogger;
+
+
+
+
+
+
+
+export const fetchDeploymentData = async (suffix) => {
+  try {
+    const response = await fetch(`/api/deployment/${suffix}`);
+    if (!response.ok) {
+      throw new Error('File not found');
+    }
+    return await response.json();
+  } catch (error) {
+    throw new Error('Failed to fetch deployment data');
   }
-]
+};
 
-this is the data which is present in the file 
+.deployment-logger {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
-make all file in js only and make folder inside component make put the file into it
+.search-container {
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.error-message {
+  color: #ff0000;
+  margin-bottom: 10px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.deployment-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.deployment-table th,
+.deployment-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.deployment-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.deployment-table tr:nth-child(even) {
+  background-color: #f8f8f8;
+}
+
+.deployment-table tr:hover {
+  background-color: #f0f0f0;
+}
+
+
+import fs from 'fs';
+import path from 'path';
+
+export default function handler(req, res) {
+  const { suffix } = req.query;
+  
+  try {
+    const filePath = path.join('/home/scripts/deployment_Tracker', `10.188.${suffix}_Deployment.json`);
+    const fileContents = fs.readFileSync(filePath, 'utf8');
+    const data = JSON.parse(fileContents);
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(404).json({ error: 'File not found' });
+  }
+}
+
+
+
+
+
