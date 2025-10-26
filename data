@@ -1,78 +1,228 @@
-Tasksdata
-: 
-[{Taskid: 1, taskDesc: "Check server health", priority: "High", userCreated_id: null,…},…]
-0
-: 
-{Taskid: 1, taskDesc: "Check server health", priority: "High", userCreated_id: null,…}
-Taskid
-: 
-1
-acknowledgeDetails
-: 
-[{ackId: 1, ackDesc: "the description is added", userAcknowleged_id: 2743582,…},…]
-0
-: 
-{ackId: 1, ackDesc: "the description is added", userAcknowleged_id: 2743582,…}
-ackDesc
-: 
-"the description is added"
-ackId
-: 
-1
-ackTask_id_id
-: 
-1
-acknowledgeTime
-: 
-"2025-10-16 08:39:22"
-userAcknowleged_id
-: 
-2743582
-1
-: 
-{ackId: 2, ackDesc: "the description is added", userAcknowleged_id: 2743582,…}
-2
-: 
-{ackId: 3, ackDesc: "the description is added", userAcknowleged_id: 2743582,…}
-3
-: 
-{ackId: 4, ackDesc: "the description is added", userAcknowleged_id: 2743582,…}
-acknowledgeStatus
-: 
-"Pending"
-creationTime
-: 
-""
-handover_id_id
-: 
-1
-priority
-: 
-"High"
-status
-: 
-"Completed"
-statusUpdateTime
-: 
-""
-taskDesc
-: 
-"Check server health"
-taskTitle
-: 
-"create handowver"
-userAccepted_id
-: 
-2743582
-userCreated_id
-: 
-null
-1
-: 
-{Taskid: 13, taskDesc: null, priority: "Medium", userCreated_id: null, status: "in progress",…}
-2
-: 
-{Taskid: 14, taskDesc: null, priority: "Critical", userCreated_id: null, status: "completed",…}
-3
-: 
-{Taskid: 15, taskDesc: null, priority: "High", userCreated_id: null, status: "in progress",…}
+ 10.188.25.163_Deployment.json
+
+/home/scripts/deployment_Tracker/
+
+
+[
+  {
+    "Date": "Oct 1",
+    "Time": "19:20:05",
+    "Service Name": "thirdPartyNSEAuth_sys_01102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_06"
+  },
+  {
+    "Date": "Oct 3",
+    "Time": "21:00:12",
+    "Service Name": "thirdPartyGenericServiceIPH_sys_03102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_07"
+  },
+  {
+    "Date": "Oct 3",
+    "Time": "22:48:28",
+    "Service Name": "thirdPartyGenericIVRCalling_sys_PRD_03102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_03"
+  },
+  {
+    "Date": "Oct 3",
+    "Time": "22:49:01",
+    "Service Name": "thirdPartyGenericMobileChangeLeadPush_sys_PRD_03102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_03"
+  },
+  {
+    "Date": "Oct 9",
+    "Time": "20:18:52",
+    "Service Name": "virtualCardATM_sys_09102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_04"
+  },
+  {
+    "Date": "Oct 9",
+    "Time": "20:25:14",
+    "Service Name": "YONO2_VIRTUAL_CARD_ATM_CLIENT_09102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_04"
+  },
+  {
+    "Date": "Oct 9",
+    "Time": "21:30:52",
+    "Service Name": "genericITTSS_sys_091025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_02"
+  },
+  {
+    "Date": "Oct 10",
+    "Time": "19:40:54",
+    "Service Name": "thirdPartyGenericNPS_sys_09102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_07"
+  },
+  {
+    "Date": "Oct 10",
+    "Time": "19:50:04",
+    "Service Name": "thirdPartyAnalyticsSBILife_sys_09102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_07"
+  },
+  {
+    "Date": "Oct 13",
+    "Time": "21:20:57",
+    "Service Name": "thirdPartyGenericDotNet_sys.bar",
+    "Broker": "WEB_APP_BROKER_SYS",
+    "EG": "SGBS_SYS"
+  },
+  {
+    "Date": "Oct 13",
+    "Time": "21:25:17",
+    "Service Name": "hotListSMB_sys_08102025_1.bar",
+    "Broker": "NON_CBS_ACCOUNT_SYS",
+    "EG": "Acc_S_01"
+  },
+  {
+    "Date": "Oct 13",
+    "Time": "21:42:06",
+    "Service Name": "msBalanceEnquiryMicro_sys.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_03"
+  },
+  {
+    "Date": "Oct 14",
+    "Time": "15:26:23",
+    "Service Name": "microserviceDedupe_sys_14102025.bar",
+    "Broker": "YONO_SYS_01",
+    "EG": "Yono_S_01"
+  },
+  {
+    "Date": "Oct 14",
+    "Time": "15:26:27",
+    "Service Name": "TDSEnquiryMicroService_sys_14102025.bar",
+    "Broker": "YONO_SYS_01",
+    "EG": "Yono_S_01"
+  },
+  {
+    "Date": "Oct 14",
+    "Time": "15:26:32",
+    "Service Name": "microserviceCIFEnquiry_sys_14102025.bar",
+    "Broker": "YONO_SYS_01",
+    "EG": "Yono_S_01"
+  },
+  {
+    "Date": "Oct 14",
+    "Time": "15:26:38",
+    "Service Name": "accountStatementMicro_sys_14102025.bar",
+    "Broker": "YONO_SYS_02",
+    "EG": "Yono_S_01"
+  },
+  {
+    "Date": "Oct 14",
+    "Time": "16:28:15",
+    "Service Name": "YONO2_VIRTUAL_CARD_ATM_CLIENT_14102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_05"
+  },
+  {
+    "Date": "Oct 14",
+    "Time": "16:35:43",
+    "Service Name": "YONO2_VIRTUAL_CARD_ATM_CLIENT_14102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_04"
+  },
+  {
+    "Date": "Oct 14",
+    "Time": "21:21:48",
+    "Service Name": "thirdPartySBIGen_sys_14102025_PROD.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_01"
+  },
+  {
+    "Date": "Oct 15",
+    "Time": "21:34:45",
+    "Service Name": "thirdPartyGenericProtean_NPS_sys_PROD_15102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_05"
+  },
+  {
+    "Date": "Oct 16",
+    "Time": "12:01:18",
+    "Service Name": "thirdPartySBIGen_sys_14102025_PROD.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_07"
+  },
+  {
+    "Date": "Oct 16",
+    "Time": "20:58:59",
+    "Service Name": "thirdPartyDLC_sys.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_05"
+  },
+  {
+    "Date": "Oct 16",
+    "Time": "21:00:54",
+    "Service Name": "thirdPartyGenericKREDX_sys_PROD_16102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_05"
+  },
+  {
+    "Date": "Oct 16",
+    "Time": "21:22:37",
+    "Service Name": "ThirdPartyBASEGetAccDetailsReq_sys_PROD_16102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_05"
+  },
+  {
+    "Date": "Oct 16",
+    "Time": "21:26:25",
+    "Service Name": "ThirdPartyBASEGetAccDetailsResp_sys_PROD_16102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_05"
+  },
+  {
+    "Date": "Oct 16",
+    "Time": "23:15:30",
+    "Service Name": "thirdPartyGenericCIMS_sys_16102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_04"
+  },
+  {
+    "Date": "Oct 17",
+    "Time": "18:10:35",
+    "Service Name": "thirdPartyGenericCIMS_sys_17102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_03"
+  },
+  {
+    "Date": "Oct 17",
+    "Time": "18:14:02",
+    "Service Name": "thirdPartyGenericCIMS_sys_17102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_03"
+  },
+  {
+    "Date": "Oct 24",
+    "Time": "19:59:49",
+    "Service Name": "thirdPartyLLMSdisbursement_sys_24102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_04"
+  },
+  {
+    "Date": "Oct 24",
+    "Time": "20:01:26",
+    "Service Name": "thirdPartyMCXCCL_sys_PROD_24102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_04"
+  },
+  {
+    "Date": "Oct 24",
+    "Time": "20:01:59",
+    "Service Name": "thirdPartyCINB_sys_PROD_24102025.bar",
+    "Broker": "MISC_SYS",
+    "EG": "Misc_S_04"
+  }
+]
+
+
+
+
