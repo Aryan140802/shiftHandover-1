@@ -1,7 +1,4 @@
- 10.188.25.163_Deployment.json
-
-/home/scripts/deployment_Tracker/
-
+i want add a component with name deployment logger  that search a file which is present in "/home/scripts/deployment_Tracker/"  with file name like this " 10.188.25.163_Deployment.json" i want to user put only 25.163 part of the to search the file after that make a dynamic table with the data present into the file 
 
 [
   {
@@ -223,6 +220,6 @@
   }
 ]
 
+this is the data which is present in the file 
 
-
-
+make all file in js only and make folder inside component make put the file into it
