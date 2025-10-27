@@ -16,6 +16,15 @@ const HandoverList = () => {
     fetchHandovers();
   }, []);
 
+  // Auto-redirect effect when data is loaded
+  useEffect(() => {
+    if (!loading && backendData.TeamHandoverDetails.length === 1) {
+      // If there's exactly one handover, redirect to its detail page
+      const singleHandover = backendData.TeamHandoverDetails[0];
+      navigate(`/handover/${singleHandover.handover_id_id}`, { replace: true });
+    }
+  }, [loading, backendData.TeamHandoverDetails, navigate]);
+
   const fetchHandovers = async () => {
     setLoading(true);
     setError(null);
@@ -136,6 +145,28 @@ const HandoverList = () => {
     }
   };
 
+  // Don't render anything if loading or if there's only one handover (will auto-redirect)
+  if (loading) {
+    return (
+      <div className="handover-container">
+        <div className="loading-message">
+          <p>Loading handovers...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If there's only one handover, show a brief message while redirecting
+  if (TeamHandoverDetails.length === 1) {
+    return (
+      <div className="handover-container">
+        <div className="loading-message">
+          <p>Redirecting to handover details...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="handover-container">
       <div className="handover-header">
@@ -219,145 +250,138 @@ const HandoverList = () => {
         </div>
       </div>
 
-      {loading ? (
-        <div className="loading-message">
-          <p>Loading handovers...</p>
-        </div>
-      ) : (
-        <div className="handover-list">
-          {filteredHandovers.length > 0 ? (
-            filteredHandovers.map((handover) => {
-              const handoverTasks = tasksByHandover[handover.handover_id_id] || [];
+      <div className="handover-list">
+        {filteredHandovers.length > 0 ? (
+          filteredHandovers.map((handover) => {
+            const handoverTasks = tasksByHandover[handover.handover_id_id] || [];
 
-              // Calculate highest priority from tasks
-              const highestPriority = handoverTasks.reduce((highest, task) => {
-                if (!task.priority) return highest;
-                const priorityOrder = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 };
-                const taskPriority = priorityOrder[task.priority.toLowerCase()] || 0;
-                const highestValue = priorityOrder[highest?.toLowerCase()] || 0;
-                return taskPriority > highestValue ? task.priority : highest;
-              }, 'Medium');
+            // Calculate highest priority from tasks
+            const highestPriority = handoverTasks.reduce((highest, task) => {
+              if (!task.priority) return highest;
+              const priorityOrder = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 };
+              const taskPriority = priorityOrder[task.priority.toLowerCase()] || 0;
+              const highestValue = priorityOrder[highest?.toLowerCase()] || 0;
+              return taskPriority > highestValue ? task.priority : highest;
+            }, 'Medium');
 
-              return (
-                <div
-                  key={handover.handover_id_id}
-                  className={`handover-item ${getPriorityClass(highestPriority)}`}
-                >
-                  <div className="handover-header">
-                    <h3>
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          navigate(`/handover/${handover.handover_id_id}`);
-                        }}
-                      >
-                        {handover.teamName} Team Handover
-                      </a>
-                    </h3>
-                  </div>
-
-                  <div className="handover-meta">
-                    <div className="meta-item">
-                      <span className="meta-label">Team:</span>
-                      <span>{handover.teamName}</span>
-                    </div>
-                    <div className="meta-item">
-                      <span className="meta-label">Team ID:</span>
-                      <span>{handover.TeamId}</span>
-                    </div>
-                    <div className="meta-item">
-                      <span className="meta-label">Team Lead ID:</span>
-                      <span>{handover.teamLead_id}</span>
-                    </div>
-                    <div className="meta-item">
-                      <span className="meta-label">Handover ID:</span>
-                      <span>{handover.handover_id_id}</span>
-                    </div>
-                  </div>
-
-                  {handoverTasks.length > 0 && (
-                    <div className="handover-tasks">
-                      <h4>Tasks ({handoverTasks.length})</h4>
-                      <div className="tasks-table-wrapper">
-                        <table className="tasks-table">
-                          <thead>
-                            <tr>
-                              <th>Title</th>
-                              <th>Description</th>
-                              <th>Priority</th>
-                              <th>Status</th>
-                              <th>Acknowledge Status</th>
-                              <th>Created</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {handoverTasks.map((task) => (
-                              <tr key={task.Taskid}>
-                                <td style={{ fontWeight: 600 }}>
-                                  {task.taskTitle || task.taskDesc || 'Untitled'}
-                                </td>
-                                <td>{task.taskDesc || '-'}</td>
-                                <td>
-                                  <span className={getPriorityBadgeClass(task.priority)}>
-                                    {task.priority || 'Medium'}
-                                  </span>
-                                </td>
-                                <td>
-                                  {/* Changed from select dropdown to status badge - READ ONLY */}
-                                  <span className={getStatusBadgeClass(task.status)}>
-                                    {getStatusText(task.status)}
-                                  </span>
-                                </td>
-                                <td>
-                                  <span className={`status-badge ${task.acknowledgeStatus?.toLowerCase() === 'pending' ? 'pending' : 'completed'}`}>
-                                    {task.acknowledgeStatus || 'Pending'}
-                                  </span>
-                                </td>
-                                <td>{formatDate(task.creationTime)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="handover-actions">
-                    <button
-                      onClick={() => navigate(`/handover/${handover.handover_id_id}`)}
-                      className="view-btn"
+            return (
+              <div
+                key={handover.handover_id_id}
+                className={`handover-item ${getPriorityClass(highestPriority)}`}
+              >
+                <div className="handover-header">
+                  <h3>
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(`/handover/${handover.handover_id_id}`);
+                      }}
                     >
-                      View Details
-                    </button>
+                      {handover.teamName} Team Handover
+                    </a>
+                  </h3>
+                </div>
+
+                <div className="handover-meta">
+                  <div className="meta-item">
+                    <span className="meta-label">Team:</span>
+                    <span>{handover.teamName}</span>
+                  </div>
+                  <div className="meta-item">
+                    <span className="meta-label">Team ID:</span>
+                    <span>{handover.TeamId}</span>
+                  </div>
+                  <div className="meta-item">
+                    <span className="meta-label">Team Lead ID:</span>
+                    <span>{handover.teamLead_id}</span>
+                  </div>
+                  <div className="meta-item">
+                    <span className="meta-label">Handover ID:</span>
+                    <span>{handover.handover_id_id}</span>
                   </div>
                 </div>
-              );
-            })
-          ) : (
-            <div className="no-handovers">
-              <p>No handovers found matching the selected filters.</p>
-              {TeamHandoverDetails.length === 0 && !loading && (
-                <button
-                  onClick={() => navigate('/create')}
-                  style={{
-                    marginTop: '1rem',
-                    padding: '0.75rem 1.5rem',
-                    background: '#2ecc71',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '1rem'
-                  }}
-                >
-                  Create First Handover
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+
+                {handoverTasks.length > 0 && (
+                  <div className="handover-tasks">
+                    <h4>Tasks ({handoverTasks.length})</h4>
+                    <div className="tasks-table-wrapper">
+                      <table className="tasks-table">
+                        <thead>
+                          <tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Acknowledge Status</th>
+                            <th>Created</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {handoverTasks.map((task) => (
+                            <tr key={task.Taskid}>
+                              <td style={{ fontWeight: 600 }}>
+                                {task.taskTitle || task.taskDesc || 'Untitled'}
+                              </td>
+                              <td>{task.taskDesc || '-'}</td>
+                              <td>
+                                <span className={getPriorityBadgeClass(task.priority)}>
+                                  {task.priority || 'Medium'}
+                                </span>
+                              </td>
+                              <td>
+                                <span className={getStatusBadgeClass(task.status)}>
+                                  {getStatusText(task.status)}
+                                </span>
+                              </td>
+                              <td>
+                                <span className={`status-badge ${task.acknowledgeStatus?.toLowerCase() === 'pending' ? 'pending' : 'completed'}`}>
+                                  {task.acknowledgeStatus || 'Pending'}
+                                </span>
+                              </td>
+                              <td>{formatDate(task.creationTime)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                <div className="handover-actions">
+                  <button
+                    onClick={() => navigate(`/handover/${handover.handover_id_id}`)}
+                    className="view-btn"
+                  >
+                    View Details
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="no-handovers">
+            <p>No handovers found matching the selected filters.</p>
+            {TeamHandoverDetails.length === 0 && !loading && (
+              <button
+                onClick={() => navigate('/create')}
+                style={{
+                  marginTop: '1rem',
+                  padding: '0.75rem 1.5rem',
+                  background: '#2ecc71',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '1rem'
+                }}
+              >
+                Create First Handover
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
