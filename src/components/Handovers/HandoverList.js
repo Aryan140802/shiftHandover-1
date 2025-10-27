@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getHandovers } from '../../Api/HandOverApi';
 import './HandoverList.css';
 
-const HandoverList = () => {
+// Create context to share handover count across components
+export const HandoverContext = createContext({ hasMultipleHandovers: true });
+
+const HandoverList = ({ onHandoversUpdate }) => {
   const navigate = useNavigate();
   const [backendData, setBackendData] = useState({ TeamHandoverDetails: [], Tasksdata: [] });
   const [statusFilter, setStatusFilter] = useState('all');
@@ -21,9 +24,19 @@ const HandoverList = () => {
     if (!loading && backendData.TeamHandoverDetails.length === 1) {
       // If there's exactly one handover, redirect to its detail page
       const singleHandover = backendData.TeamHandoverDetails[0];
-      navigate(`/handover/${singleHandover.handover_id_id}`, { replace: true });
+      navigate(`/handover/${singleHandover.handover_id_id}`, { 
+        replace: true,
+        state: { hasMultipleHandovers: false }
+      });
     }
   }, [loading, backendData.TeamHandoverDetails, navigate]);
+
+  // Call the parent callback to update handovers
+  useEffect(() => {
+    if (!loading && onHandoversUpdate) {
+      onHandoversUpdate(backendData);
+    }
+  }, [backendData, loading, onHandoversUpdate]);
 
   const fetchHandovers = async () => {
     setLoading(true);
