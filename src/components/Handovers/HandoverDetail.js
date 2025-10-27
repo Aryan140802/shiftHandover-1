@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
 import './HandoverDetail.css';
 import Modal from '../UI/Modal';
@@ -61,6 +61,7 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
 const HandoverDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [backendData, setBackendData] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -76,10 +77,33 @@ const HandoverDetail = () => {
     status: 'open'
   });
   const [loading, setLoading] = useState(true);
+  const [hasMultipleHandovers, setHasMultipleHandovers] = useState(true);
 
   useEffect(() => {
     fetchHandoverData();
   }, [id]);
+
+  // Check if there are multiple handovers
+  useEffect(() => {
+    // Check from navigation state first
+    if (location.state?.hasMultipleHandovers === false) {
+      setHasMultipleHandovers(false);
+    } else {
+      // Otherwise check by fetching all handovers
+      checkMultipleHandovers();
+    }
+  }, [location.state]);
+
+  const checkMultipleHandovers = async () => {
+    try {
+      const data = await getHandovers();
+      if (data && data.TeamHandoverDetails) {
+        setHasMultipleHandovers(data.TeamHandoverDetails.length > 1);
+      }
+    } catch (err) {
+      console.error('Error checking handover count:', err);
+    }
+  };
 
   // Modal scroll control
   useEffect(() => {
@@ -276,9 +300,11 @@ const HandoverDetail = () => {
       <div className="handover-detail-container">
         <div className="not-found">
           <h2>Handover not found</h2>
-          <button onClick={() => navigate('/dashboard')} className="back-button">
-            Back to List
-          </button>
+          {hasMultipleHandovers && (
+            <button onClick={() => navigate('/dashboard')} className="back-button">
+              Back to List
+            </button>
+          )}
         </div>
       </div>
     );
@@ -292,9 +318,11 @@ const HandoverDetail = () => {
     <div className="handover-detail-container">
       <div className="handover-detail-header">
         <h2>{handover.teamName} Team Handover</h2>
-        <button onClick={() => navigate('/dashboard')} className="back-button">
-          ← Back to List
-        </button>
+        {hasMultipleHandovers && (
+          <button onClick={() => navigate('/dashboard')} className="back-button">
+            ← Back to List
+          </button>
+        )}
       </div>
 
       <div className="handover-detail-content">
