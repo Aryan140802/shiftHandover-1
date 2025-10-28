@@ -1,30 +1,54 @@
 import fs from 'fs';
 import path from 'path';
 
+// API Route Handler (place this in pages/api/deployment.js or app/api/deployment/route.js)
 export default function handler(req, res) {
   const { suffix } = req.query;
-
+  
+  if (!suffix) {
+    return res.status(400).json({ error: 'Suffix parameter is required' });
+  }
+  
   try {
-    const filePath = path.join('/home/scripts/deployment_Tracker', `10.188.${suffix}_Deployment.json`);
+    // Handle both formats: "24.10" or full IP "10.188.24.10"
+    const fileName = suffix.startsWith('10.188.') 
+      ? `${suffix}_Deployment.json`
+      : `10.188.${suffix}_Deployment.json`;
+    
+    const filePath = path.join('/home/scripts/deployment_Tracker', fileName);
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found', path: fileName });
+    }
+    
     const fileContents = fs.readFileSync(filePath, 'utf8');
     const data = JSON.parse(fileContents);
+    
     res.status(200).json(data);
   } catch (error) {
-    res.status(404).json({ error: 'File not found' });
+    console.error('Error reading deployment file:', error);
+    res.status(500).json({ 
+      error: 'Failed to read deployment file', 
+      message: error.message 
+    });
   }
 }
 
-
+// Client-side fetch function
 export const fetchDeploymentData = async (suffix) => {
   try {
-    const response = await fetch(`${suffix}`);
+    // Construct the API endpoint URL
+    const response = await fetch(`/api/deployment?suffix=${encodeURIComponent(suffix)}`);
+    
     if (!response.ok) {
-      throw new Error('File not found');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch deployment data');
     }
+    
     return await response.json();
   } catch (error) {
-    throw new Error('Failed to fetch deployment data');
+    console.error('Fetch error:', error);
+    throw new Error(`Failed to fetch deployment data: ${error.message}`);
   }
 };
-
-
