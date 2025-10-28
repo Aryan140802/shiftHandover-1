@@ -1,30 +1,15 @@
-const fs = require('fs');
-const path = require('path');
-
-/**
- * Search for a deployment file in the directory
- * @param {string} ipAddress - The IP address (e.g., '10.188.24.10')
- * @returns {string|null} Full path to the file if found, null otherwise
- */
-function searchDeploymentFile(ipAddress) {
+async function searchDeploymentFile(ipAddress) {
   const directory = '/home/scripts/deployment_Tracker/';
   const filename = `${ipAddress}_Deployment.json`;
-  const filePath = path.join(directory, filename);
+  const filePath = `${directory}${filename}`;
   
-  if (fs.existsSync(filePath)) {
-    return filePath;
+  try {
+    const response = await fetch(filePath);
+    if (response.ok) {
+      return filePath;
+    }
+    return null;
+  } catch (error) {
+    return null;
   }
-  
-  return null;
 }
-
-// Example usage:
-const result = searchDeploymentFile('10.188.24.10');
-
-if (result) {
-  console.log(`File found: ${result}`);
-} else {
-  console.log('File not found');
-}
-
-module.exports = searchDeploymentFile;
