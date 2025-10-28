@@ -1,3 +1,8 @@
+/**
+ * Search for a deployment file in the directory
+ * @param {string} ipAddress - The IP address (e.g., '10.188.24.10')
+ * @returns {Promise<string|null>} Full path to the file if found, null otherwise
+ */
 async function searchDeploymentFile(ipAddress) {
   const directory = '/home/scripts/deployment_Tracker/';
   const filename = `${ipAddress}_Deployment.json`;
@@ -13,3 +18,24 @@ async function searchDeploymentFile(ipAddress) {
     return null;
   }
 }
+
+// Example usage:
+searchDeploymentFile('10.188.24.10').then(result => {
+  if (result) {
+    console.log(`File found: ${result}`);
+  } else {
+    console.log('File not found');
+  }
+});
+
+// Or with async/await
+async function example() {
+  const result = await searchDeploymentFile('10.188.24.10');
+  if (result) {
+    console.log(`File found: ${result}`);
+  } else {
+    console.log('File not found');
+  }
+}
+
+module.exports = searchDeploymentFile;
