@@ -1,54 +1,156 @@
-import fs from 'fs';
-import path from 'path';
+const fs = require('fs');
+const path = require('path');
 
-// API Route Handler (place this in pages/api/deployment.js or app/api/deployment/route.js)
-export default function handler(req, res) {
-  const { suffix } = req.query;
-  
-  if (!suffix) {
-    return res.status(400).json({ error: 'Suffix parameter is required' });
-  }
-  
+/**
+ * Search for deployment JSON files in a directory
+ * @param {string} directory - Directory path to search in
+ * @param {string} ipAddress - Specific IP address to search for (e.g., '10.188.24.10')
+ * @param {RegExp} pattern - Custom regex pattern for matching files
+ * @returns {Array} Array of matching file paths
+ */
+function searchDeploymentFile(
+  directory = '/home/scripts/deployment_Tracker/',
+  ipAddress = null,
+  pattern = null
+) {
   try {
-    // Handle both formats: "24.10" or full IP "10.188.24.10"
-    const fileName = suffix.startsWith('10.188.') 
-      ? `${suffix}_Deployment.json`
-      : `10.188.${suffix}_Deployment.json`;
-    
-    const filePath = path.join('/home/scripts/deployment_Tracker', fileName);
-    
-    // Check if file exists
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'File not found', path: fileName });
+    // Check if directory exists
+    if (!fs.existsSync(directory)) {
+      console.log(`Directory not found: ${directory}`);
+      return [];
     }
-    
-    const fileContents = fs.readFileSync(filePath, 'utf8');
-    const data = JSON.parse(fileContents);
-    
-    res.status(200).json(data);
-  } catch (error) {
-    console.error('Error reading deployment file:', error);
-    res.status(500).json({ 
-      error: 'Failed to read deployment file', 
-      message: error.message 
+
+    // Read all files in the directory
+    const files = fs.readdirSync(directory);
+    const matchingFiles = [];
+
+    // Build matching logic
+    files.forEach(file => {
+      let matches = false;
+
+      if (ipAddress) {
+        // Search for specific IP address
+        matches = file === `${ipAddress}_Deployment.json`;
+      } else if (pattern) {
+        // Search using custom regex pattern
+        matches = pattern.test(file);
+      } else {
+        // Default: match all files ending with _Deployment.json
+        matches = file.endsWith('_Deployment.json');
+      }
+
+      if (matches) {
+        matchingFiles.push(path.join(directory, file));
+      }
     });
+
+    return matchingFiles;
+  } catch (error) {
+    console.error(`Error searching files: ${error.message}`);
+    return [];
   }
 }
 
-// Client-side fetch function
-export const fetchDeploymentData = async (suffix) => {
-  try {
-    // Construct the API endpoint URL
-    const response = await fetch(`/api/deployment?suffix=${encodeURIComponent(suffix)}`);
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch deployment data');
+/**
+ * Recursively search for deployment JSON files in directory and subdirectories
+ * @param {string} directory - Directory path to search in
+ * @param {string} ipAddress - Specific IP address to search for
+ * @param {RegExp} pattern - Custom regex pattern for matching files
+ * @returns {Array} Array of matching file paths
+ */
+function searchDeploymentFileRecursive(
+  directory = '/home/scripts/deployment_Tracker/',
+  ipAddress = null,
+  pattern = null
+) {
+  const matchingFiles = [];
+
+  function searchDir(dir) {
+    try {
+      if (!fs.existsSync(dir)) {
+        return;
+      }
+
+      const items = fs.readdirSync(dir, { withFileTypes: true });
+
+      items.forEach(item => {
+        const fullPath = path.join(dir, item.name);
+
+        if (item.isDirectory()) {
+          // Recursively search subdirectories
+          searchDir(fullPath);
+        } else if (item.isFile()) {
+          let matches = false;
+
+          if (ipAddress) {
+            matches = item.name === `${ipAddress}_Deployment.json`;
+          } else if (pattern) {
+            matches = pattern.test(item.name);
+          } else {
+            matches = item.name.endsWith('_Deployment.json');
+          }
+
+          if (matches) {
+            matchingFiles.push(fullPath);
+          }
+        }
+      });
+    } catch (error) {
+      console.error(`Error reading directory ${dir}: ${error.message}`);
     }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Fetch error:', error);
-    throw new Error(`Failed to fetch deployment data: ${error.message}`);
   }
+
+  searchDir(directory);
+  return matchingFiles;
+}
+
+/**
+ * Check if a specific deployment file exists
+ * @param {string} directory - Directory path
+ * @param {string} ipAddress - IP address to check
+ * @returns {boolean} True if file exists
+ */
+function deploymentFileExists(directory, ipAddress) {
+  const filePath = path.join(directory, `${ipAddress}_Deployment.json`);
+  return fs.existsSync(filePath);
+}
+
+// Example usage:
+if (require.main === module) {
+  // Search for specific IP
+  const files = searchDeploymentFile(
+    '/home/scripts/deployment_Tracker/',
+    '10.188.24.10'
+  );
+  console.log('Found files for specific IP:', files);
+
+  // Search for all deployment files
+  const allFiles = searchDeploymentFile('/home/scripts/deployment_Tracker/');
+  console.log('\nAll deployment files:', allFiles);
+
+  // Search with custom regex pattern (files starting with 10.188.)
+  const customPattern = /^10\.188\.\d+\.\d+_Deployment\.json$/;
+  const customFiles = searchDeploymentFile(
+    '/home/scripts/deployment_Tracker/',
+    null,
+    customPattern
+  );
+  console.log('\nFiles matching custom pattern:', customFiles);
+
+  // Recursive search
+  const recursiveFiles = searchDeploymentFileRecursive(
+    '/home/scripts/deployment_Tracker/'
+  );
+  console.log('\nRecursive search results:', recursiveFiles);
+
+  // Check if specific file exists
+  const targetIp = '10.188.24.10';
+  const exists = deploymentFileExists('/home/scripts/deployment_Tracker/', targetIp);
+  console.log(`\nFile exists for ${targetIp}: ${exists}`);
+}
+
+module.exports = {
+  searchDeploymentFile,
+  searchDeploymentFileRecursive,
+  deploymentFileExists
 };
