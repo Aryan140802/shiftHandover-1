@@ -1,154 +1,9 @@
-import React, { useState } from 'react';
-import { fetchDeploymentData } from './deploymentService';
-import './DeploymentLogger.css';
-
-const DeploymentLogger = () => {
-  const [ipSuffix, setIpSuffix] = useState('');
-  const [deploymentData, setDeploymentData] = useState([]);
-  const [error, setError] = useState('');
-
-  const handleSearch = async (e) => {
-    const value = e.target.value;
-    setIpSuffix(value);
-
-    if (value.match(/^\d{2,3}\.\d{1,3}$/)) {
-      try {
-        const data = await fetchDeploymentData(value);
-        setDeploymentData(data);
-        setError('');
-      } catch (err) {
-        setError('Could not find deployment file for the given IP');
-        setDeploymentData([]);
-      }
-    }
-  };
-
-  return (
-    <div className="deployment-logger">
-      <h2>Deployment Logger</h2>
-      
-      <div className="search-container">
-        <input
-          type="text"
-          placeholder="Enter IP Suffix (e.g., 25.163)"
-          value={ipSuffix}
-          onChange={handleSearch}
-          className="search-input"
-        />
-      </div>
-
-      {error && <div className="error-message">{error}</div>}
-
-      {deploymentData.length > 0 && (
-        <div className="table-container">
-          <table className="deployment-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Service Name</th>
-                <th>Broker</th>
-                <th>EG</th>
-              </tr>
-            </thead>
-            <tbody>
-              {deploymentData.map((row, index) => (
-                <tr key={index}>
-                  <td>{row.Date}</td>
-                  <td>{row.Time}</td>
-                  <td>{row['Service Name']}</td>
-                  <td>{row.Broker}</td>
-                  <td>{row.EG}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default DeploymentLogger;
-
-
-
-
-
-
-
-export const fetchDeploymentData = async (suffix) => {
-  try {
-    const response = await fetch(`/api/deployment/${suffix}`);
-    if (!response.ok) {
-      throw new Error('File not found');
-    }
-    return await response.json();
-  } catch (error) {
-    throw new Error('Failed to fetch deployment data');
-  }
-};
-
-.deployment-logger {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.search-container {
-  margin-bottom: 20px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.error-message {
-  color: #ff0000;
-  margin-bottom: 10px;
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
-.deployment-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.deployment-table th,
-.deployment-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-.deployment-table th {
-  background-color: #f4f4f4;
-  font-weight: bold;
-}
-
-.deployment-table tr:nth-child(even) {
-  background-color: #f8f8f8;
-}
-
-.deployment-table tr:hover {
-  background-color: #f0f0f0;
-}
-
-
 import fs from 'fs';
 import path from 'path';
 
 export default function handler(req, res) {
   const { suffix } = req.query;
-  
+
   try {
     const filePath = path.join('/home/scripts/deployment_Tracker', `10.188.${suffix}_Deployment.json`);
     const fileContents = fs.readFileSync(filePath, 'utf8');
@@ -160,6 +15,16 @@ export default function handler(req, res) {
 }
 
 
-
+export const fetchDeploymentData = async (suffix) => {
+  try {
+    const response = await fetch(`${suffix}`);
+    if (!response.ok) {
+      throw new Error('File not found');
+    }
+    return await response.json();
+  } catch (error) {
+    throw new Error('Failed to fetch deployment data');
+  }
+};
 
 
