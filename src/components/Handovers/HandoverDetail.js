@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import './HandoverDetail.css';
 import Modal from '../UI/Modal';
-import { getHandovers, createTask, updateTask, getHistoryHandovers } from '../../Api/HandOverApi';
+import { getHandovers, createTask, updateTask, getHistoryHandovers, getHandoverSummary } from '../../Api/HandOverApi';
 
 const statusOptions = [
   { value: 'open', label: 'Open' },
@@ -122,6 +122,75 @@ const HistoryTable = ({ historyData, onClose }) => {
   );
 };
 
+// Summary Modal Component
+const SummaryModal = ({ summaryData, onClose }) => {
+  if (!summaryData) {
+    return (
+      <div className="summary-modal">
+        <div className="modal-header">
+          <h3>Handover Summary</h3>
+          <button onClick={onClose} className="close-button">×</button>
+        </div>
+        <div className="no-summary-data">
+          <p>No summary data available</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="summary-modal">
+      <div className="modal-header">
+        <h3>Handover Summary</h3>
+        <button onClick={onClose} className="close-button">×</button>
+      </div>
+      <div className="summary-content">
+        <div className="summary-grid">
+          <div className="summary-item">
+            <span className="summary-label">Total Handovers</span>
+            <span className="summary-value">{summaryData.totalHandovers || 0}</span>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Active Tasks</span>
+            <span className="summary-value">{summaryData.activeTasks || 0}</span>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Completed Tasks</span>
+            <span className="summary-value">{summaryData.completedTasks || 0}</span>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Pending Acknowledgment</span>
+            <span className="summary-value">{summaryData.pendingAcknowledgment || 0}</span>
+          </div>
+        </div>
+        
+        {summaryData.recentActivity && summaryData.recentActivity.length > 0 && (
+          <div className="recent-activity">
+            <h4>Recent Activity</h4>
+            <div className="activity-list">
+              {summaryData.recentActivity.map((activity, index) => (
+                <div key={index} className="activity-item">
+                  <span className="activity-time">
+                    {format(new Date(activity.timestamp), 'MMM d, h:mm a')}
+                  </span>
+                  <span className="activity-desc">{activity.description}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <div className="summary-raw-data">
+          <h4>Raw Data</h4>
+          <pre className="raw-data">
+            {JSON.stringify(summaryData, null, 2)}
+          </pre>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const HandoverDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -134,8 +203,11 @@ const HandoverDetail = () => {
   const [error, setError] = useState('');
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [historyData, setHistoryData] = useState(null);
+  const [summaryData, setSummaryData] = useState(null);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [summaryLoading, setSummaryLoading] = useState(false);
   const [newTask, setNewTask] = useState({
     taskTitle: '',
     taskDesc: '',
@@ -183,6 +255,20 @@ const HandoverDetail = () => {
       return format(new Date(dateString), 'MMM d, yyyy h:mm a');
     } catch (e) {
       return '-';
+    }
+  };
+
+  const handleSummaryClick = async () => {
+    setSummaryLoading(true);
+    setShowSummaryModal(true);
+    try {
+      const summary = await getHandoverSummary();
+      setSummaryData(summary);
+    } catch (err) {
+      setError('Failed to load handover summary');
+      console.error('Summary fetch error:', err);
+    } finally {
+      setSummaryLoading(false);
     }
   };
 
@@ -250,6 +336,9 @@ const HandoverDetail = () => {
       setAckDescription('');
       setAckStatus('');
       setError('');
+
+      // Refresh the entire page after successful acknowledgment
+      window.location.reload();
     } catch (err) {
       setError('Failed to update task on server!');
     }
@@ -397,6 +486,13 @@ const HandoverDetail = () => {
               >
                 {historyLoading ? 'Loading...' : 'View History'}
               </button>
+              <button 
+                className="summary-button"
+                onClick={handleSummaryClick}
+                disabled={summaryLoading}
+              >
+                {summaryLoading ? 'Loading...' : 'View Summary'}
+              </button>
             </div>
             <button className="create-task-btn" onClick={handleCreateTask}>
               + Create New Task
@@ -461,20 +557,23 @@ const HandoverDetail = () => {
             <div className="modal-form-container">
               <h2 className="modal-title">Acknowledge Task</h2>
 
-              <div className="task-info-box">
-                <div className="info-row">
-                  <strong>Task ID:</strong> <span>{selectedTask.Taskid}</span>
+              <div className="task-info-horizontal">
+                <div className="info-column">
+                  <strong>Task ID</strong>
+                  <span>{selectedTask.Taskid}</span>
                 </div>
-                <div className="info-row">
-                  <strong>Title:</strong> <span>{selectedTask.taskTitle || 'Untitled'}</span>
+                <div className="info-column">
+                  <strong>Title</strong>
+                  <span>{selectedTask.taskTitle || 'Untitled'}</span>
                 </div>
-                <div className="info-row">
-                  <strong>Description:</strong> <span>{selectedTask.taskDesc || '-'}</span>
+                <div className="info-column">
+                  <strong>Description</strong>
+                  <span>{selectedTask.taskDesc || '-'}</span>
                 </div>
-
-                {/* Timeline Component */}
-                <AcknowledgeTimeline acknowledgeDetails={selectedTask.acknowledgeDetails} />
               </div>
+
+              {/* Timeline Component */}
+              <AcknowledgeTimeline acknowledgeDetails={selectedTask.acknowledgeDetails} />
 
               <div className="form-group">
                 <label>
@@ -527,7 +626,7 @@ const HandoverDetail = () => {
                   className="btn-primary"
                   disabled={!ackDescription.trim()}
                 >
-                  Submit
+                  Submit Acknowledgment
                 </button>
               </div>
             </div>
@@ -621,6 +720,16 @@ const HandoverDetail = () => {
             <HistoryTable 
               historyData={historyData} 
               onClose={() => setShowHistoryModal(false)}
+            />
+          </Modal>
+        )}
+
+        {/* Summary Modal */}
+        {showSummaryModal && (
+          <Modal open={showSummaryModal} onClose={() => setShowSummaryModal(false)}>
+            <SummaryModal 
+              summaryData={summaryData} 
+              onClose={() => setShowSummaryModal(false)}
             />
           </Modal>
         )}
