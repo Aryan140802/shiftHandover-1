@@ -1494,3 +1494,103 @@ body.modal-open {
     font-size: 0.8rem;
   }
 }
+
+
+/* Summary Modal Additional Styles */
+.tasks-breakdown {
+  margin-bottom: 2rem;
+}
+
+.tasks-breakdown h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2ed5ff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.breakdown-list {
+  background: linear-gradient(135deg, rgba(46, 213, 255, 0.03) 0%, rgba(138, 43, 226, 0.03) 100%);
+  border: 1px solid rgba(46, 213, 255, 0.15);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.breakdown-item {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(46, 213, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.breakdown-item:last-child {
+  border-bottom: none;
+}
+
+.breakdown-item:hover {
+  background: rgba(46, 213, 255, 0.05);
+  border-radius: 8px;
+}
+
+.breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.task-id {
+  font-weight: 600;
+  color: #2ed5ff;
+  font-size: 0.9rem;
+}
+
+.ack-count {
+  font-size: 0.8rem;
+  color: rgba(230, 238, 248, 0.7);
+  background: rgba(46, 213, 255, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.task-description {
+  color: rgba(230, 238, 248, 0.9);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.latest-ack {
+  font-size: 0.85rem;
+  color: rgba(230, 238, 248, 0.7);
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.5rem;
+  border-radius: 4px;
+  border-left: 2px solid rgba(46, 213, 255, 0.3);
+}
+
+.activity-description {
+  color: rgba(230, 238, 248, 0.8);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+  font-size: 0.9rem;
+}
+
+.ack-count-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.ack-count-badge.has-acks {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.ack-count-badge.no-acks {
+  background: rgba(158, 158, 158, 0.2);
+  color: #9e9e9e;
+  border: 1px solid rgba(158, 158, 158, 0.3);
+}
