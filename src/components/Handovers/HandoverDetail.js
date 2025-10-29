@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import './HandoverDetail.css';
 import Modal from '../UI/Modal';
-import { getHandovers, createTask, updateTask, getHistoryHandovers, getHandoverSummary } from '../../Api/HandOverApi';
+import { getHandovers, createTask, updateTask, getHistoryHandovers } from '../../Api/HandOverApi';
 
 const statusOptions = [
   { value: 'open', label: 'Open' },
@@ -122,9 +122,70 @@ const HistoryTable = ({ historyData, onClose }) => {
   );
 };
 
-// Summary Modal Component
-const SummaryModal = ({ summaryData, onClose }) => {
-  if (!summaryData) {
+// Summary Modal Component - Uses History Data to create summary
+const SummaryModal = ({ historyData, onClose }) => {
+  // Calculate summary statistics from history data
+  const calculateSummary = (data) => {
+    if (!data || data.length === 0) {
+      return {
+        totalHandovers: 0,
+        activeHandovers: 0,
+        completedHandovers: 0,
+        totalTasks: 0,
+        teams: [],
+        statusDistribution: {},
+        recentActivity: []
+      };
+    }
+
+    const totalHandovers = data.length;
+    const activeHandovers = data.filter(item => 
+      item.status && (item.status.toLowerCase() === 'open' || item.status.toLowerCase() === 'in progress')
+    ).length;
+    const completedHandovers = data.filter(item => 
+      item.status && item.status.toLowerCase() === 'completed'
+    ).length;
+
+    // Calculate total tasks across all handovers
+    const totalTasks = data.reduce((sum, item) => {
+      return sum + (item.tasksCount || item.tasks?.length || item.task_count || 0);
+    }, 0);
+
+    // Get unique teams
+    const teams = [...new Set(data.map(item => item.teamName || item.team_name).filter(Boolean))];
+
+    // Status distribution
+    const statusDistribution = data.reduce((acc, item) => {
+      const status = item.status?.toLowerCase() || 'unknown';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Recent activity (last 5 handovers)
+    const recentActivity = data
+      .slice(0, 5)
+      .map(item => ({
+        handoverId: item.handover_id || item.id || item.handover_id_id,
+        teamName: item.teamName || item.team_name,
+        status: item.status,
+        timestamp: item.lastUpdated || item.updatedAt || item.updated_date || item.creationTime || item.createdAt
+      }));
+
+    return {
+      totalHandovers,
+      activeHandovers,
+      completedHandovers,
+      totalTasks,
+      teams: teams.slice(0, 5), // Show only first 5 teams
+      teamCount: teams.length,
+      statusDistribution,
+      recentActivity
+    };
+  };
+
+  const summary = calculateSummary(historyData);
+
+  if (!historyData || historyData.length === 0) {
     return (
       <div className="summary-modal">
         <div className="modal-header">
@@ -132,7 +193,7 @@ const SummaryModal = ({ summaryData, onClose }) => {
           <button onClick={onClose} className="close-button">×</button>
         </div>
         <div className="no-summary-data">
-          <p>No summary data available</p>
+          <p>No data available for summary</p>
         </div>
       </div>
     );
@@ -145,46 +206,96 @@ const SummaryModal = ({ summaryData, onClose }) => {
         <button onClick={onClose} className="close-button">×</button>
       </div>
       <div className="summary-content">
+        {/* Key Metrics */}
         <div className="summary-grid">
-          <div className="summary-item">
+          <div className="summary-item total">
             <span className="summary-label">Total Handovers</span>
-            <span className="summary-value">{summaryData.totalHandovers || 0}</span>
+            <span className="summary-value">{summary.totalHandovers}</span>
           </div>
-          <div className="summary-item">
-            <span className="summary-label">Active Tasks</span>
-            <span className="summary-value">{summaryData.activeTasks || 0}</span>
+          <div className="summary-item active">
+            <span className="summary-label">Active</span>
+            <span className="summary-value">{summary.activeHandovers}</span>
           </div>
-          <div className="summary-item">
-            <span className="summary-label">Completed Tasks</span>
-            <span className="summary-value">{summaryData.completedTasks || 0}</span>
+          <div className="summary-item completed">
+            <span className="summary-label">Completed</span>
+            <span className="summary-value">{summary.completedHandovers}</span>
           </div>
-          <div className="summary-item">
-            <span className="summary-label">Pending Acknowledgment</span>
-            <span className="summary-value">{summaryData.pendingAcknowledgment || 0}</span>
+          <div className="summary-item tasks">
+            <span className="summary-label">Total Tasks</span>
+            <span className="summary-value">{summary.totalTasks}</span>
           </div>
         </div>
-        
-        {summaryData.recentActivity && summaryData.recentActivity.length > 0 && (
+
+        {/* Status Distribution */}
+        <div className="status-distribution">
+          <h4>Status Distribution</h4>
+          <div className="status-bars">
+            {Object.entries(summary.statusDistribution).map(([status, count]) => (
+              <div key={status} className="status-bar-item">
+                <div className="status-bar-header">
+                  <span className="status-name">{status.charAt(0).toUpperCase() + status.slice(1)}</span>
+                  <span className="status-count">{count}</span>
+                </div>
+                <div className="status-bar">
+                  <div 
+                    className={`status-bar-fill ${status}`}
+                    style={{ 
+                      width: `${(count / summary.totalHandovers) * 100}%` 
+                    }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Teams Overview */}
+        {summary.teams.length > 0 && (
+          <div className="teams-overview">
+            <h4>Teams Overview</h4>
+            <div className="teams-list">
+              {summary.teams.map((team, index) => (
+                <div key={index} className="team-tag">
+                  {team}
+                </div>
+              ))}
+              {summary.teamCount > 5 && (
+                <div className="team-tag more">
+                  +{summary.teamCount - 5} more
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Recent Activity */}
+        {summary.recentActivity.length > 0 && (
           <div className="recent-activity">
             <h4>Recent Activity</h4>
             <div className="activity-list">
-              {summaryData.recentActivity.map((activity, index) => (
+              {summary.recentActivity.map((activity, index) => (
                 <div key={index} className="activity-item">
-                  <span className="activity-time">
-                    {format(new Date(activity.timestamp), 'MMM d, h:mm a')}
-                  </span>
-                  <span className="activity-desc">{activity.description}</span>
+                  <div className="activity-main">
+                    <span className="activity-team">{activity.teamName}</span>
+                    <span className={`activity-status ${activity.status?.toLowerCase()}`}>
+                      {activity.status || 'Unknown'}
+                    </span>
+                  </div>
+                  <div className="activity-meta">
+                    <span className="activity-id">ID: {activity.handoverId}</span>
+                    <span className="activity-time">
+                      {format(new Date(activity.timestamp), 'MMM d, h:mm a')}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
-        
-        <div className="summary-raw-data">
-          <h4>Raw Data</h4>
-          <pre className="raw-data">
-            {JSON.stringify(summaryData, null, 2)}
-          </pre>
+
+        {/* Data Source Info */}
+        <div className="data-source">
+          <p>Summary generated from {summary.totalHandovers} historical handover records</p>
         </div>
       </div>
     </div>
@@ -205,7 +316,6 @@ const HandoverDetail = () => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [historyData, setHistoryData] = useState(null);
-  const [summaryData, setSummaryData] = useState(null);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [newTask, setNewTask] = useState({
@@ -262,8 +372,9 @@ const HandoverDetail = () => {
     setSummaryLoading(true);
     setShowSummaryModal(true);
     try {
-      const summary = await getHandoverSummary();
-      setSummaryData(summary);
+      // Use the same history API but we'll process it differently for summary
+      const history = await getHistoryHandovers();
+      setHistoryData(history);
     } catch (err) {
       setError('Failed to load handover summary');
       console.error('Summary fetch error:', err);
@@ -728,7 +839,7 @@ const HandoverDetail = () => {
         {showSummaryModal && (
           <Modal open={showSummaryModal} onClose={() => setShowSummaryModal(false)}>
             <SummaryModal 
-              summaryData={summaryData} 
+              historyData={historyData} 
               onClose={() => setShowSummaryModal(false)}
             />
           </Modal>
