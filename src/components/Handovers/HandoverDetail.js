@@ -55,6 +55,73 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   );
 };
 
+// History Data Table Component
+const HistoryTable = ({ historyData, onClose }) => {
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    try {
+      return format(new Date(dateString), 'MMM d, yyyy h:mm a');
+    } catch (e) {
+      return '-';
+    }
+  };
+
+  if (!historyData || historyData.length === 0) {
+    return (
+      <div className="history-modal">
+        <div className="modal-header">
+          <h3>Handover History</h3>
+          <button onClick={onClose} className="close-button">×</button>
+        </div>
+        <div className="no-history-data">
+          <p>No historical data available</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="history-modal">
+      <div className="modal-header">
+        <h3>Handover History ({historyData.length} records)</h3>
+        <button onClick={onClose} className="close-button">×</button>
+      </div>
+      <div className="history-table-container">
+        <table className="history-table">
+          <thead>
+            <tr>
+              <th>Handover ID</th>
+              <th>Team Name</th>
+              <th>Team Lead</th>
+              <th>Status</th>
+              <th>Created Date</th>
+              <th>Last Updated</th>
+              <th>Tasks Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {historyData.map((historyItem) => (
+              <tr key={historyItem.handover_id || historyItem.id || historyItem.handover_id_id}>
+                <td>{historyItem.handover_id || historyItem.id || historyItem.handover_id_id}</td>
+                <td>{historyItem.teamName || historyItem.team_name || '-'}</td>
+                <td>{historyItem.teamLead_id || historyItem.team_lead_id || '-'}</td>
+                <td>
+                  <span className={`status-badge ${(historyItem.status?.toLowerCase() || 'unknown')}`}>
+                    {historyItem.status || 'Unknown'}
+                  </span>
+                </td>
+                <td>{formatDate(historyItem.creationTime || historyItem.createdAt || historyItem.created_date)}</td>
+                <td>{formatDate(historyItem.lastUpdated || historyItem.updatedAt || historyItem.updated_date)}</td>
+                <td>{historyItem.tasksCount || historyItem.tasks?.length || historyItem.task_count || 0}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
 // Summary Modal Component - Uses current handover data
 const SummaryModal = ({ handoverData, onClose }) => {
   // Calculate summary statistics from current handover data
@@ -243,7 +310,10 @@ const HandoverDetail = () => {
   const [ackStatus, setAckStatus] = useState('');
   const [error, setError] = useState('');
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [historyData, setHistoryData] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [newTask, setNewTask] = useState({
     taskTitle: '',
@@ -299,6 +369,20 @@ const HandoverDetail = () => {
     setSummaryLoading(true);
     setShowSummaryModal(true);
     setSummaryLoading(false);
+  };
+
+  const handleHistoryClick = async () => {
+    setHistoryLoading(true);
+    setShowHistoryModal(true);
+    try {
+      const history = await getHistoryHandovers();
+      setHistoryData(history);
+    } catch (err) {
+      setError('Failed to load handover history');
+      console.error('History fetch error:', err);
+    } finally {
+      setHistoryLoading(false);
+    }
   };
 
   const handleAcknowledgeClick = (task) => {
@@ -441,7 +525,7 @@ const HandoverDetail = () => {
   return (
     <div className="handover-detail-container">
       <div className="handover-detail-header">
-        <h2>{handover.role} Team Handover</h2>
+        <h2>{handover.teamName} Team Handover</h2>
         <button onClick={() => navigate('/dashboard')} className="back-button">
           ← Back to List
         </button>
@@ -471,20 +555,20 @@ const HandoverDetail = () => {
           <h3>Handover Information</h3>
           <div className="detail-grid">
             <div className="detail-item">
-              <span className="detail-label">Team Role</span>
-              <span className="detail-value">{handover.role}</span>
+              <span className="detail-label">Team Name</span>
+              <span className="detail-value">{handover.teamName}</span>
             </div>
             <div className="detail-item">
-              <span className="detail-label">Project ID</span>
-              <span className="detail-value">{handover.pid}</span>
+              <span className="detail-label">Team ID</span>
+              <span className="detail-value">{handover.TeamId}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Team Lead ID</span>
+              <span className="detail-value">{handover.teamLead_id}</span>
             </div>
             <div className="detail-item">
               <span className="detail-label">Handover ID</span>
               <span className="detail-value">{handover.handover_id_id}</span>
-            </div>
-            <div className="detail-item">
-              <span className="detail-label">Record ID</span>
-              <span className="detail-value">{handover.rid}</span>
             </div>
           </div>
         </div>
@@ -494,6 +578,13 @@ const HandoverDetail = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <h3>Tasks ({tasks.length})</h3>
+              <button 
+                className="history-button"
+                onClick={handleHistoryClick}
+                disabled={historyLoading}
+              >
+                {historyLoading ? 'Loading...' : 'View History'}
+              </button>
               <button 
                 className="summary-button"
                 onClick={handleSummaryClick}
@@ -512,25 +603,37 @@ const HandoverDetail = () => {
               <thead>
                 <tr>
                   <th>ID</th>
+                  <th>Title</th>
                   <th>Description</th>
-                  <th>Completed By</th>
-                  <th>Last Updated</th>
-                  <th>Acknowledgments</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Ack Status</th>
+                  <th>Created</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {tasks.map(task => (
-                  <tr key={task.historyTaskId}>
-                    <td>{task.historyTaskId}</td>
-                    <td style={{ fontWeight: 600 }}>{task.task || 'No description'}</td>
-                    <td>{task.userCompleted_id || '-'}</td>
-                    <td>{formatDate(task.timing)}</td>
+                  <tr key={task.Taskid}>
+                    <td>{task.Taskid}</td>
+                    <td style={{ fontWeight: 600 }}>{task.taskTitle || 'Untitled'}</td>
+                    <td>{task.taskDesc || '-'}</td>
                     <td>
-                      <span className={`ack-count-badge ${task.acknowledgeDetails?.length > 0 ? 'has-acks' : 'no-acks'}`}>
-                        {task.acknowledgeDetails?.length || 0}
+                      <span className={`priority-badge priority-${(task.priority || 'medium').toLowerCase()}`}>
+                        {task.priority || 'Medium'}
                       </span>
                     </td>
+                    <td>
+                      <span className={`status-badge ${task.status === 'in progress' ? 'in-progress' : task.status}`}>
+                        {task.status === 'in progress' ? 'In Progress' : task.status}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`status-badge ${task.acknowledgeStatus?.toLowerCase() === 'pending' ? 'pending' : 'completed'}`}>
+                        {task.acknowledgeStatus || 'Pending'}
+                      </span>
+                    </td>
+                    <td>{formatDate(task.creationTime)}</td>
                     <td>
                       <button className="acknowledge-btn" onClick={() => handleAcknowledgeClick(task)}>
                         Acknowledge
@@ -556,15 +659,15 @@ const HandoverDetail = () => {
               <div className="task-info-horizontal">
                 <div className="info-column">
                   <strong>Task ID</strong>
-                  <span>{selectedTask.historyTaskId}</span>
+                  <span>{selectedTask.Taskid}</span>
+                </div>
+                <div className="info-column">
+                  <strong>Title</strong>
+                  <span>{selectedTask.taskTitle || 'Untitled'}</span>
                 </div>
                 <div className="info-column">
                   <strong>Description</strong>
-                  <span>{selectedTask.task || 'No description'}</span>
-                </div>
-                <div className="info-column">
-                  <strong>Acknowledgments</strong>
-                  <span>{selectedTask.acknowledgeDetails?.length || 0}</span>
+                  <span>{selectedTask.taskDesc || '-'}</span>
                 </div>
               </div>
 
@@ -707,6 +810,16 @@ const HandoverDetail = () => {
                 </button>
               </div>
             </form>
+          </Modal>
+        )}
+
+        {/* History Modal */}
+        {showHistoryModal && (
+          <Modal open={showHistoryModal} onClose={() => setShowHistoryModal(false)}>
+            <HistoryTable 
+              historyData={historyData} 
+              onClose={() => setShowHistoryModal(false)}
+            />
           </Modal>
         )}
 
