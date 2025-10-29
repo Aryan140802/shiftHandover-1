@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import './HandoverDetail.css';
 import Modal from '../UI/Modal';
-import { getHandovers } from '../../Api/HandOverApi';
+import { getHandovers, createTask, updateTask, getHistoryHandovers } from '../../Api/HandOverApi';
 
 const statusOptions = [
   { value: 'open', label: 'Open' },
@@ -11,12 +11,11 @@ const statusOptions = [
   { value: 'completed', label: 'Completed' }
 ];
 
-// Enhanced Timeline Component with Connector Lines
+// Timeline Component
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   if (!acknowledgeDetails || acknowledgeDetails.length === 0) {
     return (
       <div className="timeline-container">
-        <h4 className="timeline-title">Acknowledgment History</h4>
         <div className="no-timeline-data">
           <p>No acknowledgment history available</p>
         </div>
@@ -30,13 +29,11 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
       <div className="timeline-horizontal">
         {acknowledgeDetails.map((ack, index) => (
           <div key={ack.ackId} className="timeline-item">
-            {/* Connector Line - Only show between items */}
-            {index < acknowledgeDetails.length - 1 && (
-              <div className="timeline-connector"></div>
-            )}
-            
             <div className="timeline-marker">
               <div className="timeline-dot"></div>
+              {index < acknowledgeDetails.length - 1 && (
+                <div className="timeline-connector"></div>
+              )}
             </div>
             <div className="timeline-content">
               <div className="timeline-header">
@@ -44,7 +41,7 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
                   {format(new Date(ack.acknowledgeTime), 'MMM d, yyyy h:mm a')}
                 </span>
                 <span className="timeline-user">
-                  {ack.userAcknowleged_id}
+                  User ID: {ack.userAcknowleged_id}
                 </span>
               </div>
               <div className="timeline-description">
@@ -61,7 +58,6 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
 const HandoverDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [backendData, setBackendData] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -77,47 +73,10 @@ const HandoverDetail = () => {
     status: 'open'
   });
   const [loading, setLoading] = useState(true);
-  const [hasMultipleHandovers, setHasMultipleHandovers] = useState(true);
 
   useEffect(() => {
     fetchHandoverData();
   }, [id]);
-
-  // Check if there are multiple handovers
-  useEffect(() => {
-    // Check from navigation state first
-    if (location.state?.hasMultipleHandovers === false) {
-      setHasMultipleHandovers(false);
-    } else {
-      // Otherwise check by fetching all handovers
-      checkMultipleHandovers();
-    }
-  }, [location.state]);
-
-  const checkMultipleHandovers = async () => {
-    try {
-      const data = await getHandovers();
-      if (data && data.TeamHandoverDetails) {
-        setHasMultipleHandovers(data.TeamHandoverDetails.length > 1);
-      }
-    } catch (err) {
-      console.error('Error checking handover count:', err);
-    }
-  };
-
-  // Modal scroll control
-  useEffect(() => {
-    if (modalOpen || showCreateTaskModal) {
-      document.body.classList.add('modal-open');
-    } else {
-      document.body.classList.remove('modal-open');
-    }
-    
-    // Cleanup on component unmount
-    return () => {
-      document.body.classList.remove('modal-open');
-    };
-  }, [modalOpen, showCreateTaskModal]);
 
   const fetchHandoverData = async () => {
     setLoading(true);
@@ -143,7 +102,6 @@ const HandoverDetail = () => {
       }
     } catch (err) {
       setError('Failed to load handover details');
-      console.error('Fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -166,19 +124,6 @@ const HandoverDetail = () => {
     setError('');
   };
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setSelectedTask(null);
-    setAckDescription('');
-    setAckStatus('');
-    setError('');
-  };
-
-  const handleCloseCreateModal = () => {
-    setShowCreateTaskModal(false);
-    setError('');
-  };
-
   const handleAcknowledgeSubmit = async () => {
     if (!ackDescription.trim()) {
       setError('Description is required.');
@@ -196,8 +141,7 @@ const HandoverDetail = () => {
     };
 
     try {
-      // Call your API to update task
-      // await updateTask(payload);
+      await updateTask(payload);
 
       const updatedTasks = backendData.Tasksdata.map(t =>
         t.Taskid === selectedTask.Taskid
@@ -207,16 +151,7 @@ const HandoverDetail = () => {
               acknowledgeStatus: 'Acknowledged',
               ackDesc: ackDescription,
               acknowledgeTime: new Date().toISOString(),
-              statusUpdateTime: new Date().toISOString(),
-              acknowledgeDetails: [
-                ...(t.acknowledgeDetails || []),
-                {
-                  ackId: Date.now(),
-                  userAcknowleged_id: 'current_user', // Replace with actual user ID
-                  acknowledgeTime: new Date().toISOString(),
-                  ackDesc: ackDescription
-                }
-              ]
+              statusUpdateTime: new Date().toISOString()
             }
           : t
       );
@@ -226,10 +161,13 @@ const HandoverDetail = () => {
         Tasksdata: updatedTasks
       });
 
-      handleCloseModal();
+      setModalOpen(false);
+      setSelectedTask(null);
+      setAckDescription('');
+      setAckStatus('');
+      setError('');
     } catch (err) {
       setError('Failed to update task on server!');
-      console.error('Update error:', err);
     }
   };
 
@@ -262,13 +200,13 @@ const HandoverDetail = () => {
     };
 
     try {
-      // Call your API to create task
-      // await createTask(payload);
+      await createTask(payload);
 
       // Refresh data after creating task
       await fetchHandoverData();
 
-      handleCloseCreateModal();
+      setShowCreateTaskModal(false);
+      setError('');
     } catch (err) {
       console.error('Create task error:', err);
       setError('Failed to create task on server!');
@@ -300,11 +238,9 @@ const HandoverDetail = () => {
       <div className="handover-detail-container">
         <div className="not-found">
           <h2>Handover not found</h2>
-          {hasMultipleHandovers && (
-            <button onClick={() => navigate('/dashboard')} className="back-button">
-              Back to List
-            </button>
-          )}
+          <button onClick={() => navigate('/dashboard')} className="back-button">
+            Back to List
+          </button>
         </div>
       </div>
     );
@@ -318,11 +254,9 @@ const HandoverDetail = () => {
     <div className="handover-detail-container">
       <div className="handover-detail-header">
         <h2>{handover.teamName} Team Handover</h2>
-        {hasMultipleHandovers && (
-          <button onClick={() => navigate('/dashboard')} className="back-button">
-            ← Back to List
-          </button>
-        )}
+        <button onClick={() => navigate('/dashboard')} className="back-button">
+          ← Back to List
+        </button>
       </div>
 
       <div className="handover-detail-content">
@@ -428,33 +362,25 @@ const HandoverDetail = () => {
           )}
         </div>
 
-        {/* Acknowledge Modal with Enhanced Styling */}
+        {/* Acknowledge Modal */}
         {modalOpen && selectedTask && (
-          <Modal open={modalOpen} onClose={handleCloseModal}>
+          <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
             <div className="modal-form-container">
               <h2 className="modal-title">Acknowledge Task</h2>
 
               <div className="task-info-box">
-                {/* Horizontal Layout for Task ID, Title, Description */}
-                <div className="task-info-horizontal">
-                  <div className="info-column">
-                    <strong>Task ID</strong>
-                    <span>{selectedTask.Taskid}</span>
-                  </div>
-                  <div className="info-column">
-                    <strong>Title</strong>
-                    <span>{selectedTask.taskTitle || 'Untitled'}</span>
-                  </div>
-                  <div className="info-column">
-                    <strong>Description</strong>
-                    <span>{selectedTask.taskDesc || '-'}</span>
-                  </div>
+                <div className="info-row">
+                  <strong>Task ID:</strong> <span>{selectedTask.Taskid}</span>
                 </div>
-                
-                {/* Enhanced Timeline Component with Connector Lines */}
-                <AcknowledgeTimeline 
-                  acknowledgeDetails={selectedTask.acknowledgeDetails || []} 
-                />
+                <div className="info-row">
+                  <strong>Title:</strong> <span>{selectedTask.taskTitle || 'Untitled'}</span>
+                </div>
+                <div className="info-row">
+                  <strong>Description:</strong> <span>{selectedTask.taskDesc || '-'}</span>
+                </div>
+
+                {/* Timeline Component */}
+                <AcknowledgeTimeline acknowledgeDetails={selectedTask.acknowledgeDetails} />
               </div>
 
               <div className="form-group">
@@ -500,7 +426,7 @@ const HandoverDetail = () => {
               {error && <div className="error-message">{error}</div>}
 
               <div className="modal-actions">
-                <button onClick={handleCloseModal} className="btn-secondary">
+                <button onClick={() => setModalOpen(false)} className="btn-secondary">
                   Cancel
                 </button>
                 <button
@@ -508,7 +434,7 @@ const HandoverDetail = () => {
                   className="btn-primary"
                   disabled={!ackDescription.trim()}
                 >
-                  Submit Acknowledgment
+                  Submit
                 </button>
               </div>
             </div>
@@ -517,7 +443,7 @@ const HandoverDetail = () => {
 
         {/* Create Task Modal */}
         {showCreateTaskModal && (
-          <Modal open={showCreateTaskModal} onClose={handleCloseCreateModal}>
+          <Modal open={showCreateTaskModal} onClose={() => setShowCreateTaskModal(false)}>
             <form onSubmit={handleCreateTaskSubmit} className="modal-form-container">
               <h2 className="modal-title">Create New Task</h2>
 
@@ -579,7 +505,7 @@ const HandoverDetail = () => {
               <div className="modal-actions">
                 <button
                   type="button"
-                  onClick={handleCloseCreateModal}
+                  onClick={() => setShowCreateTaskModal(false)}
                   className="btn-secondary"
                 >
                   Cancel
