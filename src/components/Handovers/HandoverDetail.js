@@ -55,6 +55,73 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   );
 };
 
+// History Data Table Component
+const HistoryTable = ({ historyData, onClose }) => {
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    try {
+      return format(new Date(dateString), 'MMM d, yyyy h:mm a');
+    } catch (e) {
+      return '-';
+    }
+  };
+
+  if (!historyData || historyData.length === 0) {
+    return (
+      <div className="history-modal">
+        <div className="modal-header">
+          <h3>Handover History</h3>
+          <button onClick={onClose} className="close-button">×</button>
+        </div>
+        <div className="no-history-data">
+          <p>No historical data available</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="history-modal">
+      <div className="modal-header">
+        <h3>Handover History ({historyData.length} records)</h3>
+        <button onClick={onClose} className="close-button">×</button>
+      </div>
+      <div className="history-table-container">
+        <table className="history-table">
+          <thead>
+            <tr>
+              <th>Handover ID</th>
+              <th>Team Name</th>
+              <th>Team Lead</th>
+              <th>Status</th>
+              <th>Created Date</th>
+              <th>Last Updated</th>
+              <th>Tasks Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {historyData.map((historyItem) => (
+              <tr key={historyItem.handover_id || historyItem.id || historyItem.handover_id_id}>
+                <td>{historyItem.handover_id || historyItem.id || historyItem.handover_id_id}</td>
+                <td>{historyItem.teamName || historyItem.team_name || '-'}</td>
+                <td>{historyItem.teamLead_id || historyItem.team_lead_id || '-'}</td>
+                <td>
+                  <span className={`status-badge ${(historyItem.status?.toLowerCase() || 'unknown')}`}>
+                    {historyItem.status || 'Unknown'}
+                  </span>
+                </td>
+                <td>{formatDate(historyItem.creationTime || historyItem.createdAt || historyItem.created_date)}</td>
+                <td>{formatDate(historyItem.lastUpdated || historyItem.updatedAt || historyItem.updated_date)}</td>
+                <td>{historyItem.tasksCount || historyItem.tasks?.length || historyItem.task_count || 0}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
 const HandoverDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -66,6 +133,9 @@ const HandoverDetail = () => {
   const [ackStatus, setAckStatus] = useState('');
   const [error, setError] = useState('');
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyData, setHistoryData] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [newTask, setNewTask] = useState({
     taskTitle: '',
     taskDesc: '',
@@ -113,6 +183,20 @@ const HandoverDetail = () => {
       return format(new Date(dateString), 'MMM d, yyyy h:mm a');
     } catch (e) {
       return '-';
+    }
+  };
+
+  const handleHistoryClick = async () => {
+    setHistoryLoading(true);
+    setShowHistoryModal(true);
+    try {
+      const history = await getHistoryHandovers();
+      setHistoryData(history);
+    } catch (err) {
+      setError('Failed to load handover history');
+      console.error('History fetch error:', err);
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -304,7 +388,16 @@ const HandoverDetail = () => {
         {/* Tasks Section */}
         <div className="detail-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h3>Tasks ({tasks.length})</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <h3>Tasks ({tasks.length})</h3>
+              <button 
+                className="history-button"
+                onClick={handleHistoryClick}
+                disabled={historyLoading}
+              >
+                {historyLoading ? 'Loading...' : 'View History'}
+              </button>
+            </div>
             <button className="create-task-btn" onClick={handleCreateTask}>
               + Create New Task
             </button>
@@ -519,6 +612,16 @@ const HandoverDetail = () => {
                 </button>
               </div>
             </form>
+          </Modal>
+        )}
+
+        {/* History Modal */}
+        {showHistoryModal && (
+          <Modal open={showHistoryModal} onClose={() => setShowHistoryModal(false)}>
+            <HistoryTable 
+              historyData={historyData} 
+              onClose={() => setShowHistoryModal(false)}
+            />
           </Modal>
         )}
       </div>
