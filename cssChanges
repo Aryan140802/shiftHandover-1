@@ -1,8 +1,151 @@
-
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding: 0 8px;
+{
+    "TeamHandoverDetails": [
+        {
+            "rid": 10,
+            "role": "EIS-Infra Development",
+            "pid": 1,
+            "rate": 0,
+            "billable_count": 0,
+            "max_days": 0,
+            "handover_id_id": 2
+        }
+    ],
+    "Tasksdata": [
+        {
+            "historyTaskId": 50,
+            "task": "sdadsafdsgfdvcsd",
+            "userCompleted_id": 2743582,
+            "timing": "2025-10-29 17:40:01.530840",
+            "handover_id_id": 2,
+            "acknowledgeDetails": [
+                {
+                    "ackId": 24,
+                    "ackDesc": "done",
+                    "userAcknowleged_id": 2743582,
+                    "acknowledgeTime": "2025-10-29 12:07:36",
+                    "ackTask_id_id": 50
+                },
+                {
+                    "ackId": 25,
+                    "ackDesc": "done",
+                    "userAcknowleged_id": 2743582,
+                    "acknowledgeTime": "2025-10-29 12:07:38",
+                    "ackTask_id_id": 50
+                },
+                {
+                    "ackId": 26,
+                    "ackDesc": "done",
+                    "userAcknowleged_id": 2743582,
+                    "acknowledgeTime": "2025-10-29 12:08:32",
+                    "ackTask_id_id": 50
+                },
+                {
+                    "ackId": 27,
+                    "ackDesc": "done",
+                    "userAcknowleged_id": 2743582,
+                    "acknowledgeTime": "2025-10-29 12:08:34",
+                    "ackTask_id_id": 50
+                },
+                {
+                    "ackId": 28,
+                    "ackDesc": "done",
+                    "userAcknowleged_id": 2743582,
+                    "acknowledgeTime": "2025-10-29 12:10:01",
+                    "ackTask_id_id": 50
+                }
+            ]
+        },
+        {
+            "historyTaskId": 51,
+            "task": "dsfdsfdgfdv",
+            "userCompleted_id": 2798445,
+            "timing": "2025-10-29 17:43:30.103248",
+            "handover_id_id": 2,
+            "acknowledgeDetails": [
+                {
+                    "ackId": 29,
+                    "ackDesc": "okkk ",
+                    "userAcknowleged_id": 2790746,
+                    "acknowledgeTime": "2025-10-28 13:26:22",
+                    "ackTask_id_id": 51
+                },
+                {
+                    "ackId": 30,
+                    "ackDesc": "g",
+                    "userAcknowleged_id": 2798445,
+                    "acknowledgeTime": "2025-10-29 12:13:30",
+                    "ackTask_id_id": 51
+                }
+            ]
+        },
+        {
+            "historyTaskId": 52,
+            "task": "asdasfsaf",
+            "userCompleted_id": 2743582,
+            "timing": "2025-10-29 17:45:48.885266",
+            "handover_id_id": 2,
+            "acknowledgeDetails": [
+                {
+                    "ackId": 31,
+                    "ackDesc": "okkk",
+                    "userAcknowleged_id": 2790746,
+                    "acknowledgeTime": "2025-10-28 13:21:02",
+                    "ackTask_id_id": 52
+                },
+                {
+                    "ackId": 32,
+                    "ackDesc": "okkkkkk",
+                    "userAcknowleged_id": 2743582,
+                    "acknowledgeTime": "2025-10-29 12:15:48",
+                    "ackTask_id_id": 52
+                }
+            ]
+        },
+        {
+            "historyTaskId": 53,
+            "task": "phase",
+            "userCompleted_id": 2798445,
+            "timing": "2025-10-29 20:05:28.171958",
+            "handover_id_id": 2,
+            "acknowledgeDetails": [
+                {
+                    "ackId": 33,
+                    "ackDesc": "this is acknowledge b me",
+                    "userAcknowleged_id": 2743582,
+                    "acknowledgeTime": "2025-10-25 12:38:17",
+                    "ackTask_id_id": 53
+                },
+                {
+                    "ackId": 34,
+                    "ackDesc": "okk",
+                    "userAcknowleged_id": 2790746,
+                    "acknowledgeTime": "2025-10-26 06:36:49",
+                    "ackTask_id_id": 53
+                },
+                {
+                    "ackId": 35,
+                    "ackDesc": "sff",
+                    "userAcknowleged_id": 2798445,
+                    "acknowledgeTime": "2025-10-29 14:35:28",
+                    "ackTask_id_id": 53
+                }
+            ]
+        },
+        {
+            "historyTaskId": 54,
+            "task": "adda",
+            "userCompleted_id": 2798445,
+            "timing": "2025-10-29 20:52:23.183101",
+            "handover_id_id": 2,
+            "acknowledgeDetails": [
+                {
+                    "ackId": 36,
+                    "ackDesc": "dada",
+                    "userAcknowleged_id": 2798445,
+                    "acknowledgeTime": "2025-10-29 15:22:23",
+                    "ackTask_id_id": 54
+                }
+            ]
+        }
+    ]
 }
