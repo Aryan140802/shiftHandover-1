@@ -55,9 +55,9 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   );
 };
 
-// Summary Modal Component - Uses current handover data
-const SummaryModal = ({ handoverData, onClose }) => {
-  // Calculate summary statistics from current handover data
+// Summary Modal Component - Uses history handover data from API
+const SummaryModal = ({ historyData, onClose, loading }) => {
+  // Calculate summary statistics from history handover data
   const calculateSummary = (data) => {
     if (!data || !data.TeamHandoverDetails || !data.Tasksdata) {
       return {
@@ -66,7 +66,8 @@ const SummaryModal = ({ handoverData, onClose }) => {
         pendingTasks: 0,
         totalAcknowledgment: 0,
         recentActivity: [],
-        teams: []
+        teams: [],
+        statusDistribution: {}
       };
     }
 
@@ -84,10 +85,17 @@ const SummaryModal = ({ handoverData, onClose }) => {
       return sum + (task.acknowledgeDetails?.length || 0);
     }, 0);
 
-    // Get unique teams
+    // Get unique teams/roles
     const teams = [...new Set(teamHandovers.map(item => item.role).filter(Boolean))];
 
-    // Recent activity (last 5 acknowledgments)
+    // Calculate status distribution
+    const statusDistribution = {};
+    tasks.forEach(task => {
+      const status = task.status || 'unknown';
+      statusDistribution[status] = (statusDistribution[status] || 0) + 1;
+    });
+
+    // Recent activity (last 10 acknowledgments from history)
     const allAcknowledgments = tasks.flatMap(task =>
       (task.acknowledgeDetails || []).map(ack => ({
         ...ack,
@@ -95,7 +103,17 @@ const SummaryModal = ({ handoverData, onClose }) => {
         taskDesc: task.task
       }))
     ).sort((a, b) => new Date(b.acknowledgeTime) - new Date(a.acknowledgeTime))
-    .slice(0, 5);
+    .slice(0, 10);
+
+    // Tasks breakdown with acknowledgment details
+    const tasksBreakdown = tasks.map(task => ({
+      taskId: task.historyTaskId,
+      taskDesc: task.task,
+      ackCount: task.acknowledgeDetails?.length || 0,
+      latestAck: task.acknowledgeDetails && task.acknowledgeDetails.length > 0
+        ? task.acknowledgeDetails[task.acknowledgeDetails.length - 1]
+        : null
+    })).sort((a, b) => b.ackCount - a.ackCount);
 
     return {
       totalTasks,
@@ -104,21 +122,38 @@ const SummaryModal = ({ handoverData, onClose }) => {
       totalAcknowledgment,
       teams: teams.slice(0, 5),
       teamCount: teams.length,
-      recentActivity: allAcknowledgments
+      recentActivity: allAcknowledgments,
+      statusDistribution,
+      tasksBreakdown
     };
   };
 
-  const summary = calculateSummary(handoverData);
+  const summary = calculateSummary(historyData);
 
-  if (!handoverData) {
+  if (loading) {
     return (
       <div className="summary-modal">
         <div className="modal-header">
-          <h3>Handover Summary</h3>
+          <h3>Handover History Summary</h3>
+          <button onClick={onClose} className="close-button">×</button>
+        </div>
+        <div className="loading-message">
+          <div className="loading-spinner"></div>
+          <p>Loading history data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!historyData) {
+    return (
+      <div className="summary-modal">
+        <div className="modal-header">
+          <h3>Handover History Summary</h3>
           <button onClick={onClose} className="close-button">×</button>
         </div>
         <div className="no-summary-data">
-          <p>No data available for summary</p>
+          <p>No history data available</p>
         </div>
       </div>
     );
@@ -127,7 +162,7 @@ const SummaryModal = ({ handoverData, onClose }) => {
   return (
     <div className="summary-modal">
       <div className="modal-header">
-        <h3>Handover Summary</h3>
+        <h3>Handover History Summary</h3>
         <button onClick={onClose} className="close-button">×</button>
       </div>
       <div className="summary-content">
@@ -151,6 +186,34 @@ const SummaryModal = ({ handoverData, onClose }) => {
           </div>
         </div>
 
+        {/* Status Distribution */}
+        {Object.keys(summary.statusDistribution).length > 0 && (
+          <div className="status-distribution">
+            <h4>Status Distribution</h4>
+            <div className="status-bars">
+              {Object.entries(summary.statusDistribution).map(([status, count]) => {
+                const percentage = summary.totalTasks > 0 
+                  ? (count / summary.totalTasks * 100).toFixed(1) 
+                  : 0;
+                return (
+                  <div key={status} className="status-bar-item">
+                    <div className="status-bar-header">
+                      <span className="status-name">{status}</span>
+                      <span className="status-count">{count} ({percentage}%)</span>
+                    </div>
+                    <div className="status-bar">
+                      <div 
+                        className={`status-bar-fill ${status.toLowerCase().replace(' ', '\\ ')}`}
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Teams Overview */}
         {summary.teams.length > 0 && (
           <div className="teams-overview">
@@ -170,6 +233,34 @@ const SummaryModal = ({ handoverData, onClose }) => {
           </div>
         )}
 
+        {/* Tasks Breakdown */}
+        {summary.tasksBreakdown && summary.tasksBreakdown.length > 0 && (
+          <div className="tasks-breakdown">
+            <h4>Tasks by Acknowledgments</h4>
+            <div className="breakdown-list">
+              {summary.tasksBreakdown.slice(0, 10).map((task, index) => (
+                <div key={task.taskId || index} className="breakdown-item">
+                  <div className="breakdown-header">
+                    <span className="task-id">Task #{task.taskId}</span>
+                    <span className={`ack-count-badge ${task.ackCount > 0 ? 'has-acks' : 'no-acks'}`}>
+                      {task.ackCount} {task.ackCount === 1 ? 'ack' : 'acks'}
+                    </span>
+                  </div>
+                  <div className="task-description">
+                    {task.taskDesc || 'No description'}
+                  </div>
+                  {task.latestAck && (
+                    <div className="latest-ack">
+                      Latest: "{task.latestAck.ackDesc}" by User {task.latestAck.userAcknowleged_id}
+                      {' '}on {format(new Date(task.latestAck.acknowledgeTime), 'MMM d, h:mm a')}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Recent Activity */}
         {summary.recentActivity.length > 0 && (
           <div className="recent-activity">
@@ -178,7 +269,7 @@ const SummaryModal = ({ handoverData, onClose }) => {
               {summary.recentActivity.map((activity, index) => (
                 <div key={activity.ackId || index} className="activity-item">
                   <div className="activity-main">
-                    <span className="activity-team">Task {activity.taskId}</span>
+                    <span className="activity-team">Task #{activity.taskId}</span>
                     <span className="activity-status completed">
                       Acknowledged
                     </span>
@@ -200,7 +291,7 @@ const SummaryModal = ({ handoverData, onClose }) => {
 
         {/* Data Source Info */}
         <div className="data-source">
-          <p>Summary generated from current handover data ({summary.totalTasks} tasks)</p>
+          <p>Historical data from all handovers ({summary.totalTasks} total tasks)</p>
         </div>
       </div>
     </div>
@@ -220,6 +311,7 @@ const HandoverDetail = () => {
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [historyData, setHistoryData] = useState(null);
   const [newTask, setNewTask] = useState({
     taskTitle: '',
     taskDesc: '',
@@ -273,7 +365,25 @@ const HandoverDetail = () => {
   const handleSummaryClick = async () => {
     setSummaryLoading(true);
     setShowSummaryModal(true);
-    setSummaryLoading(false);
+    setError('');
+    
+    try {
+      console.log('Fetching history handovers...');
+      const data = await getHistoryHandovers();
+      console.log('History data received:', data);
+      
+      if (data && data.TeamHandoverDetails && data.Tasksdata) {
+        setHistoryData(data);
+      } else {
+        throw new Error('Invalid history data structure');
+      }
+    } catch (err) {
+      console.error('Error fetching history:', err);
+      setError('Failed to load history data');
+      setHistoryData(null);
+    } finally {
+      setSummaryLoading(false);
+    }
   };
 
   const handleAcknowledgeClick = (task) => {
@@ -474,7 +584,7 @@ const HandoverDetail = () => {
                 onClick={handleSummaryClick}
                 disabled={summaryLoading}
               >
-                {summaryLoading ? 'Loading...' : 'View Summary'}
+                {summaryLoading ? 'Loading...' : '📊 View History Summary'}
               </button>
             </div>
             <button className="create-task-btn" onClick={handleCreateTask}>
@@ -702,7 +812,8 @@ const HandoverDetail = () => {
         {showSummaryModal && (
           <Modal open={showSummaryModal} onClose={() => setShowSummaryModal(false)}>
             <SummaryModal
-              handoverData={backendData}
+              historyData={historyData}
+              loading={summaryLoading}
               onClose={() => setShowSummaryModal(false)}
             />
           </Modal>
