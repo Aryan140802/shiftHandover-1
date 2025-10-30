@@ -11,44 +11,288 @@ const statusOptions = [
   { value: 'completed', label: 'Completed' }
 ];
 
-// Timeline Component for Task Acknowledgments
-const TaskAcknowledgeTimeline = ({ acknowledgeDetails }) => {
+// Timeline Component
+const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   if (!acknowledgeDetails || acknowledgeDetails.length === 0) {
     return (
-      <div className="task-timeline-container">
+      <div className="timeline-container">
         <div className="no-timeline-data">
-          <p>No acknowledgment history</p>
+          <p>No acknowledgment history available</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="task-timeline-container">
-      <div className="task-timeline-vertical">
+    <div className="timeline-container">
+      <h4 className="timeline-title">Acknowledgment History</h4>
+      <div className="timeline-horizontal">
         {acknowledgeDetails.map((ack, index) => (
-          <div key={ack.ackId} className="task-timeline-item">
-            <div className="task-timeline-marker">
-              <div className="task-timeline-dot"></div>
+          <div key={ack.ackId} className="timeline-item">
+            <div className="timeline-marker">
+              <div className="timeline-dot"></div>
               {index < acknowledgeDetails.length - 1 && (
-                <div className="task-timeline-connector"></div>
+                <div className="timeline-connector"></div>
               )}
             </div>
-            <div className="task-timeline-content">
-              <div className="task-timeline-header">
-                <span className="task-timeline-time">
+            <div className="timeline-content">
+              <div className="timeline-header">
+                <span className="timeline-time">
                   {format(new Date(ack.acknowledgeTime), 'MMM d, yyyy h:mm a')}
                 </span>
-                <span className="task-timeline-user">
+                <span className="timeline-user">
                   User ID: {ack.userAcknowleged_id}
                 </span>
               </div>
-              <div className="task-timeline-description">
+              <div className="timeline-description">
                 {ack.ackDesc}
               </div>
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+};
+
+// Summary Modal Component - Uses history handover data from API
+const SummaryModal = ({ historyData, onClose, loading }) => {
+  // Calculate summary statistics from history handover data
+  const calculateSummary = (data) => {
+    if (!data || !data.TeamHandoverDetails || !data.Tasksdata) {
+      return {
+        totalTasks: 0,
+        acknowledgedTasks: 0,
+        pendingTasks: 0,
+        totalAcknowledgment: 0,
+        recentActivity: [],
+        teams: [],
+        statusDistribution: {}
+      };
+    }
+
+    const tasks = data.Tasksdata || [];
+    const teamHandovers = data.TeamHandoverDetails || [];
+
+    const totalTasks = tasks.length;
+    const acknowledgedTasks = tasks.filter(task =>
+      task.acknowledgeDetails && task.acknowledgeDetails.length > 0
+    ).length;
+    const pendingTasks = totalTasks - acknowledgedTasks;
+
+    // Calculate total acknowledgments across all tasks
+    const totalAcknowledgment = tasks.reduce((sum, task) => {
+      return sum + (task.acknowledgeDetails?.length || 0);
+    }, 0);
+
+    // Get unique teams/roles
+    const teams = [...new Set(teamHandovers.map(item => item.role).filter(Boolean))];
+
+    // Calculate status distribution
+    const statusDistribution = {};
+    tasks.forEach(task => {
+      const status = task.status || 'unknown';
+      statusDistribution[status] = (statusDistribution[status] || 0) + 1;
+    });
+
+    // Recent activity (last 10 acknowledgments from history)
+    const allAcknowledgments = tasks.flatMap(task =>
+      (task.acknowledgeDetails || []).map(ack => ({
+        ...ack,
+        taskId: task.historyTaskId,
+        taskDesc: task.task
+      }))
+    ).sort((a, b) => new Date(b.acknowledgeTime) - new Date(a.acknowledgeTime))
+    .slice(0, 10);
+
+    // Tasks breakdown with acknowledgment details
+    const tasksBreakdown = tasks.map(task => ({
+      taskId: task.historyTaskId,
+      taskDesc: task.task,
+      ackCount: task.acknowledgeDetails?.length || 0,
+      latestAck: task.acknowledgeDetails && task.acknowledgeDetails.length > 0
+        ? task.acknowledgeDetails[task.acknowledgeDetails.length - 1]
+        : null
+    })).sort((a, b) => b.ackCount - a.ackCount);
+
+    return {
+      totalTasks,
+      acknowledgedTasks,
+      pendingTasks,
+      totalAcknowledgment,
+      teams: teams.slice(0, 5),
+      teamCount: teams.length,
+      recentActivity: allAcknowledgments,
+      statusDistribution,
+      tasksBreakdown
+    };
+  };
+
+  const summary = calculateSummary(historyData);
+
+  if (loading) {
+    return (
+      <div className="summary-modal">
+        <div className="modal-header">
+          <h3>Handover History Summary</h3>
+          <button onClick={onClose} className="close-button">×</button>
+        </div>
+        <div className="loading-message">
+          <div className="loading-spinner"></div>
+          <p>Loading history data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!historyData) {
+    return (
+      <div className="summary-modal">
+        <div className="modal-header">
+          <h3>Handover History Summary</h3>
+          <button onClick={onClose} className="close-button">×</button>
+        </div>
+        <div className="no-summary-data">
+          <p>No history data available</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="summary-modal">
+      <div className="modal-header">
+        <h3>Handover History Summary</h3>
+        <button onClick={onClose} className="close-button">×</button>
+      </div>
+      <div className="summary-content">
+        {/* Key Metrics */}
+        <div className="summary-grid">
+          <div className="summary-item total">
+            <span className="summary-label">Total Tasks</span>
+            <span className="summary-value">{summary.totalTasks}</span>
+          </div>
+          <div className="summary-item active">
+            <span className="summary-label">Acknowledged</span>
+            <span className="summary-value">{summary.acknowledgedTasks}</span>
+          </div>
+          <div className="summary-item completed">
+            <span className="summary-label">Pending</span>
+            <span className="summary-value">{summary.pendingTasks}</span>
+          </div>
+          <div className="summary-item tasks">
+            <span className="summary-label">Total Acks</span>
+            <span className="summary-value">{summary.totalAcknowledgment}</span>
+          </div>
+        </div>
+
+        {/* Status Distribution */}
+        {Object.keys(summary.statusDistribution).length > 0 && (
+          <div className="status-distribution">
+            <h4>Status Distribution</h4>
+            <div className="status-bars">
+              {Object.entries(summary.statusDistribution).map(([status, count]) => {
+                const percentage = summary.totalTasks > 0 
+                  ? (count / summary.totalTasks * 100).toFixed(1) 
+                  : 0;
+                return (
+                  <div key={status} className="status-bar-item">
+                    <div className="status-bar-header">
+                      <span className="status-name">{status}</span>
+                      <span className="status-count">{count} ({percentage}%)</span>
+                    </div>
+                    <div className="status-bar">
+                      <div 
+                        className={`status-bar-fill ${status.toLowerCase().replace(' ', '\\ ')}`}
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Teams Overview */}
+        {summary.teams.length > 0 && (
+          <div className="teams-overview">
+            <h4>Teams/Roles</h4>
+            <div className="teams-list">
+              {summary.teams.map((team, index) => (
+                <div key={index} className="team-tag">
+                  {team}
+                </div>
+              ))}
+              {summary.teamCount > 5 && (
+                <div className="team-tag more">
+                  +{summary.teamCount - 5} more
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Tasks Breakdown */}
+        {summary.tasksBreakdown && summary.tasksBreakdown.length > 0 && (
+          <div className="tasks-breakdown">
+            <h4>Tasks by Acknowledgments</h4>
+            <div className="breakdown-list">
+              {summary.tasksBreakdown.slice(0, 10).map((task, index) => (
+                <div key={task.taskId || index} className="breakdown-item">
+                  <div className="breakdown-header">
+                    <span className="task-id">Task #{task.taskId}</span>
+                    <span className={`ack-count-badge ${task.ackCount > 0 ? 'has-acks' : 'no-acks'}`}>
+                      {task.ackCount} {task.ackCount === 1 ? 'ack' : 'acks'}
+                    </span>
+                  </div>
+                  <div className="task-description">
+                    {task.taskDesc || 'No description'}
+                  </div>
+                  {task.latestAck && (
+                    <div className="latest-ack">
+                      Latest: "{task.latestAck.ackDesc}" by User {task.latestAck.userAcknowleged_id}
+                      {' '}on {format(new Date(task.latestAck.acknowledgeTime), 'MMM d, h:mm a')}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recent Activity */}
+        {summary.recentActivity.length > 0 && (
+          <div className="recent-activity">
+            <h4>Recent Acknowledgments</h4>
+            <div className="activity-list">
+              {summary.recentActivity.map((activity, index) => (
+                <div key={activity.ackId || index} className="activity-item">
+                  <div className="activity-main">
+                    <span className="activity-team">Task #{activity.taskId}</span>
+                    <span className="activity-status completed">
+                      Acknowledged
+                    </span>
+                  </div>
+                  <div className="activity-description">
+                    {activity.ackDesc || 'No description'}
+                  </div>
+                  <div className="activity-meta">
+                    <span className="activity-id">User: {activity.userAcknowleged_id}</span>
+                    <span className="activity-time">
+                      {format(new Date(activity.acknowledgeTime), 'MMM d, h:mm a')}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Data Source Info */}
+        <div className="data-source">
+          <p>Historical data from all handovers ({summary.totalTasks} total tasks)</p>
+        </div>
       </div>
     </div>
   );
@@ -65,7 +309,9 @@ const HandoverDetail = () => {
   const [ackStatus, setAckStatus] = useState('');
   const [error, setError] = useState('');
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
-  const [expandedTaskId, setExpandedTaskId] = useState(null);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [historyData, setHistoryData] = useState(null);
   const [newTask, setNewTask] = useState({
     taskTitle: '',
     taskDesc: '',
@@ -116,8 +362,28 @@ const HandoverDetail = () => {
     }
   };
 
-  const toggleTaskExpansion = (taskId) => {
-    setExpandedTaskId(expandedTaskId === taskId ? null : taskId);
+  const handleSummaryClick = async () => {
+    setSummaryLoading(true);
+    setShowSummaryModal(true);
+    setError('');
+    
+    try {
+      console.log('Fetching history handovers...');
+      const data = await getHistoryHandovers();
+      console.log('History data received:', data);
+      
+      if (data && data.TeamHandoverDetails && data.Tasksdata) {
+        setHistoryData(data);
+      } else {
+        throw new Error('Invalid history data structure');
+      }
+    } catch (err) {
+      console.error('Error fetching history:', err);
+      setError('Failed to load history data');
+      setHistoryData(null);
+    } finally {
+      setSummaryLoading(false);
+    }
   };
 
   const handleAcknowledgeClick = (task) => {
@@ -311,81 +577,67 @@ const HandoverDetail = () => {
         {/* Tasks Section */}
         <div className="detail-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h3>Tasks ({tasks.length})</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <h3>Tasks ({tasks.length})</h3>
+              <button
+                className="summary-button"
+                onClick={handleSummaryClick}
+                disabled={summaryLoading}
+              >
+                {summaryLoading ? 'Loading...' : '📊 View History Summary'}
+              </button>
+            </div>
             <button className="create-task-btn" onClick={handleCreateTask}>
               + Create New Task
             </button>
           </div>
 
           {tasks.length > 0 ? (
-            <div className="tasks-table-container">
-              <table className="tasks-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th>Priority</th>
-                    <th>Status</th>
-                    <th>Ack Status</th>
-                    <th>Created</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
+            <table className="tasks-table">
+              <thead>
+                 <tr>
+                  <th>ID</th>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Ack Status</th>
+                  <th>Created</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
                 <tbody>
-                  {tasks.map(task => (
-                    <React.Fragment key={task.Taskid}>
-                      <tr className="task-row">
-                        <td>{task.Taskid}</td>
-                        <td style={{ fontWeight: 600 }}>{task.taskTitle || 'Untitled'}</td>
-                        <td>{task.taskDesc || '-'}</td>
-                        <td>
-                          <span className={`priority-badge priority-${(task.priority || 'medium').toLowerCase()}`}>
-                            {task.priority || 'Medium'}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`status-badge ${task.status === 'in progress' ? 'in-progress' : task.status}`}>
-                            {task.status === 'in progress' ? 'In Progress' : task.status}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`status-badge ${task.acknowledgeStatus?.toLowerCase() === 'pending' ? 'pending' : 'completed'}`}>
-                            {task.acknowledgeStatus || 'Pending'}
-                          </span>
-                        </td>
-                        <td>{formatDate(task.creationTime)}</td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
-                            <button className="acknowledge-btn" onClick={() => handleAcknowledgeClick(task)}>
-                              Acknowledge
-                            </button>
-                            {task.acknowledgeDetails && task.acknowledgeDetails.length > 0 && (
-                              <button 
-                                className="history-button"
-                                onClick={() => toggleTaskExpansion(task.Taskid)}
-                              >
-                                {expandedTaskId === task.Taskid ? '▲ Hide History' : '▼ Show History'}
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                      {expandedTaskId === task.Taskid && task.acknowledgeDetails && (
-                        <tr className="timeline-row">
-                          <td colSpan="8">
-                            <div className="task-timeline-wrapper">
-                              <h4 className="timeline-title">Acknowledgment History</h4>
-                              <TaskAcknowledgeTimeline acknowledgeDetails={task.acknowledgeDetails} />
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                {tasks.map(task => (
+                  <tr key={task.Taskid}>
+                    <td>{task.Taskid}</td>
+                    <td style={{ fontWeight: 600 }}>{task.taskTitle || 'Untitled'}</td>
+                    <td>{task.taskDesc || '-'}</td>
+                    <td>
+                      <span className={`priority-badge priority-${(task.priority || 'medium').toLowerCase()}`}>
+                        {task.priority || 'Medium'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`status-badge ${task.status === 'in progress' ? 'in-progress' : task.status}`}>
+                        {task.status === 'in progress' ? 'In Progress' : task.status}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`status-badge ${task.acknowledgeStatus?.toLowerCase() === 'pending' ? 'pending' : 'completed'}`}>
+                        {task.acknowledgeStatus || 'Pending'}
+                      </span>
+                    </td>
+                    <td>{formatDate(task.creationTime)}</td>
+                    <td>
+                      <button className="acknowledge-btn" onClick={() => handleAcknowledgeClick(task)}>
+                        Acknowledge
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+
+                  </table>
           ) : (
             <div className="no-tasks">
               <p>No tasks found for this handover.</p>
@@ -402,11 +654,11 @@ const HandoverDetail = () => {
               <div className="task-info-horizontal">
                 <div className="info-column">
                   <strong>Task ID</strong>
-                  <span>{selectedTask.Taskid}</span>
+                  <span>{selectedTask.historyTaskId}</span>
                 </div>
                 <div className="info-column">
                   <strong>Description</strong>
-                  <span>{selectedTask.taskDesc || 'No description'}</span>
+                  <span>{selectedTask.task || 'No description'}</span>
                 </div>
                 <div className="info-column">
                   <strong>Acknowledgments</strong>
@@ -415,7 +667,7 @@ const HandoverDetail = () => {
               </div>
 
               {/* Timeline Component */}
-              <TaskAcknowledgeTimeline acknowledgeDetails={selectedTask.acknowledgeDetails} />
+              <AcknowledgeTimeline acknowledgeDetails={selectedTask.acknowledgeDetails} />
 
               <div className="form-group">
                 <label>
@@ -553,6 +805,17 @@ const HandoverDetail = () => {
                 </button>
               </div>
             </form>
+          </Modal>
+        )}
+
+        {/* Summary Modal */}
+        {showSummaryModal && (
+          <Modal open={showSummaryModal} onClose={() => setShowSummaryModal(false)}>
+            <SummaryModal
+              historyData={historyData}
+              loading={summaryLoading}
+              onClose={() => setShowSummaryModal(false)}
+            />
           </Modal>
         )}
       </div>
