@@ -175,7 +175,7 @@ const BillingAnalysis = () => {
       if (attendance2File) formData.append('attendance_sheet_2', attendance2File);
 
       // TODO: replace with your real upload endpoint and add any auth headers required.
-      const uploadUrl = '/api/billing/upload'; // <-- change me
+      const uploadUrl = 'https://10.191.171.12:5443/EISHOME_TEST/projectRoster/api/billing/upload'; // <-- change me
       const resp = await fetch(uploadUrl, {
         method: 'POST',
         body: formData,
