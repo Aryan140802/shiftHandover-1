@@ -479,6 +479,8 @@ const HandoverDetail = () => {
     );
   }
 
+  // FIXED: Check if backendData exists and has TeamHandoverDetails
+  // Don't show "not found" if we have handover data even if tasks are empty
   if (!backendData || !backendData.TeamHandoverDetails || backendData.TeamHandoverDetails.length === 0) {
     return (
       <div className="handover-detail-container">
@@ -506,7 +508,7 @@ const HandoverDetail = () => {
       </div>
 
       <div className="handover-detail-content">
-        {/* Task Statistics */}
+        {/* Task Statistics - Only show if there are tasks */}
         {tasks.length > 0 && (
           <div className="task-stats">
             <div className="task-stat-card pending">
@@ -612,7 +614,14 @@ const HandoverDetail = () => {
             </table>
           ) : (
             <div className="no-tasks">
-              <p>No tasks found for this handover.</p>
+              <p>No tasks found for this handover. Create your first task to get started!</p>
+              <button 
+                className="create-task-btn" 
+                onClick={handleCreateTask}
+                style={{ marginTop: '1rem' }}
+              >
+                + Create First Task
+              </button>
             </div>
           )}
         </div>
