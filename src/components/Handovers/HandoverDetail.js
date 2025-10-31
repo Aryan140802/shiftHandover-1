@@ -112,7 +112,8 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
       ackCount: task.acknowledgeDetails?.length || 0,
       latestAck: task.acknowledgeDetails && task.acknowledgeDetails.length > 0
         ? task.acknowledgeDetails[task.acknowledgeDetails.length - 1]
-        : null
+        : null,
+      acknowledgeDetails: task.acknowledgeDetails || []
     })).sort((a, b) => b.ackCount - a.ackCount);
 
     return {
@@ -254,6 +255,11 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
                       Latest: "{task.latestAck.ackDesc}" by User {task.latestAck.userAcknowleged_id}
                       {' '}on {format(new Date(task.latestAck.acknowledgeTime), 'MMM d, h:mm a')}
                     </div>
+                  )}
+
+                  {/* CHANGE: Show timeline of acknowledgments for each task */}
+                  {task.acknowledgeDetails && task.acknowledgeDetails.length > 0 && (
+                    <AcknowledgeTimeline acknowledgeDetails={task.acknowledgeDetails} />
                   )}
                 </div>
               ))}
@@ -824,3 +830,4 @@ const HandoverDetail = () => {
 };
 
 export default HandoverDetail;
+
