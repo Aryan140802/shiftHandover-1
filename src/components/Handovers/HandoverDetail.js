@@ -5,8 +5,8 @@ import './HandoverDetail.css';
 import Modal from '../UI/Modal';
 import { getHandovers, createTask, updateTask, getHistoryHandovers } from '../../Api/HandOverApi';
 
-const statusOptions = [
-  { value: 'open', label: 'Open' },
+// Status options for acknowledging tasks (no "open" option)
+const acknowledgeStatusOptions = [
   { value: 'in progress', label: 'In Progress' },
   { value: 'completed', label: 'Completed' }
 ];
@@ -283,7 +283,7 @@ const HandoverDetail = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [ackDescription, setAckDescription] = useState('');
-  const [ackStatus, setAckStatus] = useState('');
+  const [ackStatus, setAckStatus] = useState('in progress'); // Default to "in progress"
   const [error, setError] = useState('');
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
@@ -293,7 +293,7 @@ const HandoverDetail = () => {
     taskTitle: '',
     taskDesc: '',
     priority: 'Medium',
-    status: 'open'
+    status: 'open' // Always open for new tasks
   });
   const [loading, setLoading] = useState(true);
 
@@ -363,7 +363,8 @@ const HandoverDetail = () => {
     setSelectedTask(task);
     setModalOpen(true);
     setAckDescription(task.ackDesc || '');
-    setAckStatus(task.status || 'open');
+    // Set default to "in progress" instead of current status
+    setAckStatus('in progress');
     setError('');
   };
 
@@ -407,7 +408,7 @@ const HandoverDetail = () => {
       setModalOpen(false);
       setSelectedTask(null);
       setAckDescription('');
-      setAckStatus('');
+      setAckStatus('in progress');
       setError('');
 
       // Refresh the entire page after successful acknowledgment
@@ -423,7 +424,7 @@ const HandoverDetail = () => {
       taskTitle: '',
       taskDesc: '',
       priority: 'Medium',
-      status: 'open'
+      status: 'open' // Always open for new tasks
     });
     setError('');
   };
@@ -438,7 +439,7 @@ const HandoverDetail = () => {
     const payload = {
       taskTitle: newTask.taskTitle,
       taskDesc: newTask.taskDesc,
-      status: newTask.status,
+      status: 'open', // Force open status
       priority: newTask.priority,
       acknowledgeStatus: 'Pending',
       ackDesc: '',
@@ -608,8 +609,7 @@ const HandoverDetail = () => {
                   </tr>
                 ))}
               </tbody>
-
-                  </table>
+            </table>
           ) : (
             <div className="no-tasks">
               <p>No tasks found for this handover.</p>
@@ -626,15 +626,17 @@ const HandoverDetail = () => {
               <div className="task-info-horizontal">
                 <div className="info-column">
                   <strong>Task ID</strong>
-                  <span>{selectedTask.historyTaskId}</span>
+                  <span>{selectedTask.Taskid}</span>
                 </div>
                 <div className="info-column">
-                  <strong>Description</strong>
-                  <span>{selectedTask.task || 'No description'}</span>
+                  <strong>Title</strong>
+                  <span>{selectedTask.taskTitle || 'Untitled'}</span>
                 </div>
                 <div className="info-column">
-                  <strong>Acknowledgments</strong>
-                  <span>{selectedTask.acknowledgeDetails?.length || 0}</span>
+                  <strong>Current Status</strong>
+                  <span className={`status-badge ${selectedTask.status === 'in progress' ? 'in-progress' : selectedTask.status}`}>
+                    {selectedTask.status === 'in progress' ? 'In Progress' : selectedTask.status}
+                  </span>
                 </div>
               </div>
 
@@ -654,31 +656,23 @@ const HandoverDetail = () => {
                 />
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Current Status</label>
-                  <div className="current-status">
-                    {selectedTask.status || 'open'}
+              <div className="form-group">
+                <label>Update Status To</label>
+                <select
+                  value={ackStatus}
+                  onChange={e => setAckStatus(e.target.value)}
+                  className="form-select"
+                  disabled={!ackDescription.trim()}
+                >
+                  {acknowledgeStatusOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                {!ackDescription.trim() && (
+                  <div className="form-hint">
+                    Please fill description to enable status change.
                   </div>
-                </div>
-                <div className="form-group">
-                  <label>Change Status</label>
-                  <select
-                    value={ackStatus}
-                    onChange={e => setAckStatus(e.target.value)}
-                    className="form-select"
-                    disabled={!ackDescription.trim()}
-                  >
-                    {statusOptions.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                  {!ackDescription.trim() && (
-                    <div className="form-hint">
-                      Please fill description to enable status change.
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
 
               {error && <div className="error-message">{error}</div>}
@@ -730,31 +724,36 @@ const HandoverDetail = () => {
                 />
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Priority</label>
-                  <select
-                    value={newTask.priority}
-                    onChange={e => setNewTask({ ...newTask, priority: e.target.value })}
-                    className="form-select"
-                  >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                    <option value="Critical">Critical</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Status</label>
-                  <select
-                    value={newTask.status}
-                    onChange={e => setNewTask({ ...newTask, status: e.target.value })}
-                    className="form-select"
-                  >
-                    <option value="open">Open</option>
-                    <option value="in progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                  </select>
+              <div className="form-group">
+                <label>Priority</label>
+                <select
+                  value={newTask.priority}
+                  onChange={e => setNewTask({ ...newTask, priority: e.target.value })}
+                  className="form-select"
+                >
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Status</label>
+                <input
+                  type="text"
+                  value="Open"
+                  className="form-input"
+                  disabled
+                  style={{ 
+                    background: 'rgba(241, 196, 15, 0.12)',
+                    border: '1px solid rgba(241, 196, 15, 0.2)',
+                    color: '#ffeaa7',
+                    cursor: 'not-allowed'
+                  }}
+                />
+                <div className="form-hint">
+                  New tasks are always created with "Open" status
                 </div>
               </div>
 
