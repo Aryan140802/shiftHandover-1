@@ -65,9 +65,9 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
         acknowledgedTasks: 0,
         pendingTasks: 0,
         totalAcknowledgment: 0,
-        recentActivity: [],
         teams: [],
-        statusDistribution: {}
+        statusDistribution: {},
+        tasksBreakdown: []
       };
     }
 
@@ -95,26 +95,19 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
       statusDistribution[status] = (statusDistribution[status] || 0) + 1;
     });
 
-    // Recent activity (last 10 acknowledgments from history)
-    const allAcknowledgments = tasks.flatMap(task =>
-      (task.acknowledgeDetails || []).map(ack => ({
-        ...ack,
-        taskId: task.historyTaskId,
-        taskDesc: task.task
-      }))
-    ).sort((a, b) => new Date(b.acknowledgeTime) - new Date(a.acknowledgeTime))
-    .slice(0, 10);
-
     // Tasks breakdown with acknowledgment details
     const tasksBreakdown = tasks.map(task => ({
-      taskId: task.historyTaskId,
-      taskDesc: task.task,
+      taskId: task.historyTaskId || task.Taskid,
+      taskDesc: task.task || task.taskDesc,
       ackCount: task.acknowledgeDetails?.length || 0,
       latestAck: task.acknowledgeDetails && task.acknowledgeDetails.length > 0
         ? task.acknowledgeDetails[task.acknowledgeDetails.length - 1]
         : null,
-      acknowledgeDetails: task.acknowledgeDetails || []
-    })).sort((a, b) => b.ackCount - a.ackCount);
+      acknowledgeDetails: task.acknowledgeDetails || [],
+      status: task.status || 'unknown',
+      priority: task.priority || 'Medium'
+    }))
+    .sort((a, b) => b.ackCount - a.ackCount);
 
     return {
       totalTasks,
@@ -123,7 +116,6 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
       totalAcknowledgment,
       teams: teams.slice(0, 5),
       teamCount: teams.length,
-      recentActivity: allAcknowledgments,
       statusDistribution,
       tasksBreakdown
     };
@@ -239,7 +231,7 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
           <div className="tasks-breakdown">
             <h4>Tasks by Acknowledgments</h4>
             <div className="breakdown-list">
-              {summary.tasksBreakdown.slice(0, 10).map((task, index) => (
+              {summary.tasksBreakdown.map((task, index) => (
                 <div key={task.taskId || index} className="breakdown-item">
                   <div className="breakdown-header">
                     <span className="task-id">Task #{task.taskId}</span>
@@ -250,45 +242,24 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
                   <div className="task-description">
                     {task.taskDesc || 'No description'}
                   </div>
+                  <div className="task-meta">
+                    <span className={`status-badge ${task.status === 'in progress' ? 'in-progress' : task.status}`}>
+                      {task.status === 'in progress' ? 'In Progress' : task.status}
+                    </span>
+                    <span className={`priority-badge priority-${(task.priority || 'medium').toLowerCase()}`}>
+                      {task.priority || 'Medium'}
+                    </span>
+                  </div>
                   {task.latestAck && (
                     <div className="latest-ack">
                       Latest: "{task.latestAck.ackDesc}" by User {task.latestAck.userAcknowleged_id}
                       {' '}on {format(new Date(task.latestAck.acknowledgeTime), 'MMM d, h:mm a')}
                     </div>
                   )}
-
-                  {/* CHANGE: Show timeline of acknowledgments for each task */}
+                  {/* Timeline of acknowledgments for each task */}
                   {task.acknowledgeDetails && task.acknowledgeDetails.length > 0 && (
                     <AcknowledgeTimeline acknowledgeDetails={task.acknowledgeDetails} />
                   )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Recent Activity */}
-        {summary.recentActivity.length > 0 && (
-          <div className="recent-activity">
-            <h4>Recent Acknowledgments</h4>
-            <div className="activity-list">
-              {summary.recentActivity.map((activity, index) => (
-                <div key={activity.ackId || index} className="activity-item">
-                  <div className="activity-main">
-                    <span className="activity-team">Task #{activity.taskId}</span>
-                    <span className="activity-status completed">
-                      Acknowledged
-                    </span>
-                  </div>
-                  <div className="activity-description">
-                    {activity.ackDesc || 'No description'}
-                  </div>
-                  <div className="activity-meta">
-                    <span className="activity-id">User: {activity.userAcknowleged_id}</span>
-                    <span className="activity-time">
-                      {format(new Date(activity.acknowledgeTime), 'MMM d, h:mm a')}
-                    </span>
-                  </div>
                 </div>
               ))}
             </div>
@@ -374,17 +345,13 @@ const HandoverDetail = () => {
     setError('');
     
     try {
-      console.log('Fetching history handovers...');
       const data = await getHistoryHandovers();
-      console.log('History data received:', data);
-      
       if (data && data.TeamHandoverDetails && data.Tasksdata) {
         setHistoryData(data);
       } else {
         throw new Error('Invalid history data structure');
       }
     } catch (err) {
-      console.error('Error fetching history:', err);
       setError('Failed to load history data');
       setHistoryData(null);
     } finally {
@@ -487,7 +454,6 @@ const HandoverDetail = () => {
       setShowCreateTaskModal(false);
       setError('');
     } catch (err) {
-      console.error('Create task error:', err);
       setError('Failed to create task on server!');
     }
   };
@@ -830,4 +796,3 @@ const HandoverDetail = () => {
 };
 
 export default HandoverDetail;
-
