@@ -152,7 +152,6 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
     <div className="summary-modal">
       <div className="modal-header">
         <h3>Handover History Summary</h3>
-        <button onClick={onClose} className="close-button">×</button>
       </div>
       <div className="summary-content">
         {/* Key Metrics */}
@@ -175,14 +174,14 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
           </div>
         </div>
 
-        {/* Status Distribution */}
+        {/* Status Distribution
         {Object.keys(summary.statusDistribution).length > 0 && (
           <div className="status-distribution">
             <h4>Status Distribution</h4>
             <div className="status-bars">
               {Object.entries(summary.statusDistribution).map(([status, count]) => {
-                const percentage = summary.totalTasks > 0 
-                  ? (count / summary.totalTasks * 100).toFixed(1) 
+                const percentage = summary.totalTasks > 0
+                  ? (count / summary.totalTasks * 100).toFixed(1)
                   : 0;
                 return (
                   <div key={status} className="status-bar-item">
@@ -191,7 +190,7 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
                       <span className="status-count">{count} ({percentage}%)</span>
                     </div>
                     <div className="status-bar">
-                      <div 
+                      <div
                         className={`status-bar-fill ${status.toLowerCase().replace(' ', '\\ ')}`}
                         style={{ width: `${percentage}%` }}
                       ></div>
@@ -202,6 +201,7 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
             </div>
           </div>
         )}
+         */}
 
         {/* Teams Overview */}
         {summary.teams.length > 0 && (
@@ -239,9 +239,11 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
                     {task.taskDesc || 'No description'}
                   </div>
                   <div className="task-meta">
+                      {/*
                     <span className={`status-badge ${task.status === 'in progress' ? 'in-progress' : task.status}`}>
                       {task.status === 'in progress' ? 'In Progress' : task.status}
                     </span>
+                    */}
                     <span className={`priority-badge priority-${(task.priority || 'medium').toLowerCase()}`}>
                       {task.priority || 'Medium'}
                     </span>
@@ -260,10 +262,11 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
             </div>
           </div>
         )}
-
+        {/*
         <div className="data-source">
           <p>Historical data from all handovers ({summary.totalTasks} total tasks)</p>
         </div>
+        */}
       </div>
     </div>
   );
@@ -275,7 +278,7 @@ const HandoverDetail = () => {
 
   // Get user level from localStorage
   const [userLevel, setUserLevel] = useState('');
-  
+
   const [backendData, setBackendData] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -296,7 +299,7 @@ const HandoverDetail = () => {
 
   useEffect(() => {
     // Get user level from localStorage
-    const level = localStorage.getItem('userlevel') || 'L2';
+    const level = localStorage.getItem('userlevel') || 'L1';
     setUserLevel(level);
   }, []);
 
@@ -305,7 +308,7 @@ const HandoverDetail = () => {
   }, [id]);
 
   // Check if user has admin access
-  const hasAdminAccess = userLevel === 'ADMIN' || userLevel === 'L1';
+  const hasAdminAccess = userLevel === 'ADMIN' || userLevel === 'L2';
 
   const fetchHandoverData = async () => {
     setLoading(true);
@@ -349,7 +352,7 @@ const HandoverDetail = () => {
     setSummaryLoading(true);
     setShowSummaryModal(true);
     setError('');
-    
+
     try {
       const data = await getHistoryHandovers();
       if (data && data.TeamHandoverDetails && data.Tasksdata) {
@@ -492,18 +495,23 @@ const HandoverDetail = () => {
     );
   }
 
+
   const handover = backendData.TeamHandoverDetails[0];
   const tasks = backendData.Tasksdata || [];
   const taskStats = getTaskStats(tasks);
 
   return (
     <div className="handover-detail-container">
+
       <div className="handover-detail-header">
         <h2>{handover.role} Team Handover</h2>
+          {/*
         <button onClick={() => navigate('/dashboard')} className="back-button">
           ← Back to List
         </button>
+        */}
       </div>
+
 
       <div className="handover-detail-content">
         {tasks.length > 0 && (
@@ -613,13 +621,7 @@ const HandoverDetail = () => {
           ) : (
             <div className="no-tasks">
               <p>No tasks found for this handover. Create your first task to get started!</p>
-              <button 
-                className="create-task-btn" 
-                onClick={handleCreateTask}
-                style={{ marginTop: '1rem' }}
-              >
-                + Create First Task
-              </button>
+
             </div>
           )}
         </div>
@@ -749,7 +751,7 @@ const HandoverDetail = () => {
                   value="Open"
                   className="form-input"
                   disabled
-                  style={{ 
+                  style={{
                     background: 'rgba(241, 196, 15, 0.12)',
                     border: '1px solid rgba(241, 196, 15, 0.2)',
                     color: '#ffeaa7',
