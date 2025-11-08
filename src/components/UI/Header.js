@@ -13,7 +13,7 @@ const Header = ({ onLogout }) => {
     // Get user info from localStorage
     const username = localStorage.getItem('username') || 'Guest User';
     const uid = localStorage.getItem('uidd') || 'N/A';
-    
+
     // Generate initials from username
     const getInitials = (name) => {
       if (!name) return 'GU';
@@ -39,7 +39,7 @@ const Header = ({ onLogout }) => {
           <h1>ShiftHandover</h1>
         </Link>
       </div>
-      
+
       <div className="header-right">
         <div className="user-avatar-container">
           <div className="user-avatar">
@@ -50,7 +50,7 @@ const Header = ({ onLogout }) => {
             <div className="tooltip-uid">UID: {userInfo.uid}</div>
           </div>
         </div>
-        
+
         {onLogout && (
           <button
             onClick={onLogout}
