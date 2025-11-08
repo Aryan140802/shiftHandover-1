@@ -23,16 +23,13 @@ function clearAllCookies() {
 // Logout API call
 async function callLogoutAPI(username) {
   try {
-    // 1. Retrieve the session ID from local storage
     const sessionId = localStorage.getItem('sessionid');
 
-    // Check if session ID exists before proceeding
     if (!sessionId) {
       console.warn('No session ID found in local storage. Skipping API call.');
       return;
     }
 
-    // 2. Prepare the headers object with the correct Authorization format
     const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${sessionId}`
@@ -65,13 +62,12 @@ const Header = ({ onLogout }) => {
     uid: '',
     initials: ''
   });
+  const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
-    // Get user info from localStorage
     const username = localStorage.getItem('username') || 'Guest User';
     const uid = localStorage.getItem('uidd') || 'N/A';
     
-    // Generate initials from username
     const getInitials = (name) => {
       if (!name) return 'GU';
       const parts = name.trim().split(' ');
@@ -88,20 +84,19 @@ const Header = ({ onLogout }) => {
     });
   }, []);
 
-  // Enhanced logout handler with API call and complete cleanup
   const handleLogout = async () => {
-    // Call logout API
     await callLogoutAPI(userInfo.username);
     
-    // Clear all storage
     localStorage.clear();
     sessionStorage.clear();
     clearAllCookies();
     
-    // Call parent onLogout if provided
     if (onLogout) {
       onLogout();
     }
+    
+    // Redirect to specified URL
+    window.location.href = 'https://10.191.171.12:5443/EISHOME/';
   };
 
   return (
@@ -114,22 +109,27 @@ const Header = ({ onLogout }) => {
       </div>
       
       <div className="header-right">
-        <div className="user-avatar-container">
+        <div 
+          className="user-avatar-container"
+          onMouseEnter={() => setShowTooltip(true)}
+          onMouseLeave={() => setShowTooltip(false)}
+        >
           <div className="user-avatar">
             {userInfo.initials}
           </div>
-          <div className="user-tooltip">
-            <div className="tooltip-name">{userInfo.username}</div>
-            <div className="tooltip-uid">UID: {userInfo.uid}</div>
-          </div>
+          {showTooltip && (
+            <div className="user-tooltip">
+              <div className="tooltip-name">{userInfo.username}</div>
+              <div className="tooltip-uid">UID: {userInfo.uid}</div>
+              <button 
+                onClick={handleLogout}
+                className="tooltip-logout-btn"
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
-        
-        <button
-          onClick={handleLogout}
-          className="logout-btn"
-        >
-          Logout
-        </button>
       </div>
     </header>
   );
