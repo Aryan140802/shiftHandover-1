@@ -55,6 +55,90 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   );
 };
 
+// History Tasks Table Component with Expandable Rows
+const HistoryTasksTable = ({ tasks }) => {
+  const [expandedRows, setExpandedRows] = useState({});
+
+  const toggleRow = (taskId) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [taskId]: !prev[taskId]
+    }));
+  };
+
+  return (
+    <div className="history-tasks-table-container">
+      <table className="history-tasks-table">
+        <thead>
+          <tr>
+            <th style={{ width: '50px' }}></th>
+            <th>Task ID</th>
+            <th>Description</th>
+            <th>Priority</th>
+            <th>Acknowledgments</th>
+            <th>Latest Update</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tasks.map((task) => (
+            <React.Fragment key={task.taskId}>
+              <tr className="task-row">
+                <td>
+                  {task.ackCount > 0 && (
+                    <button
+                      className="expand-button"
+                      onClick={() => toggleRow(task.taskId)}
+                      aria-label={expandedRows[task.taskId] ? 'Collapse' : 'Expand'}
+                    >
+                      {expandedRows[task.taskId] ? '▼' : '▶'}
+                    </button>
+                  )}
+                </td>
+                <td className="task-id-cell">#{task.taskId}</td>
+                <td className="task-desc-cell">{task.taskDesc || 'No description'}</td>
+                <td>
+                  <span className={`priority-badge priority-${(task.priority || 'medium').toLowerCase()}`}>
+                    {task.priority || 'Medium'}
+                  </span>
+                </td>
+                <td>
+                  <span className={`ack-count-badge ${task.ackCount > 0 ? 'has-acks' : 'no-acks'}`}>
+                    {task.ackCount} {task.ackCount === 1 ? 'ack' : 'acks'}
+                  </span>
+                </td>
+                <td className="latest-update-cell">
+                  {task.latestAck ? (
+                    <div>
+                      <div className="update-time">
+                        {format(new Date(task.latestAck.acknowledgeTime), 'MMM d, h:mm a')}
+                      </div>
+                      <div className="update-user">
+                        User {task.latestAck.userAcknowleged_id}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="no-update">No updates</span>
+                  )}
+                </td>
+              </tr>
+              {expandedRows[task.taskId] && task.acknowledgeDetails && task.acknowledgeDetails.length > 0 && (
+                <tr className="expanded-row">
+                  <td colSpan="6">
+                    <div className="expanded-content">
+                      <AcknowledgeTimeline acknowledgeDetails={task.acknowledgeDetails} />
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
+      
+    </div>
+  );
+};
+
 // Summary Modal Component - Uses history handover data from API
 const SummaryModal = ({ historyData, onClose, loading }) => {
   // Calculate summary statistics from history handover data
@@ -222,44 +306,11 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
           </div>
         )}
 
-        {/* Tasks Breakdown */}
+        {/* Tasks Breakdown Table */}
         {summary.tasksBreakdown && summary.tasksBreakdown.length > 0 && (
           <div className="tasks-breakdown">
-            <h4>Tasks by Acknowledgments</h4>
-            <div className="breakdown-list">
-              {summary.tasksBreakdown.map((task, index) => (
-                <div key={task.taskId || index} className="breakdown-item">
-                  <div className="breakdown-header">
-                    <span className="task-id">Task #{task.taskId}</span>
-                    <span className={`ack-count-badge ${task.ackCount > 0 ? 'has-acks' : 'no-acks'}`}>
-                      {task.ackCount} {task.ackCount === 1 ? 'ack' : 'acks'}
-                    </span>
-                  </div>
-                  <div className="task-description">
-                    {task.taskDesc || 'No description'}
-                  </div>
-                  <div className="task-meta">
-                      {/*
-                    <span className={`status-badge ${task.status === 'in progress' ? 'in-progress' : task.status}`}>
-                      {task.status === 'in progress' ? 'In Progress' : task.status}
-                    </span>
-                    */}
-                    <span className={`priority-badge priority-${(task.priority || 'medium').toLowerCase()}`}>
-                      {task.priority || 'Medium'}
-                    </span>
-                  </div>
-                  {task.latestAck && (
-                    <div className="latest-ack">
-                      Latest: "{task.latestAck.ackDesc}" by User {task.latestAck.userAcknowleged_id}
-                      {' '}on {format(new Date(task.latestAck.acknowledgeTime), 'MMM d, h:mm a')}
-                    </div>
-                  )}
-                  {task.acknowledgeDetails && task.acknowledgeDetails.length > 0 && (
-                    <AcknowledgeTimeline acknowledgeDetails={task.acknowledgeDetails} />
-                  )}
-                </div>
-              ))}
-            </div>
+            <h4>Tasks History Details</h4>
+            <HistoryTasksTable tasks={summary.tasksBreakdown} />
           </div>
         )}
         {/*
@@ -557,7 +608,7 @@ const HandoverDetail = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <h3>Tasks ({tasks.length})</h3>
-              {/* Only show History Summary button for ADMIN and L1 users */}
+              {/* Only show History Summary button for ADMIN and L2 users */}
               {hasAdminAccess && (
                 <button
                   className="summary-button"
