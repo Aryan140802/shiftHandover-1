@@ -131,17 +131,24 @@
   border: 1px solid rgba(46, 213, 255, 0.3);
   border-radius: 12px;
   padding: 1rem 1.25rem;
-  min-width: 200px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 220px;
   box-shadow:
     0 10px 40px rgba(2, 6, 23, 0.5),
     0 0 0 1px rgba(46, 213, 255, 0.2);
   z-index: 1000;
-  pointer-events: none;
   backdrop-filter: blur(12px);
+  animation: tooltipFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .user-tooltip::before {
@@ -155,12 +162,6 @@
   border-left: 1px solid rgba(46, 213, 255, 0.3);
   border-top: 1px solid rgba(46, 213, 255, 0.3);
   transform: rotate(45deg);
-}
-
-.user-avatar-container:hover .user-tooltip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
 }
 
 .tooltip-name {
@@ -181,10 +182,12 @@
   border: 1px solid rgba(46, 213, 255, 0.2);
   display: inline-block;
   white-space: nowrap;
+  margin-bottom: 1rem;
 }
 
-/* Logout Button Styles */
-.logout-btn {
+/* Tooltip Logout Button */
+.tooltip-logout-btn {
+  width: 100%;
   padding: 0.65rem 1.25rem;
   background: linear-gradient(90deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.15));
   color: #ffc4c4;
@@ -196,16 +199,17 @@
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(2, 6, 23, 0.3);
   font-family: 'Inter', sans-serif;
+  margin-top: 0.75rem;
 }
 
-.logout-btn:hover {
+.tooltip-logout-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(231, 76, 60, 0.25);
   background: linear-gradient(90deg, rgba(231, 76, 60, 0.3), rgba(192, 57, 43, 0.2));
   border-color: rgba(231, 76, 60, 0.5);
 }
 
-.logout-btn:active {
+.tooltip-logout-btn:active {
   transform: translateY(0);
 }
 
@@ -237,10 +241,10 @@
 
   .user-tooltip {
     right: -10px;
-    min-width: 180px;
+    min-width: 200px;
   }
 
-  .logout-btn {
+  .tooltip-logout-btn {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
   }
@@ -273,10 +277,8 @@
     right: 20px;
   }
 
-  .logout-btn {
+  .tooltip-logout-btn {
     padding: 0.45rem 0.85rem;
     font-size: 0.8rem;
   }
-
-
 }
