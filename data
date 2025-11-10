@@ -8,7 +8,7 @@ import { postGetSecurityQuestion, postForgotPassword } from "../api/PostApi";
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
+  const [showPassword, setShowPassword] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -70,23 +70,18 @@ function Login({ onLogin }) {
     setForgotPwdMsg('');
     try {
       const res = await postGetSecurityQuestion(empId);
-      //console.log('Security Question Response:', res.data); // Debug log
-
-      // Accept typo key first, then correct key
       const secQ = res.data.securityQuestion;
 
-      // Check if we got a valid response and security question
       if (res.data && (secQ !== null && secQ !== '')) {
         setSecurityQ(secQ);
         setShowEmpIdModal(false);
         setShowSecQModal(true);
         setSecurityAnswer('');
         setNewPwd('');
-        setForgotPwdMsg(''); // Clear any previous messages
+        setForgotPwdMsg('');
       } else {
-        // Handle case where employee ID is valid but no security question is set
         if (res.data && (secQ === '' || secQ === null)) {
-          setSecurityQ(''); // Set empty security question
+          setSecurityQ('');
           setShowEmpIdModal(false);
           setShowSecQModal(true);
           setSecurityAnswer('');
@@ -166,10 +161,11 @@ function Login({ onLogin }) {
               className="password-input"
             />
             <span 
-              className={`password-toggle-icon ${showPassword ? 'visible' : ''}`}
+              className="password-toggle-icon"
               onClick={togglePasswordVisibility}
+              title={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? '🙈' : '👁️'}
+              {showPassword ? '&#x1F441;' : '&#x1F441;&#xFE0F;'}
             </span>
           </div>
           <button type="submit" disabled={loading}>
@@ -178,7 +174,6 @@ function Login({ onLogin }) {
           <button type="button" onClick={handleRegisterRedirect}>
             Register
           </button>
-          {/* Forgot Password link always visible */}
           <div style={{ marginTop: "10px" }}>
             <a
               href="#"
@@ -316,17 +311,24 @@ function Login({ onLogin }) {
           cursor: pointer;
           user-select: none;
           font-size: 1.2em;
-          padding: 4px;
+          padding: 4px 8px;
           border-radius: 4px;
-          transition: background-color 0.2s ease;
+          transition: all 0.2s ease;
+          background: transparent;
+          border: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 30px;
+          min-height: 30px;
         }
 
         .password-toggle-icon:hover {
           background-color: rgba(0, 0, 0, 0.1);
         }
 
-        .password-toggle-icon.visible {
-          opacity: 0.8;
+        .password-toggle-icon:active {
+          transform: translateY(-50%) scale(0.95);
         }
 
         .modal-overlay {
