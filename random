@@ -147,6 +147,12 @@ function App() {
   // Inactivity time limit in ms (60 minutes)
   const INACTIVITY_LIMIT = 60 * 60 * 1000;
 
+  // Define allowed user levels for Chatbot access
+  const CHATBOT_ALLOWED_LEVELS = ['ADMIN', 'L2', 'BANKER'];
+
+  // Check if current user has access to chatbot
+  const hasChatbotAccess = CHATBOT_ALLOWED_LEVELS.includes(userLevel);
+
   // Only disable inspect for users other than ADMIN
   useDisableInspectElement(userLevel && userLevel !== 'ADMIN');
 
@@ -174,6 +180,7 @@ function App() {
 
       setIsLoggedIn(true);
       localStorage.setItem('username', user);
+      localStorage.setItem('userlevel', loginData.userLevel); // Store userLevel in localStorage
 
       localStorage.setItem('loginTime', now.toString());
       sessionStorage.setItem('loginTime', now.toString());
@@ -238,21 +245,7 @@ function App() {
   }, [handleLogout]); // Dependency on handleLogout ensures we call the correct function instance
 
 
-  // On login from persisted session, fetch announcement
-  useEffect(() => {
-    if (isLoggedIn && !announcement) {
-      (async () => {
-        const ann = await fetchLatestAnnouncement();
-        setAnnouncement(ann);
-        if (ann) setShowAnnouncementPopup(true);
-      })();
-    }
-    // eslint-disable-next-line
-  }, [isLoggedIn]);
-
-
-
-  // Auto logout after 30 min of inactivity
+  // Auto logout after 60 min of inactivity
   useEffect(() => {
     if (!isLoggedIn) return;
 
@@ -322,7 +315,10 @@ function App() {
           setIsSidebarOpen={setIsSidebarOpen}
         />
         <Dashboard isSidebarOpen={isSidebarOpen} />
-        <Chatbot setChatbotMinimized={setChatbotMinimized} username={username} />
+        {/* Conditionally render Chatbot only for specific user levels */}
+        {hasChatbotAccess && (
+          <Chatbot setChatbotMinimized={setChatbotMinimized} username={username} />
+        )}
       </div>
       <Footer />
     </div>
