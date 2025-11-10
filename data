@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from './components/Header.jsx';
 import Footer from './components/Footer';
 import Menu from './components/Menu';
@@ -119,6 +119,7 @@ function App() {
   const [announcement, setAnnouncement] = useState('');
   const [showAnnouncementPopup, setShowAnnouncementPopup] = useState(false);
   const [userLevel, setUserLevel] = useState('');
+  const [isInitializing, setIsInitializing] = useState(true);
   const inactivityTimer = useRef(null);
 
   const INACTIVITY_LIMIT = 60 * 60 * 1000; // 60 minutes
@@ -131,89 +132,109 @@ function App() {
 
   useDisableInspectElement(userLevel && userLevel !== 'ADMIN');
 
-  // ✅ FIXED: Wrap handleLogout in useCallback to prevent infinite loops
-  const handleLogout = useCallback(async () => {
-    await callLogoutAPI(username);
-
-    setIsLoggedIn(false);
-    setUsername('');
-    setUserLevel('');
-    
-    // Clear all storage
-    localStorage.clear();
-    sessionStorage.clear();
-    clearAllCookies();
-  }, [username]);
-
-  // ✅ FIXED: Properly store session data on login
-  const handleLogin = async (user, password) => {
-    try {
-      const loginData = await loginApi(user, password);
-      console.log('Login data:', loginData);
-      
-      const now = Date.now();
-      
-      // Store all necessary data
-      setUsername(user);
-      setUserLevel(loginData.userLevel);
-      setIsLoggedIn(true);
-      
-      localStorage.setItem('username', user);
-      localStorage.setItem('userLevel', loginData.userLevel); // ✅ FIXED: Now storing userLevel
-      localStorage.setItem('loginTime', now.toString());
-      sessionStorage.setItem('loginTime', now.toString());
-      
-      // ✅ FIXED: Store session ID if present in response
-      if (loginData.sessionId || loginData.sessionToken) {
-        localStorage.setItem('sessionId', loginData.sessionId || loginData.sessionToken);
-      }
-
-      // Fetch announcement
-      const ann = await fetchLatestAnnouncement();
-      setAnnouncement(ann);
-      if (ann) setShowAnnouncementPopup(true);
-    } catch (err) {
-      alert('Login failed: ' + err.message);
-    }
-  };
-
-  // ✅ FIXED: Check for existing session on mount
+  // ✅ FIXED: Check for existing session FIRST, before any renders
   useEffect(() => {
     const storedUsername = localStorage.getItem('username');
     const storedLoginTime = localStorage.getItem('loginTime');
-    const storedUserLevel = localStorage.getItem('userLevel'); // ✅ FIXED: Correct key
+    const storedUserLevel = localStorage.getItem('userLevel');
     const storedSessionId = localStorage.getItem('sessionId');
 
-    // Validate session is still valid (within 60 min)
+    console.log('Checking stored session:', { storedUsername, storedUserLevel, storedSessionId });
+
     if (storedUsername && storedLoginTime && storedUserLevel && storedSessionId) {
       const loginTime = parseInt(storedLoginTime, 10);
       const now = Date.now();
       
       if (now - loginTime < INACTIVITY_LIMIT) {
+        console.log('Restoring session from localStorage');
         setUsername(storedUsername);
         setUserLevel(storedUserLevel);
         setIsLoggedIn(true);
       } else {
-        // Session expired, clear storage
+        console.log('Session expired, clearing storage');
         localStorage.clear();
         sessionStorage.clear();
       }
     }
-  }, [INACTIVITY_LIMIT]);
+    
+    setIsInitializing(false);
+  }, []);
 
-  // Fetch announcement on login from persisted session
-  useEffect(() => {
-    if (isLoggedIn && !announcement) {
-      (async () => {
+  // ✅ FIXED: Set login data and store in localStorage properly
+  const handleLogin = async (user, password) => {
+    try {
+      const loginData = await loginApi(user, password);
+      console.log('Login response:', loginData);
+      
+      const now = Date.now();
+      
+      // ✅ First, store in localStorage
+      localStorage.setItem('username', user);
+      localStorage.setItem('userLevel', loginData.userLevel);
+      localStorage.setItem('loginTime', now.toString());
+      sessionStorage.setItem('loginTime', now.toString());
+      
+      // Store session ID if present in response
+      if (loginData.sessionId || loginData.sessionToken || loginData.session_id) {
+        const sessionId = loginData.sessionId || loginData.sessionToken || loginData.session_id;
+        localStorage.setItem('sessionId', sessionId);
+      }
+
+      // ✅ Then, update state (this triggers re-render)
+      setUsername(user);
+      setUserLevel(loginData.userLevel);
+      setIsLoggedIn(true);
+
+      // Fetch announcement
+      try {
         const ann = await fetchLatestAnnouncement();
         setAnnouncement(ann);
         if (ann) setShowAnnouncementPopup(true);
+      } catch (err) {
+        console.error('Failed to fetch announcement:', err);
+      }
+      
+    } catch (err) {
+      alert('Login failed: ' + err.message);
+    }
+  };
+
+  // Fetch announcement on login from persisted session
+  useEffect(() => {
+    if (isLoggedIn && !announcement && !isInitializing) {
+      (async () => {
+        try {
+          const ann = await fetchLatestAnnouncement();
+          setAnnouncement(ann);
+          if (ann) setShowAnnouncementPopup(true);
+        } catch (err) {
+          console.error('Failed to fetch announcement:', err);
+        }
       })();
     }
-  }, [isLoggedIn, announcement]);
+  }, [isLoggedIn, announcement, isInitializing]);
 
-  // ✅ FIXED: Cross-tab logout detection
+  // ✅ FIXED: Logout handler without useCallback
+  const handleLogout = async () => {
+    await callLogoutAPI(username);
+
+    // Clear state
+    setIsLoggedIn(false);
+    setUsername('');
+    setUserLevel('');
+    setAnnouncement('');
+    setShowAnnouncementPopup(false);
+    
+    // Clear all storage
+    localStorage.clear();
+    sessionStorage.clear();
+    clearAllCookies();
+  };
+
+  // ✅ Cross-tab logout detection
   useEffect(() => {
+    if (!isLoggedIn) return;
+
     const handleStorageChange = (event) => {
       // Check if sessionId was removed (logout in another tab)
       if (event.key === 'sessionId' && !event.newValue) {
@@ -233,7 +254,7 @@ function App() {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [handleLogout]);
+  }, [isLoggedIn]);
 
   // Auto logout after 60 min of inactivity
   useEffect(() => {
@@ -261,7 +282,12 @@ function App() {
       );
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
     };
-  }, [isLoggedIn, handleLogout, INACTIVITY_LIMIT]);
+  }, [isLoggedIn]);
+
+  // Show loading state while checking for existing session
+  if (isInitializing) {
+    return <div>Loading...</div>;
+  }
 
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;
