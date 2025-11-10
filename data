@@ -8,6 +8,7 @@ import { postGetSecurityQuestion, postForgotPassword } from "../api/PostApi";
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -31,8 +32,10 @@ function Login({ onLogin }) {
           }
   } , [forgotPwdMsg]);
 
-
-
+  // Toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -153,13 +156,22 @@ function Login({ onLogin }) {
             onChange={(e) => setUsername(e.target.value)}
             required
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="password-input-container">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="password-input"
+            />
+            <span 
+              className={`password-toggle-icon ${showPassword ? 'visible' : ''}`}
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? '🙈' : '👁️'}
+            </span>
+          </div>
           <button type="submit" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
           </button>
@@ -282,6 +294,41 @@ function Login({ onLogin }) {
 
       {/* Enhanced Modal Styling */}
       <style>{`
+        .password-input-container {
+          position: relative;
+          width: 100%;
+        }
+
+        .password-input {
+          width: 100%;
+          padding: 0.75em 3em 0.75em 1em;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          font-size: 1em;
+          box-sizing: border-box;
+        }
+
+        .password-toggle-icon {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          cursor: pointer;
+          user-select: none;
+          font-size: 1.2em;
+          padding: 4px;
+          border-radius: 4px;
+          transition: background-color 0.2s ease;
+        }
+
+        .password-toggle-icon:hover {
+          background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .password-toggle-icon.visible {
+          opacity: 0.8;
+        }
+
         .modal-overlay {
           position: fixed;
           top: 0;
@@ -488,6 +535,22 @@ function Login({ onLogin }) {
         .dark-mode .modal-input:focus {
           border-color: #4299e1;
           box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        /* Dark mode support for password toggle */
+        .dark-mode .password-toggle-icon:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .dark-mode .password-input {
+          background: #4a5568;
+          border-color: #718096;
+          color: #e2e8f0;
+        }
+
+        .dark-mode .password-input:focus {
+          border-color: #4299e1;
+          outline: none;
         }
       `}</style>
     </div>
