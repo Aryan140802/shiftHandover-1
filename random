@@ -149,9 +149,11 @@ function App() {
 
   // Define allowed user levels for Chatbot access
   const CHATBOT_ALLOWED_LEVELS = ['ADMIN', 'L2', 'BANKER'];
+  const CHATBOT_BLOCKED_LEVELS = ['SUPPORT'];
 
   // Check if current user has access to chatbot
-  const hasChatbotAccess = CHATBOT_ALLOWED_LEVELS.includes(userLevel);
+  const hasChatbotAccess = CHATBOT_ALLOWED_LEVELS.includes(userLevel) && 
+                           !CHATBOT_BLOCKED_LEVELS.includes(userLevel);
 
   // Only disable inspect for users other than ADMIN
   useDisableInspectElement(userLevel && userLevel !== 'ADMIN');
