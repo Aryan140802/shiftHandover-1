@@ -8,20 +8,54 @@ const Sidebar = ({ darkMode, isSidebarOpen, setIsSidebarOpen }) => {
   const [favorites, setFavorites] = useState([]);
   const [userId, setUserId] = useState(null);
   const [password, setPassword] = useState(null);
+  const [userLevel, setUserLevel] = useState(null);
+  const [cardLinks, setCardLinks] = useState([]);
 
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
 
-  // Get userId and password from localStorage on mount
+  // Get userId, password, and userLevel from localStorage on mount
   useEffect(() => {
     const uid = localStorage.getItem('uidd');
     const pwd = localStorage.getItem('password');
+    const level = localStorage.getItem('userlevel');
+    
     if (uid && pwd) {
       setUserId(uid);
       setPassword(pwd);
     } else {
       console.warn('No user credentials found in localStorage');
     }
+
+    if (level) {
+      setUserLevel(level);
+    } else {
+      console.warn('No user level found in localStorage');
+    }
   }, []);
+
+  // Set cardLinks based on userLevel
+  useEffect(() => {
+    if (!userLevel) return;
+
+    const normalizedLevel = userLevel.toUpperCase();
+
+    switch (normalizedLevel) {
+      case 'ADMIN':
+      case 'L2':
+        setCardLinks(cardLinkEISInfra);
+        break;
+      case 'SUPPORT':
+        setCardLinks(cardLinkSupport);
+        break;
+      case 'BANK':
+        // Combine both arrays for Bank users
+        setCardLinks([...cardLinkEISInfra, ...cardLinkSupport]);
+        break;
+      default:
+        console.warn('Unknown user level:', userLevel);
+        setCardLinks([]);
+    }
+  }, [userLevel]);
 
   // Fetch favorites from backend
   useEffect(() => {
@@ -64,7 +98,7 @@ const Sidebar = ({ darkMode, isSidebarOpen, setIsSidebarOpen }) => {
         body: JSON.stringify({
           userId,
           password,
-          favList: updatedFavorites, // Send as array
+          favList: updatedFavorites,
         }),
       });
     } catch (error) {
@@ -126,116 +160,46 @@ const Sidebar = ({ darkMode, isSidebarOpen, setIsSidebarOpen }) => {
 
         <div className="sidebar-content">
           <div className="sidebar-section">
-            {filteredLinks.map((link, index) => {
-              const isFavorited = favorites.includes(link.name);
-              return (
-                <div key={index} className="link-card">
-                  <span
-                    className="star-icon"
-                    onClick={() => toggleFavorite(link.name)}
-                    title={isFavorited ? 'Unstar' : 'Star'}
-                  >
-                    {isFavorited ? (
-                      <Star fill="#facc15" color="#facc15" size={16} />
-                    ) : (
-                      <Star color="#fff" size={16} />
-                    )}
-                  </span>
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="link-anchor"
-                  >
-                    {isSidebarOpen ? (
-                      <span>{link.name}</span>
-                    ) : (
-                      <img
-                        src={link.icon}
-                        alt={link.name}
-                        title={link.name}
-                        className="link-icon"
-                      />
-                    )}
-                  </a>
-                </div>
-              );
-            })}
+            {filteredLinks.length > 0 ? (
+              filteredLinks.map((link, index) => {
+                const isFavorited = favorites.includes(link.name);
+                return (
+                  <div key={index} className="link-card">
+                    <span
+                      className="star-icon"
+                      onClick={() => toggleFavorite(link.name)}
+                      title={isFavorited ? 'Unstar' : 'Star'}
+                    >
+                      {isFavorited ? (
+                        <Star fill="#facc15" color="#facc15" size={16} />
+                      ) : (
+                        <Star color="#fff" size={16} />
+                      )}
+                    </span>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="link-anchor"
+                    >
+                      {isSidebarOpen ? (
+                        <span>{link.name}</span>
+                      ) : (
+                        <img
+                          src={link.icon}
+                          alt={link.name}
+                          title={link.name}
+                          className="link-icon"
+                        />
+                      )}
+                    </a>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="no-links-message">No links available for your user level</p>
+            )}
           </div>
-        </div>
-      </div>
-    </>
-  );
-};
-
-export default Sidebar;
-
-
-
-
-
-
-import React, { useState, useEffect } from 'react';
-import { Menu } from 'lucide-react';
-import { cardLinkEISInfra } from '../data/links';
-import '../styles/sidebar.css';
-
-const Sidebar = ({ darkMode }) => {
-  const [isOpen, setIsOpen] = useState(window.innerWidth > 768);
-
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768) {
-        setIsOpen(true);
-      } else {
-        setIsOpen(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return (
-    <>
-      {/* Toggle button outside the sidebar */}
-      <button
-        className="sidebar-toggle"
-        onClick={toggleSidebar}
-        aria-label="Toggle sidebar"
-      >
-        <Menu size={20} color="var(--text-color)" />
-      </button>
-
-      {/* Sidebar content */}
-      <div className={`sidebar ${darkMode ? 'dark-mode' : ''} ${isOpen ? 'open' : ''}`}>
-        <div className="sidebar-header">
-          <h2 className="sidebar-title">Navigation & Quick Access</h2>
-          <p className="sidebar-subtitle"></p>
-        </div>
-
-        <div className="sidebar-content">
-          <div className="sidebar-section">
-            {cardLinkEISInfra.map((link, index) => (
-              <div
-                key={index}
-                className="link-card"
-                style={{ '--index': index }}
-              >
-                <a href={link.url} target="_blank" rel="noopener noreferrer">
-                  <span>{link.name}</span>
-                </a>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="sidebar-footer">
-          <p></p>
         </div>
       </div>
     </>
