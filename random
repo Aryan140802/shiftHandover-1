@@ -45,57 +45,81 @@ const [showPassword, setShowPassword] = useState(false);
 
 .password-input {
   width: 100%;
-  padding-right: 40px; /* space for the eye icon */
+  padding-right: 45px;
 }
 
-/* The eye icon */
+/* Base eye shape */
 .toggle-password {
   position: absolute;
   top: 50%;
   right: 10px;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 16px;
   cursor: pointer;
   transform: translateY(-50%);
-  opacity: 0.6; /* transparent look */
+  opacity: 0.75;
+  transition: opacity 0.3s ease;
 }
 
-/* Eye shape */
-.toggle-password::before,
+.toggle-password:hover {
+  opacity: 1;
+}
+
+/* Outer eye (arc shape) */
+.toggle-password::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid #888;
+  border-radius: 50% / 60%;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+/* Inner pupil */
 .toggle-password::after {
   content: "";
   position: absolute;
-  border-radius: 50%;
-  transition: 0.3s ease;
-}
-
-/* Outer eye outline */
-.toggle-password::before {
-  width: 100%;
-  height: 60%;
-  border: 2px solid #999; /* 👁 hex color */
-  border-radius: 50% / 50%;
-  top: 20%;
-  left: 0;
-}
-
-/* Pupil */
-.toggle-password::after {
-  width: 8px;
-  height: 8px;
-  background-color: #999; /* 👁 pupil color */
   top: 50%;
   left: 50%;
+  width: 8px;
+  height: 8px;
+  background-color: #888;
+  border-radius: 50%;
   transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
 }
 
-/* Active state (eye open / visible password) */
+/* Active (open eye) effect */
 .toggle-password.active::before {
-  border-color: #00bcd4; /* light teal */
+  border-color: #00d9ff;
+  box-shadow: 0 0 8px #00d9ff;
 }
+
 .toggle-password.active::after {
-  background-color: #00bcd4;
+  background-color: #00d9ff;
+  width: 10px;
+  height: 10px;
 }
-.toggle-password:hover {
-  opacity: 1; /* brighten on hover */
+
+/* Slash for hidden state (eye closed) */
+.toggle-password:not(.active)::after {
+  background-color: #888;
 }
+
+.toggle-password::marker {
+  display: none;
+}
+
+/* Optional slash animation */
+.toggle-password::before,
+.toggle-password::after {
+  position: absolute;
+}
+
+.toggle-password:not(.active)::before {
+  background: linear-gradient(45deg, transparent 45%, #888 45%, #888 55%, transparent 55%);
+  background-size: 100% 100%;
+  border: none;
+}
+
