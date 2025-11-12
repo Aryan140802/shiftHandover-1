@@ -1,271 +1,50 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Menu as MenuIcon, ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import { cardLinkEISInfra, cardLinkSupport } from './CardLinks';
-//import { apiFetchFavorites, apiUpdateFavorites } from '../utils/api'; // Import the new functions
-import  { apiFetchFavorites, apiUpdateFavorites } from "../api/PostApi";
-
-import '../styles/Menu.css';
-
-const Sidebar = ({ darkMode, isSidebarOpen, setIsSidebarOpen }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [favorites, setFavorites] = useState([]);
-  const [userId, setUserId] = useState(null);
-  const [password, setPassword] = useState(null);
-  const [userLevel, setUserLevel] = useState(null);
-  const [cardLinks, setCardLinks] = useState([]);
-
-  const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
-
-  // Get userId, password, and userLevel from localStorage on mount
-  useEffect(() => {
-    const uid = localStorage.getItem('uidd');
-    const pwd = localStorage.getItem('password');
-    const level = localStorage.getItem('userlevel');
-
-    if (uid && pwd) {
-      setUserId(uid);
-      setPassword(pwd);
-    } else {
-      console.warn('No user credentials found in localStorage');
-    }
-
-    if (level) {
-      setUserLevel(level);
-    } else {
-      console.warn('No user level found in localStorage');
-    }
-  }, []);
-
-  // Set cardLinks based on userLevel
-  useEffect(() => {
-    if (!userLevel) return;
-
-    const normalizedLevel = userLevel.toUpperCase();
-
-    switch (normalizedLevel) {
-      case 'ADMIN':
-      case 'L2':
-        setCardLinks(cardLinkEISInfra);
-        break;
-      case 'SUPPORT':
-        setCardLinks(cardLinkSupport);
-        break;
-      case 'BANK':
-        // Combine both arrays for Bank users
-        setCardLinks([...cardLinkEISInfra, ...cardLinkSupport]);
-        break;
-      default:
-        console.warn('Unknown user level:', userLevel);
-        setCardLinks([]);
-    }
-  }, [userLevel]);
-
-  // Fetch favorites from backend using the API function
-  useEffect(() => {
-    if (!userId || !password) return;
-
-    const loadFavorites = async () => {
-      try {
-        const favArray = await apiFetchFavorites(userId, password);
-        setFavorites(favArray);
-      } catch (err) {
-        // Error already logged in api.js, but can add component-specific logic here
-      }
-    };
-
-    loadFavorites();
-  }, [userId, password]);
-
-  // Memoized function to update the backend when favorites change
-  const updateFavoritesOnBackend = useCallback(async (updatedFavorites) => {
-    if (!userId || !password) return;
-    try {
-      await apiUpdateFavorites(userId, password, updatedFavorites);
-    } catch (error) {
-      // Error already logged in api.js
-    }
-  }, [userId, password]); // Dependencies for the update function
-
-  // Toggle favorite
-  const toggleFavorite = (name) => {
-    setFavorites((prev) => {
-      const updated = prev.includes(name)
-        ? prev.filter((fav) => fav !== name)
-        : [...prev, name];
-
-      // Call the separated and memoized backend update function
-      updateFavoritesOnBackend(updated);
-      return updated;
-    });
-  };
-
-  // Filter and sort links
-  const filteredLinks = cardLinks
-    .filter((link) => link.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a, b) => {
-      const aFav = favorites.includes(a.name);
-      const bFav = favorites.includes(b.name);
-      return aFav === bFav ? 0 : aFav ? -1 : 1;
-    });
-
-  return (
-    <>
-      {!isSidebarOpen && (
-        <button className="sidebar-toggle" onClick={toggleSidebar}>
-          <MenuIcon size={24} />
-        </button>
-      )}
-
-      <div className={`sidebar ${isSidebarOpen ? 'open' : 'collapsed'}`}>
-        <div className="sidebar-header">
-          {isSidebarOpen && <h2 className="sidebar-title">Quick Access</h2>}
-          <button
-            className="collapse-btn"
-            onClick={toggleSidebar}
-            aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-          >
-            {isSidebarOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
-          </button>
-        </div>
-
-        {isSidebarOpen && (
-          <div className="sidebar-search">
-            <input
-              type="text"
-              placeholder="Search links..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-          </div>
-        )}
-
-        <div className="sidebar-content">
-          <div className="sidebar-section">
-            {filteredLinks.length > 0 ? (
-              filteredLinks.map((link, index) => {
-                const isFavorited = favorites.includes(link.name);
-                return (
-                  <div key={index} className="link-card">
-                    <span
-                      className="star-icon"
-                      onClick={() => toggleFavorite(link.name)}
-                      title={isFavorited ? 'Unstar' : 'Star'}
-                    >
-                      {isFavorited ? (
-                        <Star fill="#facc15" color="#facc15" size={16} />
-                      ) : (
-                        <Star color="#fff" size={16} />
-                      )}
-                    </span>
-                    <a
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="link-anchor"
-                    >
-                      {isSidebarOpen ? (
-                        <span>{link.name}</span>
-                      ) : (
-                        <img
-                          src={link.icon}
-                          alt={link.name}
-                          title={link.name}
-                          className="link-icon"
-                        />
-                      )}
-                    </a>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="no-links-message">No links available for your user level</p>
-            )}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-};
-
-export default Sidebar;
-
-
-
-
-{userId: "v1018696", password: "92a11936f2552555c6ae212b1c81973c", favList: "v1018696"}
-favList
-: 
-"v1018696"
-password
-: 
-"92a11936f2552555c6ae212b1c81973c"
-userId
-: 
-"v1018696"
-
-{error: "favList must be an array"}
-error
-: 
-"favList must be an array"
-
-
-
-
 export const apiFetchFavorites = async () => {
   try {
-
     const userId = localStorage.getItem('uidd');
     const password = localStorage.getItem('password');
+    
     const res = await api.post('/EISHome/postFavourites/', {
-      "userId":userId,
-      "password":password,
-
+      userId: userId,
+      password: password,
     });
-
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-
-    const data = await res.json();
+    
+    // If using axios (which api.post likely is), response data is in res.data
+    const data = res.data;
     const favData = data.favourites;
-
     let favArray = [];
-
+    
     // Ensure favData is handled correctly whether it's an array or a comma-separated string
     if (Array.isArray(favData)) {
       favArray = favData;
     } else if (typeof favData === 'string') {
       favArray = favData.split(',').map(item => item.trim()).filter(Boolean);
     }
-
+    
     return favArray;
-
   } catch (err) {
     console.error('Failed to load favorites:', err);
-    throw err; // Re-throw to allow component-level error handling if needed
+    throw err;
   }
 };
-
 
 export const apiUpdateFavorites = async (updatedFavorites) => {
   try {
-       const userId = localStorage.getItem('uidd');
-       const password = localStorage.getItem('password');
-       const res = await api.post('/EISHome/postFavourites/', {
-        "userId":userId,
-        "password":password,
-        favList: updatedFavorites,
-
+    const userId = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    
+    // Ensure updatedFavorites is always an array
+    const favList = Array.isArray(updatedFavorites) ? updatedFavorites : [];
+    
+    const res = await api.post('/EISHome/postFavourites/', {
+      userId: userId,
+      password: password,
+      favList: favList, // This must be an array
     });
-
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-
+    
+    // If using axios, you don't need to check res.ok or call res.json()
+    return res.data;
   } catch (error) {
     console.error('Failed to update favorites:', error);
-    throw error; // Re-throw to allow component-level error handling
+    throw error;
   }
 };
-
