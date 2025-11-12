@@ -209,3 +209,63 @@ error
 : 
 "favList must be an array"
 
+
+
+
+export const apiFetchFavorites = async () => {
+  try {
+
+    const userId = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const res = await api.post('/EISHome/postFavourites/', {
+      "userId":userId,
+      "password":password,
+
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    const favData = data.favourites;
+
+    let favArray = [];
+
+    // Ensure favData is handled correctly whether it's an array or a comma-separated string
+    if (Array.isArray(favData)) {
+      favArray = favData;
+    } else if (typeof favData === 'string') {
+      favArray = favData.split(',').map(item => item.trim()).filter(Boolean);
+    }
+
+    return favArray;
+
+  } catch (err) {
+    console.error('Failed to load favorites:', err);
+    throw err; // Re-throw to allow component-level error handling if needed
+  }
+};
+
+
+export const apiUpdateFavorites = async (updatedFavorites) => {
+  try {
+       const userId = localStorage.getItem('uidd');
+       const password = localStorage.getItem('password');
+       const res = await api.post('/EISHome/postFavourites/', {
+        "userId":userId,
+        "password":password,
+        favList: updatedFavorites,
+
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+  } catch (error) {
+    console.error('Failed to update favorites:', error);
+    throw error; // Re-throw to allow component-level error handling
+  }
+};
+
