@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const sessionId = localStorage.getItem('sessionid');
     
     if (!uid || !sessionId) {
+        console.log("No auth tokens - redirecting to login");
         redirectToLogin();
         return;
     }
@@ -17,36 +18,27 @@ document.addEventListener("DOMContentLoaded", async () => {
             body: JSON.stringify({ uid })
         });
 
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
+        console.log("Auth response:", data);
         
-        if (data.status === 302 || data.success) {
-            handlePostLoginRedirect();
+        if (data.status === 302 || data.success === true) {
+            console.log("Authentication successful");
+            // Continue with app
         } else {
+            console.log("Authentication failed - redirecting");
             redirectToLogin();
         }
     } catch (error) {
+        console.error("Auth error:", error);
         redirectToLogin();
     }
 });
 
 function redirectToLogin() {
-    const returnUrl = window.location.href;
-    localStorage.setItem('post_login_redirect', returnUrl);
-    window.location.href = 'https://10.191.171.12:5443/EISHOME/';
-}
-
-function handlePostLoginRedirect() {
-    const redirectUrl = localStorage.getItem('post_login_redirect');
-    if (redirectUrl && redirectUrl !== window.location.href) {
-        localStorage.removeItem('post_login_redirect');
-        window.location.href = redirectUrl;
-    } else {
-        // Continue with app initialization
-        initializeApp();
-    }
-}
-
-function initializeApp() {
-    // Your app initialization code here
-    console.log("App initialized");
+    const currentUrl = encodeURIComponent(window.location.href);
+    window.location.href = `https://10.191.171.12:5443/EISHOME/?return_url=${currentUrl}`;
 }
