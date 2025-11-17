@@ -1,28 +1,52 @@
-document.addEventListener("DOMContentLoaded",async ()=> {
-var uid=localStorage.getItem('uidd');
-var sessionId=localStorage.getItem('sessionid');
-  try{
-     const response  = await fetch('https://10.191.171.12:5443/EISHOME/awthenticationService/authenticatePortal/',{
-     method:'POST',
-     headers:{
-             'Content-Type':'application/json',
-             'Authorization': `Bearer ${sessionId}`
-:
-    },
-    body: JSON.stringify({uid})
-    });
-    const data = await response.json();
-    console.log(data);
-    if(data.status==302){
-            console.log("login successfull");
+document.addEventListener("DOMContentLoaded", async () => {
+    const uid = localStorage.getItem('uidd');
+    const sessionId = localStorage.getItem('sessionid');
+    
+    if (!uid || !sessionId) {
+        redirectToLogin();
+        return;
     }
-    else{
-            console.log(data.status)
-          window.location.href='https://10.191.171.12:5443/EISHOME/';
-    }
-  }
-catch(e){
-console.log("an error occured for login"+e)
 
-}
+    try {
+        const response = await fetch('https://10.191.171.12:5443/EISHOME/awthenticationService/authenticatePortal/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionId}`
+            },
+            body: JSON.stringify({ uid })
+        });
+
+        const data = await response.json();
+        
+        if (data.status === 302 || data.success) {
+            handlePostLoginRedirect();
+        } else {
+            redirectToLogin();
+        }
+    } catch (error) {
+        redirectToLogin();
+    }
 });
+
+function redirectToLogin() {
+    const returnUrl = window.location.href;
+    localStorage.setItem('post_login_redirect', returnUrl);
+    window.location.href = 'https://10.191.171.12:5443/EISHOME/';
+}
+
+function handlePostLoginRedirect() {
+    const redirectUrl = localStorage.getItem('post_login_redirect');
+    if (redirectUrl && redirectUrl !== window.location.href) {
+        localStorage.removeItem('post_login_redirect');
+        window.location.href = redirectUrl;
+    } else {
+        // Continue with app initialization
+        initializeApp();
+    }
+}
+
+function initializeApp() {
+    // Your app initialization code here
+    console.log("App initialized");
+}
