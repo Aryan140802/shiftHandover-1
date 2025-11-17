@@ -2,6 +2,14 @@
 https://10.191.171.12:5443/EISHOME/awthenticationService/authenticatePortal/
 
 
+Response
+: 
+"login successfull"
+status
+: 
+302
+
+
 
 
 
