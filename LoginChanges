@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Login.css';
 import Header from './Header';
 import Footer from './Footer';
@@ -23,16 +23,44 @@ function Login({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-          if (forgotPwdMsg){
-                  const timer = setTimeout(() => {
-                          setForgotPwdMsg('');
-                  },3000);
-                  return () => clearTimeout(timer);
-          }
-  } , [forgotPwdMsg]);
+    if (forgotPwdMsg) {
+      const timer = setTimeout(() => {
+        setForgotPwdMsg('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [forgotPwdMsg]);
 
+  // Check for redirect URL on component mount
+  useEffect(() => {
+    console.log("Login page loaded - checking for redirect URL");
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnUrl = urlParams.get('return_url');
+    
+    if (returnUrl) {
+      console.log("Found return URL in parameters:", returnUrl);
+      localStorage.setItem('post_login_redirect', returnUrl);
+    } else {
+      console.log("No return URL found in parameters");
+    }
+  }, []);
 
-
+  const handleLoginSuccess = (username) => {
+    // Check if there's a redirect URL stored
+    const redirectUrl = localStorage.getItem('post_login_redirect');
+    console.log("Login successful - checking redirect URL:", redirectUrl);
+    
+    if (redirectUrl) {
+      // Clear the stored URL and redirect back
+      localStorage.removeItem('post_login_redirect');
+      console.log("Redirecting back to:", redirectUrl);
+      window.location.href = redirectUrl;
+    } else {
+      // No redirect URL, proceed with normal login flow
+      console.log("No redirect URL - proceeding with normal login");
+      onLogin(username);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,7 +69,7 @@ function Login({ onLogin }) {
     try {
       const response = await postLogin(username, password);
       if (response.data.status === 302) {
-        onLogin(response.data.username);
+        handleLoginSuccess(response.data.username);
       } else {
         setError('Invalid credentials');
       }
@@ -67,23 +95,18 @@ function Login({ onLogin }) {
     setForgotPwdMsg('');
     try {
       const res = await postGetSecurityQuestion(empId);
-      //console.log('Security Question Response:', res.data); // Debug log
-
-      // Accept typo key first, then correct key
       const secQ = res.data.securityQuestion;
 
-      // Check if we got a valid response and security question
       if (res.data && (secQ !== null && secQ !== '')) {
         setSecurityQ(secQ);
         setShowEmpIdModal(false);
         setShowSecQModal(true);
         setSecurityAnswer('');
         setNewPwd('');
-        setForgotPwdMsg(''); // Clear any previous messages
+        setForgotPwdMsg('');
       } else {
-        // Handle case where employee ID is valid but no security question is set
         if (res.data && (secQ === '' || secQ === null)) {
-          setSecurityQ(''); // Set empty security question
+          setSecurityQ('');
           setShowEmpIdModal(false);
           setShowSecQModal(true);
           setSecurityAnswer('');
@@ -134,7 +157,7 @@ function Login({ onLogin }) {
   };
 
   const handleRegisterRedirect = () => {
-    window.open('https://10.191.171.12:5443/EISInfra/EIS/EIS/Registration.php', '_blank' );
+    window.open('https://10.191.171.12:5443/EISInfra/EIS/EIS/Registration.php', '_blank');
   };
 
   return (
@@ -154,20 +177,20 @@ function Login({ onLogin }) {
             required
           />
 
-       <div className="password-wrapper">
-      <input
-        type={showPassword ? "text" : "password"}
-        className="password-input"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <span
-        className={`toggle-password ${showPassword ? "active" : ""}`}
-        onClick={() => setShowPassword(!showPassword)}
-      ></span>
-    </div>
+          <div className="password-wrapper">
+            <input
+              type={showPassword ? "text" : "password"}
+              className="password-input"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <span
+              className={`toggle-password ${showPassword ? "active" : ""}`}
+              onClick={() => setShowPassword(!showPassword)}
+            ></span>
+          </div>
 
           <button type="submit" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
@@ -257,7 +280,7 @@ function Login({ onLogin }) {
 
               <label>Your Answer:</label>
               <input
-                 type="password"
+                type="password"
                 placeholder="Enter your answer"
                 value={securityAnswer}
                 onChange={e => setSecurityAnswer(e.target.value)}
