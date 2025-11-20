@@ -134,7 +134,7 @@ const HistoryTasksTable = ({ tasks }) => {
           ))}
         </tbody>
       </table>
-      
+
     </div>
   );
 };
