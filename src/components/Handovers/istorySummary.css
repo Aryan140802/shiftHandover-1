@@ -521,15 +521,21 @@
   letter-spacing: 0.5px;
 }
 
+
+
 .timeline-horizontal {
   display: flex;
   overflow-x: auto;
+  max-width: 100%;
   padding: 2rem 0 1rem 0;
   gap: 0;
   position: relative;
   min-height: 200px;
+ 
 }
-
+.expanded-content {
+  overflow-x: visible !important; /* Ensure parent doesn't force unwanted horizontal scroll */
+}
 .timeline-item {
   display: flex;
   flex-direction: column;
