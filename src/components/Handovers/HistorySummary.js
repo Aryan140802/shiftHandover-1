@@ -19,6 +19,7 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   return (
     <div className="timeline-container">
       <h4 className="timeline-title">📅 Acknowledgment History</h4>
+      {/* Added timeline scroller so it only appears inside expanded timeline */}
       <div className="timeline-horizontal">
         {acknowledgeDetails.map((ack, index) => (
           <div key={ack.ackId || index} className="timeline-item">
@@ -133,6 +134,7 @@ const HistoryTasksTable = ({ tasks }) => {
                 <tr className="expanded-row">
                   <td colSpan="7">
                     <div className="expanded-content">
+                      {/* Timeline will have its own scroller only if overflowed */}
                       <AcknowledgeTimeline acknowledgeDetails={task.acknowledgeDetails} />
                     </div>
                   </td>
@@ -152,6 +154,12 @@ const HistorySummary = () => {
   const [error, setError] = useState('');
   const [historyData, setHistoryData] = useState(null);
   const [apiCalled, setApiCalled] = useState(false);
+
+  // Fetch data on page load (component mount)
+  useEffect(() => {
+    handleFetchHistory();
+    // eslint-disable-next-line
+  }, []);
 
   // Function to fetch history data from API
   const handleFetchHistory = async () => {
