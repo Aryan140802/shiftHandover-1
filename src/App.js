@@ -12,6 +12,8 @@ import HandoverDetail from './components/Handovers/HandoverDetail';
 import HandoverReports from './components/Reports/HandoverReports';
 import DeploymentLogger from './components/DeploymentLogger/DeploymentLogger';
 import BillingAnalysis from './components/BillingAnalysis/BillingAnalysis';
+// Add import at the top
+import HistorySummary from './components/Handovers/HistorySummary';
 
 // Main CSS
 import './App.css';
@@ -113,6 +115,15 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+                <Route
+  path="/history-summary"
+  element={
+    <ProtectedRoute allowedRoles={['ADMIN', 'L2']}>
+      <HistorySummary />
+    </ProtectedRoute>
+  }
+/>
               
               <Route
                 path="/deployment-logger"
