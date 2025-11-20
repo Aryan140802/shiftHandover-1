@@ -61,8 +61,39 @@
   overflow: hidden;
 }
 
+/* Modal Position Fix - UPDATED */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(8px);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  display: flex !important;
+  align-items: flex-start !important; /* Changed to flex-start to show top */
+  justify-content: center !important;
+  z-index: 9999 !important;
+  overflow-y: auto !important;
+  padding: 2rem 0 !important;
+}
 
-
+.modal-content {
+  background: linear-gradient(135deg, rgba(26, 26, 62, 0.95) 0%, rgba(15, 15, 35, 0.95) 100%) !important;
+  border: 1px solid rgba(46, 213, 255, 0.3) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 20px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  max-width: 1400px !important; /* Increased to 1400px */
+  width: 95% !important;
+  max-height: 90vh !important;
+  position: relative !important;
+  margin: 0 !important;
+  transform: none !important;
+  top: 0 !important;
+  left: auto !important;
+}
 
 /* Modal Form Container Styles - UPDATED */
 .modal-form-container {
@@ -1911,127 +1942,3 @@ body.modal-open {
           background: rgba(231, 76, 60, 0.2);
           color: #e74c3c;
         }
-/* Modal Form Container Styles - OPTIMIZED FOR FULL PAGE */
-.modal-form-container {
-  position: relative;
-  z-index: 1;
-  max-width: 1200px; /* Increased from default */
-  margin: 0 auto;
-  padding: 2rem;
-  min-height: calc(100vh - 4rem); /* Ensure content fills viewport */
-}
-
-/* Remove max-height constraint that was causing scroll issues */
-.modal-form-container > * {
-  margin-bottom: 1.5rem;
-}
-
-.modal-form-container > *:last-child {
-  margin-bottom: 0;
-}
-
-/* Custom Scrollbar for Modal - only if needed */
-.modal-form-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.modal-form-container::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 10px;
-}
-
-.modal-form-container::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(46, 213, 255, 0.4) 0%, rgba(138, 43, 226, 0.4) 100%);
-  border-radius: 10px;
-}
-
-.modal-form-container::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(46, 213, 255, 0.6) 0%, rgba(138, 43, 226, 0.6) 100%);
-}
-
-.modal-title {
-  margin: 0 0 2rem 0;
-  font-size: 1.75rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #2ed5ff 0%, #8a2be2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-align: center;
-  letter-spacing: 0.5px;
-}
-
-/* Task Info Horizontal Grid - Better spacing for full page */
-.task-info-horizontal {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(46, 213, 255, 0.03) 0%, rgba(138, 43, 226, 0.03) 100%);
-  border: 1px solid rgba(46, 213, 255, 0.15);
-  border-radius: 12px;
-}
-
-/* Timeline Container - Optimized for full page view */
-.timeline-container {
-  margin-top: 1.5rem;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(46, 213, 255, 0.03) 0%, rgba(138, 43, 226, 0.03) 100%);
-  border: 1px solid rgba(46, 213, 255, 0.15);
-  border-radius: 12px;
-  position: relative;
-  overflow: visible; /* Changed from hidden */
-  max-height: 500px; /* Add max height to timeline */
-  overflow-y: auto; /* Only timeline scrolls if too tall */
-}
-
-/* Timeline horizontal scroll */
-.timeline-horizontal {
-  display: flex;
-  overflow-x: auto;
-  padding: 2rem 0 1rem 0;
-  gap: 0;
-  position: relative;
-  min-height: 200px;
-}
-
-/* Form actions - stick to bottom on full page */
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  position: sticky;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(26, 26, 62, 0.98) 0%, rgba(15, 15, 35, 0.98) 100%);
-  z-index: 10;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .modal-form-container {
-    padding: 1.5rem 1rem;
-    min-height: calc(100vh - 3rem);
-  }
-
-  .task-info-horizontal {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .timeline-container {
-    max-height: 400px;
-  }
-
-  .modal-actions {
-    flex-direction: column;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    width: 100%;
-  }
-}
