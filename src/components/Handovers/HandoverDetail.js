@@ -337,9 +337,7 @@ const HandoverDetail = () => {
   const [ackStatus, setAckStatus] = useState('in progress');
   const [error, setError] = useState('');
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
-  const [showSummaryModal, setShowSummaryModal] = useState(false);
-  const [summaryLoading, setSummaryLoading] = useState(false);
-  const [historyData, setHistoryData] = useState(null);
+
   const [newTask, setNewTask] = useState({
     taskTitle: '',
     taskDesc: '',
@@ -399,25 +397,9 @@ const HandoverDetail = () => {
     }
   };
 
-  const handleSummaryClick = async () => {
-    setSummaryLoading(true);
-    setShowSummaryModal(true);
-    setError('');
-
-    try {
-      const data = await getHistoryHandovers();
-      if (data && data.TeamHandoverDetails && data.Tasksdata) {
-        setHistoryData(data);
-      } else {
-        throw new Error('Invalid history data structure');
-      }
-    } catch (err) {
-      setError('Failed to load history data');
-      setHistoryData(null);
-    } finally {
-      setSummaryLoading(false);
-    }
-  };
+  const handleSummaryClick = () => {
+  navigate('/history-summary');
+};
 
   const handleAcknowledgeClick = (task) => {
     setSelectedTask(task);
@@ -836,15 +818,7 @@ const HandoverDetail = () => {
           </Modal>
         )}
 
-        {showSummaryModal && (
-          <Modal open={showSummaryModal} onClose={() => setShowSummaryModal(false)}>
-            <SummaryModal
-              historyData={historyData}
-              loading={summaryLoading}
-              onClose={() => setShowSummaryModal(false)}
-            />
-          </Modal>
-        )}
+       
       </div>
     </div>
   );
