@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import './HandoverDetail.css';
@@ -11,8 +11,62 @@ const acknowledgeStatusOptions = [
   { value: 'completed', label: 'Completed' }
 ];
 
-// Timeline Component
+// Timeline Component with Auto-Scroll
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
+  const timelineScrollRef = useRef(null);
+  const autoScrollRef = useRef(null);
+
+  useEffect(() => {
+    if (!timelineScrollRef.current) return;
+
+    const scrollElement = timelineScrollRef.current;
+    const scrollWidth = scrollElement.scrollWidth;
+    const clientWidth = scrollElement.clientWidth;
+
+    // Only auto-scroll if content is wider than container
+    if (scrollWidth <= clientWidth) return;
+
+    let scrollPosition = 0;
+    let direction = 1; // 1 for forward, -1 for backward
+    const scrollSpeed = 50; // milliseconds per scroll step
+
+    const autoScroll = () => {
+      scrollPosition += direction;
+      scrollElement.scrollLeft = scrollPosition;
+
+      // Reverse direction at the ends
+      if (scrollPosition >= scrollWidth - clientWidth - 10) {
+        direction = -1;
+      } else if (scrollPosition <= 10) {
+        direction = 1;
+      }
+
+      autoScrollRef.current = setTimeout(autoScroll, scrollSpeed);
+    };
+
+    // Start auto-scroll
+    autoScrollRef.current = setTimeout(autoScroll, 2000); // Start after 2 seconds
+
+    // Pause on hover
+    const handleMouseEnter = () => {
+      if (autoScrollRef.current) clearTimeout(autoScrollRef.current);
+    };
+
+    const handleMouseLeave = () => {
+      autoScrollRef.current = setTimeout(autoScroll, scrollSpeed);
+    };
+
+    scrollElement.addEventListener('mouseenter', handleMouseEnter);
+    scrollElement.addEventListener('mouseleave', handleMouseLeave);
+
+    // Cleanup
+    return () => {
+      if (autoScrollRef.current) clearTimeout(autoScrollRef.current);
+      scrollElement.removeEventListener('mouseenter', handleMouseEnter);
+      scrollElement.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [acknowledgeDetails]);
+
   if (!acknowledgeDetails || acknowledgeDetails.length === 0) {
     return (
       <div className="timeline-container">
@@ -26,30 +80,35 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   return (
     <div className="timeline-container">
       <h4 className="timeline-title">Acknowledgment History</h4>
-      <div className="timeline-horizontal">
-        {acknowledgeDetails.map((ack, index) => (
-          <div key={ack.ackId} className="timeline-item">
-            <div className="timeline-marker">
-              <div className="timeline-dot"></div>
-              {index < acknowledgeDetails.length - 1 && (
-                <div className="timeline-connector"></div>
-              )}
-            </div>
-            <div className="timeline-content">
-              <div className="timeline-header">
-                <span className="timeline-time">
-                  {format(new Date(ack.acknowledgeTime), 'MMM d, yyyy h:mm a')}
-                </span>
-                <span className="timeline-user">
-                  User ID: {ack.userAcknowleged_id}
-                </span>
+      <div 
+        ref={timelineScrollRef}
+        className="timeline-horizontal-scroll"
+      >
+        <div className="timeline-horizontal">
+          {acknowledgeDetails.map((ack, index) => (
+            <div key={ack.ackId} className="timeline-item">
+              <div className="timeline-marker">
+                <div className="timeline-dot"></div>
+                {index < acknowledgeDetails.length - 1 && (
+                  <div className="timeline-connector"></div>
+                )}
               </div>
-              <div className="timeline-description">
-                {ack.ackDesc}
+              <div className="timeline-content">
+                <div className="timeline-header">
+                  <span className="timeline-time">
+                    {format(new Date(ack.acknowledgeTime), 'MMM d, yyyy h:mm a')}
+                  </span>
+                  <span className="timeline-user">
+                    User ID: {ack.userAcknowleged_id}
+                  </span>
+                </div>
+                <div className="timeline-description">
+                  {ack.ackDesc}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -258,35 +317,6 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
           </div>
         </div>
 
-        {/* Status Distribution
-        {Object.keys(summary.statusDistribution).length > 0 && (
-          <div className="status-distribution">
-            <h4>Status Distribution</h4>
-            <div className="status-bars">
-              {Object.entries(summary.statusDistribution).map(([status, count]) => {
-                const percentage = summary.totalTasks > 0
-                  ? (count / summary.totalTasks * 100).toFixed(1)
-                  : 0;
-                return (
-                  <div key={status} className="status-bar-item">
-                    <div className="status-bar-header">
-                      <span className="status-name">{status}</span>
-                      <span className="status-count">{count} ({percentage}%)</span>
-                    </div>
-                    <div className="status-bar">
-                      <div
-                        className={`status-bar-fill ${status.toLowerCase().replace(' ', '\\ ')}`}
-                        style={{ width: `${percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-         */}
-
         {/* Teams Overview */}
         {summary.teams.length > 0 && (
           <div className="teams-overview">
@@ -313,11 +343,6 @@ const SummaryModal = ({ historyData, onClose, loading }) => {
             <HistoryTasksTable tasks={summary.tasksBreakdown} />
           </div>
         )}
-        {/*
-        <div className="data-source">
-          <p>Historical data from all handovers ({summary.totalTasks} total tasks)</p>
-        </div>
-        */}
       </div>
     </div>
   );
@@ -398,8 +423,8 @@ const HandoverDetail = () => {
   };
 
   const handleSummaryClick = () => {
-  navigate('/history-summary');
-};
+    navigate('/history-summary');
+  };
 
   const handleAcknowledgeClick = (task) => {
     setSelectedTask(task);
@@ -538,11 +563,6 @@ const HandoverDetail = () => {
 
       <div className="handover-detail-header">
         <h2>{handover.role} Team Handover</h2>
-          {/*
-        <button onClick={() => navigate('/dashboard')} className="back-button">
-          ← Back to List
-        </button>
-        */}
       </div>
 
 
