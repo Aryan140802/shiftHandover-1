@@ -75,63 +75,33 @@
   background: linear-gradient(90deg, rgba(52, 152, 219, 0.3), rgba(41, 128, 185, 0.25));
 }
 
-/* Fetch Section */
-.fetch-section {
+/* Loading States */
+.loading-container {
+  text-align: center;
+  padding: 4rem 2rem;
   background: linear-gradient(135deg, rgba(26, 26, 62, 0.4) 0%, rgba(15, 15, 35, 0.4) 100%);
   border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(12px);
   border: 1px solid rgba(46, 213, 255, 0.15);
-  text-align: center;
-  margin-bottom: 2rem;
 }
 
-.fetch-history-btn {
-  padding: 1rem 2rem;
-  background: linear-gradient(90deg, rgba(46, 213, 255, 0.2), rgba(138, 43, 226, 0.15));
-  color: #2ed5ff;
-  border: 1px solid rgba(46, 213, 255, 0.3);
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 1.05rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  box-shadow: 0 4px 15px rgba(46, 213, 255, 0.2);
-}
-
-.fetch-history-btn:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(46, 213, 255, 0.35);
-  background: linear-gradient(90deg, rgba(46, 213, 255, 0.3), rgba(138, 43, 226, 0.2));
-}
-
-.fetch-history-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(46, 213, 255, 0.3);
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(46, 213, 255, 0.2);
   border-top-color: #2ed5ff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  margin: 0 auto 1.5rem;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-.fetch-info {
-  margin-top: 1rem;
-  color: rgba(230, 238, 248, 0.6);
-  font-size: 0.9rem;
+.loading-text {
+  color: #2ed5ff;
+  font-size: 1.1rem;
+  font-weight: 500;
 }
 
 .history-content {
@@ -270,58 +240,6 @@
   color: #b87bff;
 }
 
-/* Status Distribution */
-.status-distribution {
-  padding: 1.5rem 0;
-}
-
-.status-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.status-bar-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.status-bar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 0;
-}
-
-.status-name {
-  font-weight: 600;
-  color: #2ed5ff;
-  text-transform: capitalize;
-}
-
-.status-count {
-  color: rgba(230, 238, 248, 0.7);
-  font-size: 0.9rem;
-}
-
-.status-bar {
-  width: 100%;
-  height: 24px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(46, 213, 255, 0.2);
-}
-
-.status-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #2ed5ff 0%, #8a2be2 100%);
-  border-radius: 12px;
-  transition: width 0.5s ease;
-  min-width: 2%;
-}
-
 /* History Tasks Table */
 .history-tasks-table-container {
   overflow-x: auto;
@@ -381,11 +299,12 @@
 
 .expanded-row td {
   padding: 0;
-  background: rgba(46, 213, 255, 0.05);
+  background: rgba(46, 213, 255, 0.03);
 }
 
 .expanded-content {
   padding: 1.5rem;
+  overflow: visible;
 }
 
 .task-id-cell {
@@ -441,12 +360,7 @@
   text-transform: capitalize;
 }
 
-.status-badge.status-open {
-  background: rgba(255, 193, 7, 0.15);
-  color: #ffeaa7;
-  border: 1px solid rgba(255, 193, 7, 0.3);
-}
-
+.status-badge.status-open,
 .status-badge.status-pending {
   background: rgba(255, 193, 7, 0.15);
   color: #ffeaa7;
@@ -501,9 +415,9 @@
   font-style: italic;
 }
 
-/* Timeline Styles */
+/* Timeline Styles - Each timeline has its own scroller */
 .timeline-container {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   padding: 1.5rem;
   background: linear-gradient(135deg, rgba(46, 213, 255, 0.03) 0%, rgba(138, 43, 226, 0.03) 100%);
   border: 1px solid rgba(46, 213, 255, 0.15);
@@ -521,26 +435,32 @@
   letter-spacing: 0.5px;
 }
 
-
+/* Individual timeline wrapper with its own horizontal scroll */
+.timeline-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1rem 0;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
 
 .timeline-horizontal {
   display: flex;
-  overflow-x: auto;
-  max-width: 100%;
-  padding: 2rem 0 1rem 0;
+  min-width: max-content;
+  padding: 1rem 0;
   gap: 0;
   position: relative;
-  min-height: 200px;
- 
+  align-items: flex-start;
 }
-.expanded-content {
-  overflow-x: visible !important; /* Ensure parent doesn't force unwanted horizontal scroll */
-}
+
 .timeline-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   min-width: 320px;
+  max-width: 320px;
   flex-shrink: 0;
   position: relative;
   padding: 0 1.5rem;
@@ -621,6 +541,7 @@
   align-items: flex-start;
   margin-bottom: 1rem;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .timeline-time {
@@ -663,6 +584,47 @@
   font-style: italic;
 }
 
+/* Enhanced Scrollbar for Individual Timelines */
+.timeline-scroll-wrapper::-webkit-scrollbar {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+}
+
+.timeline-scroll-wrapper::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  margin: 0 1rem;
+}
+
+.timeline-scroll-wrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, 
+    rgba(46, 213, 255, 0.4) 0%, 
+    rgba(138, 43, 226, 0.4) 50%, 
+    rgba(46, 213, 255, 0.4) 100%);
+  border-radius: 10px;
+  border: 2px solid rgba(26, 26, 62, 0.8);
+  box-shadow: 0 0 10px rgba(46, 213, 255, 0.3);
+}
+
+.timeline-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, 
+    rgba(46, 213, 255, 0.6) 0%, 
+    rgba(138, 43, 226, 0.6) 50%, 
+    rgba(46, 213, 255, 0.6) 100%);
+  box-shadow: 0 0 15px rgba(46, 213, 255, 0.5);
+}
+
+/* Scroll Hint */
+.scroll-hint {
+  text-align: center;
+  padding: 0.5rem;
+  color: rgba(46, 213, 255, 0.6);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
 /* Error and State Messages */
 .error-message {
   background: linear-gradient(90deg, rgba(231, 76, 60, 0.12), rgba(231, 76, 60, 0.06));
@@ -694,34 +656,14 @@
   border: 1px dashed rgba(46, 213, 255, 0.2);
 }
 
-.no-data-message {
-  text-align: center;
-  padding: 2rem;
-  color: rgba(230, 238, 248, 0.5);
-}
-
+.no-data-message,
 .no-tasks-message {
   text-align: center;
   padding: 2rem;
   color: rgba(230, 238, 248, 0.5);
 }
 
-.initial-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 4rem 2rem;
-}
-
-.initial-message {
-  text-align: center;
-  padding: 2rem;
-  background: rgba(46, 213, 255, 0.05);
-  border: 2px dashed rgba(46, 213, 255, 0.3);
-  border-radius: 12px;
-  color: rgba(230, 238, 248, 0.7);
-}
-
+/* Responsive Design */
 @media (max-width: 768px) {
   .history-summary-page {
     padding: 1rem;
@@ -752,11 +694,20 @@
 
   .timeline-item {
     min-width: 280px;
+    max-width: 280px;
     padding: 0 1rem;
   }
 
-  .fetch-history-btn {
-    padding: 0.85rem 1.5rem;
-    font-size: 0.95rem;
+  .timeline-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .timeline-item {
+    min-width: 260px;
+    max-width: 260px;
   }
 }
