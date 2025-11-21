@@ -1,11 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getHistoryHandovers } from '../../Api/HandOverApi';
 import './HistorySummary.css';
 
-// Acknowledge Timeline Component
+// Acknowledge Timeline Component with Horizontal Scroll
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
+  const [scrollPosition, setScrollPosition] = useState('start');
+  const scrollWrapperRef = useRef(null);
+
+  const handleScroll = (e) => {
+    const { scrollLeft, scrollWidth, clientWidth } = e.target;
+    const tolerance = 5; // Pixel tolerance for edge detection
+    
+    if (scrollLeft <= tolerance) {
+      setScrollPosition('start');
+    } else if (scrollLeft + clientWidth >= scrollWidth - tolerance) {
+      setScrollPosition('end');
+    } else {
+      setScrollPosition('middle');
+    }
+  };
+
+  // Check initial scroll position on mount and when data changes
+  useEffect(() => {
+    const scrollWrapper = scrollWrapperRef.current;
+    if (scrollWrapper) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollWrapper;
+      if (scrollWidth <= clientWidth) {
+        setScrollPosition('start'); // No scroll needed
+      } else if (scrollLeft === 0) {
+        setScrollPosition('start');
+      } else if (scrollLeft + clientWidth >= scrollWidth - 5) {
+        setScrollPosition('end');
+      } else {
+        setScrollPosition('middle');
+      }
+    }
+  }, [acknowledgeDetails]);
+
   if (!acknowledgeDetails || acknowledgeDetails.length === 0) {
     return (
       <div className="timeline-container">
@@ -19,32 +52,45 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   return (
     <div className="timeline-container">
       <h4 className="timeline-title">📅 Acknowledgment History</h4>
-      {/* Added timeline scroller so it only appears inside expanded timeline */}
-      <div className="timeline-horizontal">
-        {acknowledgeDetails.map((ack, index) => (
-          <div key={ack.ackId || index} className="timeline-item">
-            <div className="timeline-marker">
-              <div className="timeline-dot"></div>
-              {index < acknowledgeDetails.length - 1 && (
-                <div className="timeline-connector"></div>
-              )}
-            </div>
-            <div className="timeline-content">
-              <div className="timeline-header">
-                <span className="timeline-time">
-                  {format(new Date(ack.acknowledgeTime), 'MMM d, yyyy h:mm a')}
-                </span>
-                <span className="timeline-user">
-                  👤 User ID: {ack.userAcknowleged_id}
-                </span>
+      {/* Timeline wrapper with horizontal scroll and dynamic indicators */}
+      <div 
+        ref={scrollWrapperRef}
+        className={`timeline-scroll-wrapper scroll-${scrollPosition}`}
+        onScroll={handleScroll}
+      >
+        <div className="timeline-horizontal">
+          {acknowledgeDetails.map((ack, index) => (
+            <div key={ack.ackId || index} className="timeline-item">
+              <div className="timeline-marker">
+                <div className="timeline-dot"></div>
+                {index < acknowledgeDetails.length - 1 && (
+                  <div className="timeline-connector"></div>
+                )}
               </div>
-              <div className="timeline-description">
-                {ack.ackDesc}
+              <div className="timeline-content">
+                <div className="timeline-header">
+                  <span className="timeline-time">
+                    {format(new Date(ack.acknowledgeTime), 'MMM d, yyyy h:mm a')}
+                  </span>
+                  <span className="timeline-user">
+                    👤 User ID: {ack.userAcknowleged_id}
+                  </span>
+                </div>
+                <div className="timeline-description">
+                  {ack.ackDesc}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+      
+      {/* Optional scroll hint for users */}
+      {scrollPosition !== 'end' && acknowledgeDetails.length > 2 && (
+        <div className="scroll-hint">
+          <span>← Scroll for more →</span>
+        </div>
+      )}
     </div>
   );
 };
@@ -134,7 +180,6 @@ const HistoryTasksTable = ({ tasks }) => {
                 <tr className="expanded-row">
                   <td colSpan="7">
                     <div className="expanded-content">
-                      {/* Timeline will have its own scroller only if overflowed */}
                       <AcknowledgeTimeline acknowledgeDetails={task.acknowledgeDetails} />
                     </div>
                   </td>
