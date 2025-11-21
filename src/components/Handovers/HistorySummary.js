@@ -4,56 +4,50 @@ import { format } from 'date-fns';
 import { getHistoryHandovers } from '../../Api/HandOverApi';
 import './HistorySummary.css';
 
-// Acknowledge Timeline Component with Auto-Scroll
+// ===========================================
+// ACKNOWLEDGE TIMELINE WITH ANIMATIONS & AUTO-SCROLL
+// ===========================================
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   const timelineScrollRef = useRef(null);
   const autoScrollRef = useRef(null);
 
   useEffect(() => {
-    if (!timelineScrollRef.current) return;
+    if (!timelineScrollRef.current || !acknowledgeDetails || acknowledgeDetails.length === 0) return;
 
     const scrollElement = timelineScrollRef.current;
     const scrollWidth = scrollElement.scrollWidth;
     const clientWidth = scrollElement.clientWidth;
 
-    // Only auto-scroll if content is wider than container
     if (scrollWidth <= clientWidth) return;
 
     let scrollPosition = 0;
-    let direction = 1; // 1 for forward, -1 for backward
-    const scrollSpeed = 50; // milliseconds per scroll step
+    let direction = 1;
+    const scrollSpeed = 40;
 
     const autoScroll = () => {
-      scrollPosition += direction;
+      scrollPosition += direction * 1.2;
       scrollElement.scrollLeft = scrollPosition;
 
-      // Reverse direction at the ends
-      if (scrollPosition >= scrollWidth - clientWidth - 10) {
-        direction = -1;
-      } else if (scrollPosition <= 10) {
-        direction = 1;
-      }
+      if (scrollPosition >= scrollWidth - clientWidth - 30) direction = -1;
+      if (scrollPosition <= 20) direction = 1;
 
       autoScrollRef.current = setTimeout(autoScroll, scrollSpeed);
     };
 
-    // Start auto-scroll
-    autoScrollRef.current = setTimeout(autoScroll, 2000); // Start after 2 seconds
+    const timer = setTimeout(() => {
+      autoScrollRef.current = setTimeout(autoScroll, 1500);
+    }, 2000);
 
-    // Pause on hover
-    const handleMouseEnter = () => {
-      if (autoScrollRef.current) clearTimeout(autoScrollRef.current);
-    };
-
+    const handleMouseEnter = () => clearTimeout(autoScrollRef.current);
     const handleMouseLeave = () => {
-      autoScrollRef.current = setTimeout(autoScroll, scrollSpeed);
+      autoScrollRef.current = setTimeout(autoScroll, 800);
     };
 
     scrollElement.addEventListener('mouseenter', handleMouseEnter);
     scrollElement.addEventListener('mouseleave', handleMouseLeave);
 
-    // Cleanup
     return () => {
+      clearTimeout(timer);
       if (autoScrollRef.current) clearTimeout(autoScrollRef.current);
       scrollElement.removeEventListener('mouseenter', handleMouseEnter);
       scrollElement.removeEventListener('mouseleave', handleMouseLeave);
@@ -72,21 +66,26 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
 
   return (
     <div className="timeline-container">
-      <h4 className="timeline-title">📅 Acknowledgment History</h4>
-      <div 
-        ref={timelineScrollRef}
-        className="timeline-horizontal-scroll"
-      >
+      <h4 className="timeline-title">
+        <span className="pulse-text">📅 Acknowledgment History</span>
+      </h4>
+
+      <div ref={timelineScrollRef} className="timeline-scroll-wrapper">
         <div className="timeline-horizontal">
           {acknowledgeDetails.map((ack, index) => (
-            <div key={ack.ackId || index} className="timeline-item">
+            <div
+              key={ack.ackId || index}
+              className="timeline-item animated-item"
+              style={{ animationDelay: `${index * 0.25}s` }}
+            >
               <div className="timeline-marker">
-                <div className="timeline-dot"></div>
+                <div className="timeline-dot animated-dot"></div>
                 {index < acknowledgeDetails.length - 1 && (
-                  <div className="timeline-connector"></div>
+                  <div className="timeline-connector flowing-connector"></div>
                 )}
               </div>
-              <div className="timeline-content">
+
+              <div className="timeline-content animated-content">
                 <div className="timeline-header">
                   <span className="timeline-time">
                     {format(new Date(ack.acknowledgeTime), 'MMM d, yyyy h:mm a')}
@@ -96,18 +95,22 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
                   </span>
                 </div>
                 <div className="timeline-description">
-                  {ack.ackDesc}
+                  {ack.ackDesc || 'Acknowledgment recorded'}
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      <div className="scroll-hint">Auto-scrolling • Hover to pause</div>
     </div>
   );
 };
 
-// History Tasks Table Component with Expandable Rows
+// ===========================================
+// HISTORY TASKS TABLE (unchanged logic)
+// ===========================================
 const HistoryTasksTable = ({ tasks }) => {
   const [expandedRows, setExpandedRows] = useState({});
 
@@ -125,6 +128,8 @@ const HistoryTasksTable = ({ tasks }) => {
       </div>
     );
   }
+
+ squ
 
   return (
     <div className="history-tasks-table-container">
@@ -188,6 +193,8 @@ const HistoryTasksTable = ({ tasks }) => {
                   )}
                 </td>
               </tr>
+
+              {/* EXPANDED ROW WITH ANIMATED TIMELINE */}
               {expandedRows[task.taskId] && task.acknowledgeDetails && task.acknowledgeDetails.length > 0 && (
                 <tr className="expanded-row">
                   <td colSpan="7">
@@ -205,32 +212,28 @@ const HistoryTasksTable = ({ tasks }) => {
   );
 };
 
+// ===========================================
+// MAIN HISTORY SUMMARY COMPONENT
+// ===========================================
 const HistorySummary = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [historyData, setHistoryData] = useState(null);
 
-  // Fetch data on page load (component mount)
   useEffect(() => {
     handleFetchHistory();
-    // eslint-disable-next-line
   }, []);
 
-  // Function to fetch history data from API
   const handleFetchHistory = async () => {
     setLoading(true);
     setError('');
-
     try {
-      console.log('Fetching history data from API...');
       const data = await getHistoryHandovers();
-      console.log('API Response:', data);
-      
       if (data && data.TeamHandoverDetails && data.Tasksdata) {
         setHistoryData(data);
       } else {
-        throw new Error('Invalid history data structure - missing TeamHandoverDetails or Tasksdata');
+        throw new Error('Invalid history data structure');
       }
     } catch (err) {
       console.error('Error fetching history:', err);
@@ -258,29 +261,23 @@ const HistorySummary = () => {
     const teamHandovers = data.TeamHandoverDetails || [];
 
     const totalTasks = tasks.length;
-    const acknowledgedTasks = tasks.filter(task =>
-      task.acknowledgeDetails && task.acknowledgeDetails.length > 0
-    ).length;
+    const acknowledgedTasks = tasks.filter(t => t.acknowledgeDetails?.length > 0).length;
     const pendingTasks = totalTasks - acknowledgedTasks;
-
-    const totalAcknowledgment = tasks.reduce((sum, task) => {
-      return sum + (task.acknowledgeDetails?.length || 0);
-    }, 0);
+    const totalAcknowledgment = tasks.reduce((sum, t) => sum + (t.acknowledgeDetails?.length || 0), 0);
 
     const teams = [...new Set(teamHandovers.map(item => item.role).filter(Boolean))];
 
-    const tasksBreakdown = tasks.map(task => ({
-      taskId: task.historyTaskId || task.Taskid,
-      taskDesc: task.task || task.taskDesc,
-      ackCount: task.acknowledgeDetails?.length || 0,
-      latestAck: task.acknowledgeDetails && task.acknowledgeDetails.length > 0
-        ? task.acknowledgeDetails[task.acknowledgeDetails.length - 1]
-        : null,
-      acknowledgeDetails: task.acknowledgeDetails || [],
-      status: task.status || 'unknown',
-      priority: task.priority || 'Medium'
-    }))
-    .sort((a, b) => b.ackCount - a.ackCount);
+    const tasksBreakdown = tasks
+      .map(task => ({
+        taskId: task.historyTaskId || task.Taskid || task.taskId,
+        taskDesc: task.task || task.taskDesc || 'No description',
+        ackCount: task.acknowledgeDetails?.length || 0,
+        latestAck: task.acknowledgeDetails?.[task.acknowledgeDetails.length - 1] || null,
+        acknowledgeDetails: task.acknowledgeDetails || [],
+        status: task.status || 'unknown',
+        priority: task.priority || 'Medium'
+      }))
+      .sort((a, b) => b.ackCount - a.ackCount);
 
     return {
       totalTasks,
@@ -303,13 +300,7 @@ const HistorySummary = () => {
             <h1>📊 Handover History Summary</h1>
             <p>Comprehensive overview of all historical handover data and acknowledgments</p>
           </div>
-          <button 
-            className="back-button-header" 
-            onClick={() => navigate(-1)}
-            aria-label="Go back"
-          >
-            ← Back
-          </button>
+          <button className="back-button-header" onClick={() => navigate(-1)}>← Back</button>
         </div>
         <div className="loading-container">
           <div className="loading-spinner"></div>
@@ -321,32 +312,21 @@ const HistorySummary = () => {
 
   return (
     <div className="history-summary-page">
-      {/* Header */}
       <div className="history-header">
         <div className="header-content">
           <h1>📊 Handover History Summary</h1>
           <p>Comprehensive overview of all historical handover data and acknowledgments</p>
         </div>
-        <button 
-          className="back-button-header" 
-          onClick={() => navigate(-1)}
-          aria-label="Go back"
-        >
-          ← Back
-        </button>
+        <button className="back-button-header" onClick={() => navigate(-1)}>← Back</button>
       </div>
 
-      {/* Error Message */}
       {error && (
         <div className="error-message">
           <span>⚠️</span>
-          <div>
-            <strong>Error:</strong> {error}
-          </div>
+          <div><strong>Error:</strong> {error}</div>
         </div>
       )}
 
-      {/* Results Display */}
       {historyData ? (
         <div className="history-content">
           {/* Key Metrics */}
@@ -358,7 +338,7 @@ const HistorySummary = () => {
                 <span className="summary-value">{summary.totalTasks}</span>
               </div>
               <div className="summary-item active">
-                <span className="summary-label">✅ Acknowledged</span>
+                <spanchlussName="summary-label">✅ Acknowledged</span>
                 <span className="summary-value">{summary.acknowledgedTasks}</span>
               </div>
               <div className="summary-item completed">
@@ -372,36 +352,33 @@ const HistorySummary = () => {
             </div>
           </section>
 
-          {/* Teams Overview */}
+          {/* Teams */}
           {summary.teams.length > 0 && (
             <section className="summary-section">
               <h2 className="section-title">👥 Teams/Roles ({summary.teamCount} total)</h2>
               <div className="teams-overview">
                 <div className="teams-list">
-                  {summary.teams.map((team, index) => (
-                    <div key={index} className="team-tag">
-                      {team}
-                    </div>
+                  {summary.teams.map((team, i) => (
+                    <div key={i} className="team-tag">{team}</div>
                   ))}
                   {summary.teamCount > 5 && (
-                    <div className="team-tag more">
-                      +{summary.teamCount - 5} more
-                    </div>
+                    <div className="team-tag more">+{summary.teamCount - 5} more</div>
                   )}
                 </div>
               </div>
             </section>
           )}
 
-          {/* Tasks Breakdown Table */}
-          {summary.tasksBreakdown && summary.tasksBreakdown.length > 0 && (
+          {/* Tasks Table */}
+          {summary.tasksBreakdown.length > 0 && (
             <section className="summary-section">
-              <h2 className="section-title">📋 Tasks History Details ({summary.tasksBreakdown.length} tasks)</h2>
+              <h2 className="section-title">
+                📋 Tasks History Details ({summary.tasksBreakdown.length} tasks)
+              </h2>
               <HistoryTasksTable tasks={summary.tasksBreakdown} />
             </section>
           )}
 
-          {/* No Tasks Message */}
           {summary.totalTasks === 0 && (
             <section className="summary-section">
               <div className="no-data-message">
