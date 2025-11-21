@@ -4,38 +4,60 @@ import { format } from 'date-fns';
 import { getHistoryHandovers } from '../../Api/HandOverApi';
 import './HistorySummary.css';
 
-// Acknowledge Timeline Component with Individual Horizontal Scroll
+// Acknowledge Timeline Component with Auto-Scroll
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
-  const scrollWrapperRef = useRef(null);
-  const [scrollPosition, setScrollPosition] = useState('start');
-
-  const handleScroll = (e) => {
-    const { scrollLeft, scrollWidth, clientWidth } = e.target;
-    const tolerance = 5;
-    
-    if (scrollLeft <= tolerance) {
-      setScrollPosition('start');
-    } else if (scrollLeft + clientWidth >= scrollWidth - tolerance) {
-      setScrollPosition('end');
-    } else {
-      setScrollPosition('middle');
-    }
-  };
+  const timelineScrollRef = useRef(null);
+  const autoScrollRef = useRef(null);
 
   useEffect(() => {
-    const scrollWrapper = scrollWrapperRef.current;
-    if (scrollWrapper) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollWrapper;
-      if (scrollWidth <= clientWidth) {
-        setScrollPosition('all-visible');
-      } else if (scrollLeft === 0) {
-        setScrollPosition('start');
-      } else if (scrollLeft + clientWidth >= scrollWidth - 5) {
-        setScrollPosition('end');
-      } else {
-        setScrollPosition('middle');
+    if (!timelineScrollRef.current) return;
+
+    const scrollElement = timelineScrollRef.current;
+    const scrollWidth = scrollElement.scrollWidth;
+    const clientWidth = scrollElement.clientWidth;
+
+    // Only auto-scroll if content is wider than container
+    if (scrollWidth <= clientWidth) return;
+
+    let scrollPosition = 0;
+    let direction = 1; // 1 for forward, -1 for backward
+    const scrollSpeed = 50; // milliseconds per scroll step
+
+    const autoScroll = () => {
+      scrollPosition += direction;
+      scrollElement.scrollLeft = scrollPosition;
+
+      // Reverse direction at the ends
+      if (scrollPosition >= scrollWidth - clientWidth - 10) {
+        direction = -1;
+      } else if (scrollPosition <= 10) {
+        direction = 1;
       }
-    }
+
+      autoScrollRef.current = setTimeout(autoScroll, scrollSpeed);
+    };
+
+    // Start auto-scroll
+    autoScrollRef.current = setTimeout(autoScroll, 2000); // Start after 2 seconds
+
+    // Pause on hover
+    const handleMouseEnter = () => {
+      if (autoScrollRef.current) clearTimeout(autoScrollRef.current);
+    };
+
+    const handleMouseLeave = () => {
+      autoScrollRef.current = setTimeout(autoScroll, scrollSpeed);
+    };
+
+    scrollElement.addEventListener('mouseenter', handleMouseEnter);
+    scrollElement.addEventListener('mouseleave', handleMouseLeave);
+
+    // Cleanup
+    return () => {
+      if (autoScrollRef.current) clearTimeout(autoScrollRef.current);
+      scrollElement.removeEventListener('mouseenter', handleMouseEnter);
+      scrollElement.removeEventListener('mouseleave', handleMouseLeave);
+    };
   }, [acknowledgeDetails]);
 
   if (!acknowledgeDetails || acknowledgeDetails.length === 0) {
@@ -52,9 +74,8 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
     <div className="timeline-container">
       <h4 className="timeline-title">📅 Acknowledgment History</h4>
       <div 
-        ref={scrollWrapperRef}
-        className={`timeline-scroll-wrapper scroll-${scrollPosition}`}
-        onScroll={handleScroll}
+        ref={timelineScrollRef}
+        className="timeline-horizontal-scroll"
       >
         <div className="timeline-horizontal">
           {acknowledgeDetails.map((ack, index) => (
@@ -82,12 +103,6 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
           ))}
         </div>
       </div>
-      
-      {scrollPosition !== 'end' && scrollPosition !== 'all-visible' && acknowledgeDetails.length > 1 && (
-        <div className="scroll-hint">
-          <span>← Scroll horizontally to see more →</span>
-        </div>
-      )}
     </div>
   );
 };
