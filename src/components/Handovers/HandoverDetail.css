@@ -61,7 +61,7 @@
   overflow: hidden;
 }
 
-/* Modal Position Fix */
+/* Modal Position Fix - UPDATED */
 .modal-overlay {
   background: rgba(0, 0, 0, 0.8) !important;
   backdrop-filter: blur(8px);
@@ -95,7 +95,7 @@
   left: auto !important;
 }
 
-/* Modal Form Container Styles */
+/* Modal Form Container Styles - UPDATED */
 .modal-form-container {
   position: relative;
   z-index: 1;
@@ -135,6 +135,14 @@
   letter-spacing: 0.5px;
 }
 
+.task-info-box {
+  background: linear-gradient(135deg, rgba(46, 213, 255, 0.05) 0%, rgba(138, 43, 226, 0.05) 100%);
+  border: 1px solid rgba(46, 213, 255, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
 /* Task Info Horizontal Grid */
 .task-info-horizontal {
   display: grid;
@@ -145,6 +153,10 @@
   background: linear-gradient(135deg, rgba(46, 213, 255, 0.03) 0%, rgba(138, 43, 226, 0.03) 100%);
   border: 1px solid rgba(46, 213, 255, 0.15);
   border-radius: 12px;
+}
+.task-meta{
+ margin-bottom:.7rem;
+
 }
 
 .info-column {
@@ -243,6 +255,26 @@
   box-shadow: 0 0 0 3px rgba(46, 213, 255, 0.1);
 }
 
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.current-status {
+  padding: 0.85rem 1rem;
+  background: rgba(241, 196, 15, 0.12);
+  border: 1px solid rgba(241, 196, 15, 0.2);
+  border-radius: 10px;
+  color: #ffeaa7;
+  font-weight: 600;
+  text-transform: capitalize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .form-hint {
   margin-top: 0.5rem;
   font-size: 0.85rem;
@@ -318,17 +350,7 @@
   transform: translateY(-2px);
 }
 
-/* Timeline Horizontal Scroll Container - WITH AUTO SCROLL */
-.timeline-horizontal-scroll {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-behavior: smooth;
-  padding: 0;
-  margin: 0;
-  -webkit-overflow-scrolling: touch;
-}
-
+/* Enhanced Timeline Styles - FIXED */
 .timeline-container {
   margin-top: 1.5rem;
   padding: 1.5rem;
@@ -368,12 +390,14 @@
 
 .timeline-horizontal {
   display: flex;
-  gap: 0;
+  overflow-x: auto;
   padding: 2rem 0 1rem 0;
+  gap: 0;
   position: relative;
-  min-width: min-content;
+  min-height: 200px;
 }
 
+/* Main Timeline Line - FIXED POSITION */
 .timeline-horizontal::before {
   content: '';
   position: absolute;
@@ -448,6 +472,7 @@
   }
 }
 
+/* Individual connector lines between dots */
 .timeline-connector {
   position: absolute;
   top: 0.5rem;
@@ -460,6 +485,7 @@
   box-shadow: 0 0 10px rgba(46, 213, 255, 0.4);
 }
 
+/* Hide connector for last item */
 .timeline-item:last-child .timeline-connector {
   display: none;
 }
@@ -544,25 +570,6 @@
   border: 1px dashed rgba(46, 213, 255, 0.2);
 }
 
-/* Scrollbar for horizontal timeline */
-.timeline-horizontal-scroll::-webkit-scrollbar {
-  height: 8px;
-}
-
-.timeline-horizontal-scroll::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 10px;
-}
-
-.timeline-horizontal-scroll::-webkit-scrollbar-thumb {
-  background: linear-gradient(90deg, rgba(46, 213, 255, 0.3) 0%, rgba(138, 43, 226, 0.3) 100%);
-  border-radius: 10px;
-}
-
-.timeline-horizontal-scroll::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(90deg, rgba(46, 213, 255, 0.5) 0%, rgba(138, 43, 226, 0.5) 100%);
-}
-
 /* Task Statistics */
 .task-stats {
   display: grid;
@@ -578,7 +585,7 @@
   position: relative;
   overflow: hidden;
   transition: all 0.2s ease;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
 .task-stat-card::before {
@@ -773,32 +780,175 @@
   font-size: 1.2rem;
 }
 
-/* TABLES - REMOVE/DISABLE HORIZONTAL SCROLL */
-
-/* History Tasks Table Container - NO SCROLL */
-.history-tasks-table-container {
-  overflow-x: visible !important;
-  overflow-y: visible !important;
-  margin-top: 1rem;
-  width: 100%;
+/* Ensure body doesn't scroll when modal is open */
+body.modal-open {
+  overflow: hidden !important;
 }
 
-.history-tasks-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: rgba(255, 255, 255, 0.05);
+/* Task Info Horizontal Grid */
+.task-info-horizontal {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(46, 213, 255, 0.03) 0%, rgba(138, 43, 226, 0.03) 100%);
+  border: 1px solid rgba(46, 213, 255, 0.15);
+  border-radius: 12px;
+}
+
+.info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
   overflow: hidden;
-  table-layout: auto;
 }
 
-.history-tasks-table thead {
-  background: rgba(255, 255, 255, 0.1);
+.info-column::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(46, 213, 255, 0.1), transparent);
+  transition: left 0.6s ease;
 }
 
-.history-tasks-table th {
-  padding: 12px 16px;
-  text-align: left;
+.info-column:hover::before {
+  left: 100%;
+}
+
+.info-column:hover {
+  background: rgba(46, 213, 255, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(46, 213, 255, 0.15);
+}
+
+.info-column strong {
+  color: #2ed5ff;
   font-weight: 600;
-  color: #e0e0e0;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.info-column span {
+  color: rgba(230, 238, 248, 0.95);
+  font-weight: 500;
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+.info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border-left: 2px solid rgba(46, 213, 255, 0.3);
+  margin-bottom: 0.75rem;
+}
+
+.info-row strong {
+  color: #2ed5ff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-row span {
+  color: rgba(230, 238, 248, 0.95);
+  font-weight: 500;
+  font-size: 1rem;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+/* Summary Button Styles */
+.summary-button {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(90deg, rgba(46, 213, 255, 0.15), rgba(138, 43, 226, 0.1));
+  color: #2ed5ff;
+  border: 1px solid rgba(46, 213, 255, 0.25);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.summary-button:hover::before {
+  left: 100%;
+}
+
+.summary-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(46, 213, 255, 0.2);
+  background: linear-gradient(90deg, rgba(46, 213, 255, 0.25), rgba(138, 43, 226, 0.15));
+  border-color: rgba(46, 213, 255, 0.4);
+}
+
+.summary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* History Button Styles */
+.history-button {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(90deg, rgba(138, 43, 226, 0.15), rgba(46, 213, 255, 0.1));
+  color: #8a2be2;
+  border: 1px solid rgba(138, 43, 226, 0.25);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.history-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.history-button:hover::before {
+  left: 100%;
+}
+
+.history-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(138, 43, 226, 0.2);
+  background: linear-gradient(90deg, rgba(138, 43, 226, 0
