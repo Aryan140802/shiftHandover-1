@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import './HandoverDetail.css';
 import Modal from '../UI/Modal';
-import { getHandovers, createTask, updateTask, getHistoryHandovers } from '../../Api/HandOverApi';
+import { getHandovers, createTask, updateTask } from '../../Api/HandOverApi';
 
 // Status options for acknowledging tasks (no "open" option)
 const acknowledgeStatusOptions = [
@@ -114,240 +114,6 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   );
 };
 
-// History Tasks Table Component with Expandable Rows
-const HistoryTasksTable = ({ tasks }) => {
-  const [expandedRows, setExpandedRows] = useState({});
-
-  const toggleRow = (taskId) => {
-    setExpandedRows(prev => ({
-      ...prev,
-      [taskId]: !prev[taskId]
-    }));
-  };
-
-  return (
-    <div className="history-tasks-table-container">
-      <table className="history-tasks-table">
-        <thead>
-          <tr>
-            <th style={{ width: '50px' }}></th>
-            <th>Task ID</th>
-            <th>Description</th>
-            <th>Priority</th>
-            <th>Acknowledgments</th>
-            <th>Latest Update</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tasks.map((task) => (
-            <React.Fragment key={task.taskId}>
-              <tr className="task-row">
-                <td>
-                  {task.ackCount > 0 && (
-                    <button
-                      className="expand-button"
-                      onClick={() => toggleRow(task.taskId)}
-                      aria-label={expandedRows[task.taskId] ? 'Collapse' : 'Expand'}
-                    >
-                      {expandedRows[task.taskId] ? '▼' : '▶'}
-                    </button>
-                  )}
-                </td>
-                <td className="task-id-cell">#{task.taskId}</td>
-                <td className="task-desc-cell">{task.taskDesc || 'No description'}</td>
-                <td>
-                  <span className={`priority-badge priority-${(task.priority || 'medium').toLowerCase()}`}>
-                    {task.priority || 'Medium'}
-                  </span>
-                </td>
-                <td>
-                  <span className={`ack-count-badge ${task.ackCount > 0 ? 'has-acks' : 'no-acks'}`}>
-                    {task.ackCount} {task.ackCount === 1 ? 'ack' : 'acks'}
-                  </span>
-                </td>
-                <td className="latest-update-cell">
-                  {task.latestAck ? (
-                    <div>
-                      <div className="update-time">
-                        {format(new Date(task.latestAck.acknowledgeTime), 'MMM d, h:mm a')}
-                      </div>
-                      <div className="update-user">
-                        User {task.latestAck.userAcknowleged_id}
-                      </div>
-                    </div>
-                  ) : (
-                    <span className="no-update">No updates</span>
-                  )}
-                </td>
-              </tr>
-              {expandedRows[task.taskId] && task.acknowledgeDetails && task.acknowledgeDetails.length > 0 && (
-                <tr className="expanded-row">
-                  <td colSpan="6">
-                    <div className="expanded-content">
-                      <AcknowledgeTimeline acknowledgeDetails={task.acknowledgeDetails} />
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-
-    </div>
-  );
-};
-
-// Summary Modal Component - Uses history handover data from API
-const SummaryModal = ({ historyData, onClose, loading }) => {
-  // Calculate summary statistics from history handover data
-  const calculateSummary = (data) => {
-    if (!data || !data.TeamHandoverDetails || !data.Tasksdata) {
-      return {
-        totalTasks: 0,
-        acknowledgedTasks: 0,
-        pendingTasks: 0,
-        totalAcknowledgment: 0,
-        teams: [],
-        statusDistribution: {},
-        tasksBreakdown: []
-      };
-    }
-
-    const tasks = data.Tasksdata || [];
-    const teamHandovers = data.TeamHandoverDetails || [];
-
-    const totalTasks = tasks.length;
-    const acknowledgedTasks = tasks.filter(task =>
-      task.acknowledgeDetails && task.acknowledgeDetails.length > 0
-    ).length;
-    const pendingTasks = totalTasks - acknowledgedTasks;
-
-    const totalAcknowledgment = tasks.reduce((sum, task) => {
-      return sum + (task.acknowledgeDetails?.length || 0);
-    }, 0);
-
-    const teams = [...new Set(teamHandovers.map(item => item.role).filter(Boolean))];
-
-    const statusDistribution = {};
-    tasks.forEach(task => {
-      const status = task.status || 'unknown';
-      statusDistribution[status] = (statusDistribution[status] || 0) + 1;
-    });
-
-    const tasksBreakdown = tasks.map(task => ({
-      taskId: task.historyTaskId || task.Taskid,
-      taskDesc: task.task || task.taskDesc,
-      ackCount: task.acknowledgeDetails?.length || 0,
-      latestAck: task.acknowledgeDetails && task.acknowledgeDetails.length > 0
-        ? task.acknowledgeDetails[task.acknowledgeDetails.length - 1]
-        : null,
-      acknowledgeDetails: task.acknowledgeDetails || [],
-      status: task.status || 'unknown',
-      priority: task.priority || 'Medium'
-    }))
-    .sort((a, b) => b.ackCount - a.ackCount);
-
-    return {
-      totalTasks,
-      acknowledgedTasks,
-      pendingTasks,
-      totalAcknowledgment,
-      teams: teams.slice(0, 5),
-      teamCount: teams.length,
-      statusDistribution,
-      tasksBreakdown
-    };
-  };
-
-  const summary = calculateSummary(historyData);
-
-  if (loading) {
-    return (
-      <div className="summary-modal">
-        <div className="modal-header">
-          <h3>Handover History Summary</h3>
-          <button onClick={onClose} className="close-button">×</button>
-        </div>
-        <div className="loading-message">
-          <div className="loading-spinner"></div>
-          <p>Loading history data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!historyData) {
-    return (
-      <div className="summary-modal">
-        <div className="modal-header">
-          <h3>Handover History Summary</h3>
-          <button onClick={onClose} className="close-button">×</button>
-        </div>
-        <div className="no-summary-data">
-          <p>No history data available</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="summary-modal">
-      <div className="modal-header">
-        <h3>Handover History Summary</h3>
-      </div>
-      <div className="summary-content">
-        {/* Key Metrics */}
-        <div className="summary-grid">
-          <div className="summary-item total">
-            <span className="summary-label">Total Tasks</span>
-            <span className="summary-value">{summary.totalTasks}</span>
-          </div>
-          <div className="summary-item active">
-            <span className="summary-label">Acknowledged</span>
-            <span className="summary-value">{summary.acknowledgedTasks}</span>
-          </div>
-          <div className="summary-item completed">
-            <span className="summary-label">Pending</span>
-            <span className="summary-value">{summary.pendingTasks}</span>
-          </div>
-          <div className="summary-item tasks">
-            <span className="summary-label">Total Acks</span>
-            <span className="summary-value">{summary.totalAcknowledgment}</span>
-          </div>
-        </div>
-
-        {/* Teams Overview */}
-        {summary.teams.length > 0 && (
-          <div className="teams-overview">
-            <h4>Teams/Roles</h4>
-            <div className="teams-list">
-              {summary.teams.map((team, index) => (
-                <div key={index} className="team-tag">
-                  {team}
-                </div>
-              ))}
-              {summary.teamCount > 5 && (
-                <div className="team-tag more">
-                  +{summary.teamCount - 5} more
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Tasks Breakdown Table */}
-        {summary.tasksBreakdown && summary.tasksBreakdown.length > 0 && (
-          <div className="tasks-breakdown">
-            <h4>Tasks History Details</h4>
-            <HistoryTasksTable tasks={summary.tasksBreakdown} />
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
 const HandoverDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -380,9 +146,6 @@ const HandoverDetail = () => {
   useEffect(() => {
     fetchHandoverData();
   }, [id]);
-
-  // Check if user has admin access
-  const hasAdminAccess = userLevel === 'ADMIN' || userLevel === 'L2';
 
   const fetchHandoverData = async () => {
     setLoading(true);
@@ -420,10 +183,6 @@ const HandoverDetail = () => {
     } catch (e) {
       return '-';
     }
-  };
-
-  const handleSummaryClick = () => {
-    navigate('/history-summary');
   };
 
   const handleAcknowledgeClick = (task) => {
@@ -553,18 +312,15 @@ const HandoverDetail = () => {
     );
   }
 
-
   const handover = backendData.TeamHandoverDetails[0];
   const tasks = backendData.Tasksdata || [];
   const taskStats = getTaskStats(tasks);
 
   return (
     <div className="handover-detail-container">
-
       <div className="handover-detail-header">
         <h2>{handover.role} Team Handover</h2>
       </div>
-
 
       <div className="handover-detail-content">
         {tasks.length > 0 && (
@@ -608,19 +364,7 @@ const HandoverDetail = () => {
 
         <div className="detail-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <h3>Tasks ({tasks.length})</h3>
-              {/* Only show History Summary button for ADMIN and L2 users */}
-              {hasAdminAccess && (
-                <button
-                  className="summary-button"
-                  onClick={handleSummaryClick}
-
-                >
-                📊 View History Summary
-                </button>
-              )}
-            </div>
+            <h3>Tasks ({tasks.length})</h3>
             <button className="create-task-btn" onClick={handleCreateTask}>
               + Create New Task
             </button>
@@ -629,7 +373,7 @@ const HandoverDetail = () => {
           {tasks.length > 0 ? (
             <table className="tasks-table">
               <thead>
-                 <tr>
+                <tr>
                   <th>ID</th>
                   <th>Title</th>
                   <th>Description</th>
@@ -640,7 +384,7 @@ const HandoverDetail = () => {
                   <th>Action</th>
                 </tr>
               </thead>
-                <tbody>
+              <tbody>
                 {tasks.map(task => (
                   <tr key={task.Taskid}>
                     <td>{task.Taskid}</td>
@@ -674,7 +418,6 @@ const HandoverDetail = () => {
           ) : (
             <div className="no-tasks">
               <p>No tasks found for this handover. Create your first task to get started!</p>
-
             </div>
           )}
         </div>
@@ -837,8 +580,6 @@ const HandoverDetail = () => {
             </form>
           </Modal>
         )}
-
-
       </div>
     </div>
   );
