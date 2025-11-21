@@ -4,14 +4,14 @@ import { format } from 'date-fns';
 import { getHistoryHandovers } from '../../Api/HandOverApi';
 import './HistorySummary.css';
 
-// Acknowledge Timeline Component with Horizontal Scroll
+// Acknowledge Timeline Component with Individual Horizontal Scroll
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
-  const [scrollPosition, setScrollPosition] = useState('start');
   const scrollWrapperRef = useRef(null);
+  const [scrollPosition, setScrollPosition] = useState('start');
 
   const handleScroll = (e) => {
     const { scrollLeft, scrollWidth, clientWidth } = e.target;
-    const tolerance = 5; // Pixel tolerance for edge detection
+    const tolerance = 5;
     
     if (scrollLeft <= tolerance) {
       setScrollPosition('start');
@@ -22,13 +22,12 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
     }
   };
 
-  // Check initial scroll position on mount and when data changes
   useEffect(() => {
     const scrollWrapper = scrollWrapperRef.current;
     if (scrollWrapper) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollWrapper;
       if (scrollWidth <= clientWidth) {
-        setScrollPosition('start'); // No scroll needed
+        setScrollPosition('all-visible');
       } else if (scrollLeft === 0) {
         setScrollPosition('start');
       } else if (scrollLeft + clientWidth >= scrollWidth - 5) {
@@ -52,7 +51,6 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   return (
     <div className="timeline-container">
       <h4 className="timeline-title">📅 Acknowledgment History</h4>
-      {/* Timeline wrapper with horizontal scroll and dynamic indicators */}
       <div 
         ref={scrollWrapperRef}
         className={`timeline-scroll-wrapper scroll-${scrollPosition}`}
@@ -85,10 +83,9 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
         </div>
       </div>
       
-      {/* Optional scroll hint for users */}
-      {scrollPosition !== 'end' && acknowledgeDetails.length > 2 && (
+      {scrollPosition !== 'end' && scrollPosition !== 'all-visible' && acknowledgeDetails.length > 1 && (
         <div className="scroll-hint">
-          <span>← Scroll for more →</span>
+          <span>← Scroll horizontally to see more →</span>
         </div>
       )}
     </div>
@@ -198,7 +195,6 @@ const HistorySummary = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [historyData, setHistoryData] = useState(null);
-  const [apiCalled, setApiCalled] = useState(false);
 
   // Fetch data on page load (component mount)
   useEffect(() => {
@@ -210,7 +206,6 @@ const HistorySummary = () => {
   const handleFetchHistory = async () => {
     setLoading(true);
     setError('');
-    setApiCalled(false);
 
     try {
       console.log('Fetching history data from API...');
@@ -219,7 +214,6 @@ const HistorySummary = () => {
       
       if (data && data.TeamHandoverDetails && data.Tasksdata) {
         setHistoryData(data);
-        setApiCalled(true);
       } else {
         throw new Error('Invalid history data structure - missing TeamHandoverDetails or Tasksdata');
       }
@@ -227,7 +221,6 @@ const HistorySummary = () => {
       console.error('Error fetching history:', err);
       setError(err.message || 'Failed to load history data');
       setHistoryData(null);
-      setApiCalled(true);
     } finally {
       setLoading(false);
     }
@@ -242,7 +235,6 @@ const HistorySummary = () => {
         totalAcknowledgment: 0,
         teams: [],
         teamCount: 0,
-        statusDistribution: {},
         tasksBreakdown: []
       };
     }
@@ -261,12 +253,6 @@ const HistorySummary = () => {
     }, 0);
 
     const teams = [...new Set(teamHandovers.map(item => item.role).filter(Boolean))];
-
-    const statusDistribution = {};
-    tasks.forEach(task => {
-      const status = task.status || 'unknown';
-      statusDistribution[status] = (statusDistribution[status] || 0) + 1;
-    });
 
     const tasksBreakdown = tasks.map(task => ({
       taskId: task.historyTaskId || task.Taskid,
@@ -288,12 +274,35 @@ const HistorySummary = () => {
       totalAcknowledgment,
       teams: teams.slice(0, 5),
       teamCount: teams.length,
-      statusDistribution,
       tasksBreakdown
     };
   };
 
   const summary = calculateSummary(historyData);
+
+  if (loading) {
+    return (
+      <div className="history-summary-page">
+        <div className="history-header">
+          <div className="header-content">
+            <h1>📊 Handover History Summary</h1>
+            <p>Comprehensive overview of all historical handover data and acknowledgments</p>
+          </div>
+          <button 
+            className="back-button-header" 
+            onClick={() => navigate(-1)}
+            aria-label="Go back"
+          >
+            ← Back
+          </button>
+        </div>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p className="loading-text">Loading history data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="history-summary-page">
@@ -312,24 +321,6 @@ const HistorySummary = () => {
         </button>
       </div>
 
-      {/* Fetch Button Section */}
-      <div className="fetch-section">
-        <button 
-          className="fetch-history-btn"
-          onClick={handleFetchHistory}
-          disabled={loading}
-        >
-          {loading ? (
-            <>
-              <span className="spinner"></span> Loading...
-            </>
-          ) : (
-            <>🔄 Fetch History Data</>
-          )}
-        </button>
-        <p className="fetch-info">Click the button above to fetch and display historical handover data from the API</p>
-      </div>
-
       {/* Error Message */}
       {error && (
         <div className="error-message">
@@ -340,120 +331,73 @@ const HistorySummary = () => {
         </div>
       )}
 
-      {/* Results Display - Only show after API call */}
-      {apiCalled && !loading && (
-        <>
-          {historyData && (
-            <div className="history-content">
-              {/* Key Metrics */}
-              <section className="summary-section">
-                <h2 className="section-title">📈 Key Metrics</h2>
-                <div className="summary-grid">
-                  <div className="summary-item total">
-                    <span className="summary-label">Total Tasks</span>
-                    <span className="summary-value">{summary.totalTasks}</span>
-                  </div>
-                  <div className="summary-item active">
-                    <span className="summary-label">✅ Acknowledged</span>
-                    <span className="summary-value">{summary.acknowledgedTasks}</span>
-                  </div>
-                  <div className="summary-item completed">
-                    <span className="summary-label">⏳ Pending</span>
-                    <span className="summary-value">{summary.pendingTasks}</span>
-                  </div>
-                  <div className="summary-item tasks">
-                    <span className="summary-label">Total Acks</span>
-                    <span className="summary-value">{summary.totalAcknowledgment}</span>
-                  </div>
+      {/* Results Display */}
+      {historyData ? (
+        <div className="history-content">
+          {/* Key Metrics */}
+          <section className="summary-section">
+            <h2 className="section-title">📈 Key Metrics</h2>
+            <div className="summary-grid">
+              <div className="summary-item total">
+                <span className="summary-label">Total Tasks</span>
+                <span className="summary-value">{summary.totalTasks}</span>
+              </div>
+              <div className="summary-item active">
+                <span className="summary-label">✅ Acknowledged</span>
+                <span className="summary-value">{summary.acknowledgedTasks}</span>
+              </div>
+              <div className="summary-item completed">
+                <span className="summary-label">⏳ Pending</span>
+                <span className="summary-value">{summary.pendingTasks}</span>
+              </div>
+              <div className="summary-item tasks">
+                <span className="summary-label">Total Acks</span>
+                <span className="summary-value">{summary.totalAcknowledgment}</span>
+              </div>
+            </div>
+          </section>
+
+          {/* Teams Overview */}
+          {summary.teams.length > 0 && (
+            <section className="summary-section">
+              <h2 className="section-title">👥 Teams/Roles ({summary.teamCount} total)</h2>
+              <div className="teams-overview">
+                <div className="teams-list">
+                  {summary.teams.map((team, index) => (
+                    <div key={index} className="team-tag">
+                      {team}
+                    </div>
+                  ))}
+                  {summary.teamCount > 5 && (
+                    <div className="team-tag more">
+                      +{summary.teamCount - 5} more
+                    </div>
+                  )}
                 </div>
-              </section>
-
-              {/* Teams Overview */}
-              {summary.teams.length > 0 && (
-                <section className="summary-section">
-                  <h2 className="section-title">👥 Teams/Roles ({summary.teamCount} total)</h2>
-                  <div className="teams-overview">
-                    <div className="teams-list">
-                      {summary.teams.map((team, index) => (
-                        <div key={index} className="team-tag">
-                          {team}
-                        </div>
-                      ))}
-                      {summary.teamCount > 5 && (
-                        <div className="team-tag more">
-                          +{summary.teamCount - 5} more
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </section>
-              )}
-
-              {/* Status Distribution */}
-              {Object.keys(summary.statusDistribution).length > 0 && (
-                <section className="summary-section">
-                  <h2 className="section-title">📊 Status Distribution</h2>
-                  <div className="status-distribution">
-                    <div className="status-bars">
-                      {Object.entries(summary.statusDistribution).map(([status, count]) => {
-                        const percentage = summary.totalTasks > 0
-                          ? (count / summary.totalTasks * 100).toFixed(1)
-                          : 0;
-                        return (
-                          <div key={status} className="status-bar-item">
-                            <div className="status-bar-header">
-                              <span className="status-name">{status}</span>
-                              <span className="status-count">{count} ({percentage}%)</span>
-                            </div>
-                            <div className="status-bar">
-                              <div
-                                className={`status-bar-fill status-${status.toLowerCase().replace(/\s/g, '-')}`}
-                                style={{ width: `${percentage}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </section>
-              )}
-
-              {/* Tasks Breakdown Table */}
-              {summary.tasksBreakdown && summary.tasksBreakdown.length > 0 && (
-                <section className="summary-section">
-                  <h2 className="section-title">📋 Tasks History Details ({summary.tasksBreakdown.length} tasks)</h2>
-                  <HistoryTasksTable tasks={summary.tasksBreakdown} />
-                </section>
-              )}
-
-              {/* No Tasks Message */}
-              {summary.totalTasks === 0 && (
-                <section className="summary-section">
-                  <div className="no-data-message">
-                    <p>📭 No tasks found in the history data</p>
-                  </div>
-                </section>
-              )}
-            </div>
+              </div>
+            </section>
           )}
 
-          {/* No Data After API Call */}
-          {!historyData && !error && (
-            <div className="no-data-container">
-              <p>❌ No data could be loaded from the API</p>
-              <button className="fetch-history-btn" onClick={handleFetchHistory}>Try Again</button>
-            </div>
+          {/* Tasks Breakdown Table */}
+          {summary.tasksBreakdown && summary.tasksBreakdown.length > 0 && (
+            <section className="summary-section">
+              <h2 className="section-title">📋 Tasks History Details ({summary.tasksBreakdown.length} tasks)</h2>
+              <HistoryTasksTable tasks={summary.tasksBreakdown} />
+            </section>
           )}
-        </>
-      )}
 
-      {/* Initial State - Before API Call */}
-      {!apiCalled && !loading && (
-        <div className="initial-state">
-          <div className="initial-message">
-            <p>👆 Click "Fetch History Data" button above to load historical handover information from the API</p>
-          </div>
+          {/* No Tasks Message */}
+          {summary.totalTasks === 0 && (
+            <section className="summary-section">
+              <div className="no-data-message">
+                <p>📭 No tasks found in the history data</p>
+              </div>
+            </section>
+          )}
+        </div>
+      ) : !error && (
+        <div className="no-data-container">
+          <p>❌ No data available</p>
         </div>
       )}
     </div>
