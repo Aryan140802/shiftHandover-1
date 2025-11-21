@@ -595,9 +595,9 @@ const HandoverDetail = () => {
                 <button
                   className="summary-button"
                   onClick={handleSummaryClick}
-                  disabled={summaryLoading}
+
                 >
-                  {summaryLoading ? 'Loading...' : '📊 View History Summary'}
+                📊 View History Summary
                 </button>
               )}
             </div>
@@ -818,7 +818,7 @@ const HandoverDetail = () => {
           </Modal>
         )}
 
-       
+
       </div>
     </div>
   );
