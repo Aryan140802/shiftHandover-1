@@ -12,7 +12,7 @@ const acknowledgeStatusOptions = [
   { value: 'completed', label: 'Completed' }
 ];
 
-// Timeline Component with Horizontal Scroll
+// Timeline Component with Horizontal Scroll - MOVED OUTSIDE HandoverDetail
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   const timelineScrollRef = useRef(null);
 
@@ -61,7 +61,6 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
       </div>
     </div>
   );
-};
 };
 
 const HandoverDetail = () => {
