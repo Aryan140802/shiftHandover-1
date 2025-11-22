@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import './HandoverDetail.css';
 import Modal from '../UI/Modal';
 import { getHandovers, createTask, updateTask } from '../../Api/HandOverApi';
+import HistorySummary from './HistorySummary';
 
 // Status options for acknowledging tasks (no "open" option)
 const acknowledgeStatusOptions = [
@@ -82,7 +83,7 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
       <h4 className="timeline-title">Acknowledgment History</h4>
       <div
         ref={timelineScrollRef}
-        className="timeline-horizontal-scroll"
+        className="timeline-scroll-wrapper"
       >
         <div className="timeline-horizontal">
           {acknowledgeDetails.map((ack, index) => (
@@ -128,6 +129,7 @@ const HandoverDetail = () => {
   const [ackStatus, setAckStatus] = useState('in progress');
   const [error, setError] = useState('');
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
+  const [showHistorySummary, setShowHistorySummary] = useState(false);
 
   const [newTask, setNewTask] = useState({
     taskTitle: '',
@@ -144,13 +146,15 @@ const HandoverDetail = () => {
   }, []);
 
   useEffect(() => {
-    fetchHandoverData();
-  }, [id]);
+    if (!showHistorySummary) {
+      fetchHandoverData();
+    }
+  }, [id, showHistorySummary]);
 
-        // Check if user has admin access
-const hasAdminAccess = userLevel === 'ADMIN' || userLevel === 'L2';
+  // Check if user has admin access
+  const hasAdminAccess = userLevel === 'ADMIN' || userLevel === 'L2';
 
-const fetchHandoverData = async () => {
+  const fetchHandoverData = async () => {
     setLoading(true);
     try {
       const data = await getHandovers();
@@ -187,12 +191,6 @@ const fetchHandoverData = async () => {
       return '-';
     }
   };
-
-
-  const handleSummaryClick = () => {
-    navigate('/history-summary');
-  };
-
 
   const handleAcknowledgeClick = (task) => {
     setSelectedTask(task);
@@ -297,6 +295,11 @@ const fetchHandoverData = async () => {
     };
   };
 
+  // Show History Summary if showHistorySummary is true
+  if (showHistorySummary) {
+    return <HistorySummary />;
+  }
+
   if (loading) {
     return (
       <div className="handover-detail-container">
@@ -379,10 +382,9 @@ const fetchHandoverData = async () => {
               {hasAdminAccess && (
                 <button
                   className="summary-button"
-                  onClick={handleSummaryClick}
-
+                  onClick={() => setShowHistorySummary(true)}
                 >
-                📊 View History Summary
+                  📊 View History Summary
                 </button>
               )}
             </div>
@@ -390,8 +392,6 @@ const fetchHandoverData = async () => {
               + Create New Task
             </button>
           </div>
-
-
 
           {tasks.length > 0 ? (
             <table className="tasks-table">
