@@ -74,7 +74,6 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   return (
     <div className="timeline-container">
       <h4 className="timeline-title">📅 Acknowledgment History</h4>
-      <div ref={timelineScrollRef} className="timeline-scroll-wrapper">
         <div className="timeline-horizontal">
           {acknowledgeDetails.map((ack, index) => (
             <div key={ack.ackId || index} className="timeline-item">
@@ -99,7 +98,6 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
               </div>
             </div>
           ))}
-        </div>
       </div>
     </div>
   );
@@ -224,7 +222,7 @@ const HistorySummary = () => {
       console.log('Fetching history data from API...');
       const data = await getHistoryHandovers();
       console.log('API Response:', data);
-      
+
       if (data && data.TeamHandoverDetails && data.Tasksdata) {
         setHistoryData(data);
       } else {
@@ -301,8 +299,8 @@ const HistorySummary = () => {
             <h1>📊 Handover History Summary</h1>
             <p>Comprehensive overview of all historical handover data and acknowledgments</p>
           </div>
-          <button 
-            className="back-button-header" 
+          <button
+            className="back-button-header"
             onClick={() => navigate(-1)}
             aria-label="Go back"
           >
@@ -325,8 +323,8 @@ const HistorySummary = () => {
           <h1>📊 Handover History Summary</h1>
           <p>Comprehensive overview of all historical handover data and acknowledgments</p>
         </div>
-        <button 
-          className="back-button-header" 
+        <button
+          className="back-button-header"
           onClick={() => navigate(-1)}
           aria-label="Go back"
         >
