@@ -98,6 +98,7 @@ const HandoverDetail = () => {
     if (!showHistorySummary) {
       fetchHandoverData();
     }
+    // eslint-disable-next-line
   }, [id, showHistorySummary]);
 
   // Check if user has admin access
@@ -126,11 +127,12 @@ const HandoverDetail = () => {
         throw new Error('Invalid data structure');
       }
     } catch (err) {
+      console.error('Error fetching handover:', err);
       setError('Failed to load handover details');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
