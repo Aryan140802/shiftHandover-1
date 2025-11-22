@@ -4,13 +4,10 @@ import { format } from 'date-fns';
 import { getHistoryHandovers } from '../../Api/HandOverApi';
 import './HistorySummary.css';
 
-
-
 // Acknowledge Timeline Component with Horizontal Scroll
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   const timelineScrollRef = useRef(null);
 
-  // Moved the return statement inside the function
   if (!acknowledgeDetails || acknowledgeDetails.length === 0) {
     return (
       <div className="timeline-container">
@@ -159,12 +156,20 @@ const HistoryTasksTable = ({ tasks }) => {
 // Main HistorySummary Component
 const HistorySummary = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [historyData, setHistoryData] = useState(null);
+  const [handoverId, setHandoverId] = useState(null);
 
   // Fetch data on page load (component mount)
   useEffect(() => {
+    // Get handover ID from location state or route params
+    const stateHandoverId = location.state?.handoverId;
+    if (stateHandoverId) {
+      setHandoverId(stateHandoverId);
+    }
+    
     handleFetchHistory();
     // eslint-disable-next-line
   }, []);
@@ -190,6 +195,16 @@ const HistorySummary = () => {
       setHistoryData(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBackClick = () => {
+    // If we have a handover ID, navigate directly to that handover
+    if (handoverId) {
+      navigate(`/handover/${handoverId}`);
+    } else {
+      // Otherwise go back to dashboard
+      navigate('/dashboard');
     }
   };
 
@@ -257,7 +272,7 @@ const HistorySummary = () => {
           </div>
           <button
             className="back-button-header"
-             onClick={() => navigate(-1)}
+            onClick={handleBackClick}
             aria-label="Go back"
           >
             ← Back
@@ -281,7 +296,7 @@ const HistorySummary = () => {
         </div>
         <button
           className="back-button-header"
-          onClick={() => navigate(-1)}
+          onClick={handleBackClick}
           aria-label="Go back"
         >
           ← Back
