@@ -80,7 +80,7 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   return (
     <div className="timeline-container">
       <h4 className="timeline-title">Acknowledgment History</h4>
-      <div 
+      <div
         ref={timelineScrollRef}
         className="timeline-horizontal-scroll"
       >
@@ -147,7 +147,10 @@ const HandoverDetail = () => {
     fetchHandoverData();
   }, [id]);
 
-  const fetchHandoverData = async () => {
+        // Check if user has admin access
+const hasAdminAccess = userLevel === 'ADMIN' || userLevel === 'L2';
+
+const fetchHandoverData = async () => {
     setLoading(true);
     try {
       const data = await getHandovers();
@@ -184,6 +187,12 @@ const HandoverDetail = () => {
       return '-';
     }
   };
+
+
+  const handleSummaryClick = () => {
+    navigate('/history-summary');
+  };
+
 
   const handleAcknowledgeClick = (task) => {
     setSelectedTask(task);
@@ -364,11 +373,25 @@ const HandoverDetail = () => {
 
         <div className="detail-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h3>Tasks ({tasks.length})</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <h3>Tasks ({tasks.length})</h3>
+              {/* Only show History Summary button for ADMIN and L2 users */}
+              {hasAdminAccess && (
+                <button
+                  className="summary-button"
+                  onClick={handleSummaryClick}
+
+                >
+                📊 View History Summary
+                </button>
+              )}
+            </div>
             <button className="create-task-btn" onClick={handleCreateTask}>
               + Create New Task
             </button>
           </div>
+
+
 
           {tasks.length > 0 ? (
             <table className="tasks-table">
