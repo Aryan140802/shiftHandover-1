@@ -435,7 +435,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Individual timeline wrapper with its own horizontal scroll */
+/* Individual timeline wrapper with horizontal scroll only */
 .timeline-scroll-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -443,7 +443,6 @@
   padding: 1rem 0;
   position: relative;
   -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
 }
 
 .timeline-horizontal {
