@@ -8,9 +8,7 @@ import './HistorySummary.css';
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   const timelineScrollRef = useRef(null);
 
-
-};
-
+  // Moved the return statement inside the function
   if (!acknowledgeDetails || acknowledgeDetails.length === 0) {
     return (
       <div className="timeline-container">
