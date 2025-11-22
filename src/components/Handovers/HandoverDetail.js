@@ -12,61 +12,9 @@ const acknowledgeStatusOptions = [
   { value: 'completed', label: 'Completed' }
 ];
 
-// Timeline Component with Auto-Scroll
+// Timeline Component with Horizontal Scroll
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   const timelineScrollRef = useRef(null);
-  const autoScrollRef = useRef(null);
-
-  useEffect(() => {
-    if (!timelineScrollRef.current) return;
-
-    const scrollElement = timelineScrollRef.current;
-    const scrollWidth = scrollElement.scrollWidth;
-    const clientWidth = scrollElement.clientWidth;
-
-    // Only auto-scroll if content is wider than container
-    if (scrollWidth <= clientWidth) return;
-
-    let scrollPosition = 0;
-    let direction = 1; // 1 for forward, -1 for backward
-    const scrollSpeed = 50; // milliseconds per scroll step
-
-    const autoScroll = () => {
-      scrollPosition += direction;
-      scrollElement.scrollLeft = scrollPosition;
-
-      // Reverse direction at the ends
-      if (scrollPosition >= scrollWidth - clientWidth - 10) {
-        direction = -1;
-      } else if (scrollPosition <= 10) {
-        direction = 1;
-      }
-
-      autoScrollRef.current = setTimeout(autoScroll, scrollSpeed);
-    };
-
-    // Start auto-scroll
-    autoScrollRef.current = setTimeout(autoScroll, 2000); // Start after 2 seconds
-
-    // Pause on hover
-    const handleMouseEnter = () => {
-      if (autoScrollRef.current) clearTimeout(autoScrollRef.current);
-    };
-
-    const handleMouseLeave = () => {
-      autoScrollRef.current = setTimeout(autoScroll, scrollSpeed);
-    };
-
-    scrollElement.addEventListener('mouseenter', handleMouseEnter);
-    scrollElement.addEventListener('mouseleave', handleMouseLeave);
-
-    // Cleanup
-    return () => {
-      if (autoScrollRef.current) clearTimeout(autoScrollRef.current);
-      scrollElement.removeEventListener('mouseenter', handleMouseEnter);
-      scrollElement.removeEventListener('mouseleave', handleMouseLeave);
-    };
-  }, [acknowledgeDetails]);
 
   if (!acknowledgeDetails || acknowledgeDetails.length === 0) {
     return (
@@ -113,6 +61,7 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
       </div>
     </div>
   );
+};
 };
 
 const HandoverDetail = () => {
