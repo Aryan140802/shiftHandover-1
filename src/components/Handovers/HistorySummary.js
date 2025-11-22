@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getHistoryHandovers } from '../../Api/HandOverApi';
 import './HistorySummary.css';
+
+
 
 // Acknowledge Timeline Component with Horizontal Scroll
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
@@ -250,12 +252,12 @@ const HistorySummary = () => {
       <div className="history-summary-page">
         <div className="history-header">
           <div className="header-content">
-            <h1>📊 Handover History Summary</h1>
+            <h1>Handover History Summary</h1>
             <p>Comprehensive overview of all historical handover data and acknowledgments</p>
           </div>
           <button
             className="back-button-header"
-            onClick={() => navigate(-1)}
+             onClick={() => navigate(-1)}
             aria-label="Go back"
           >
             ← Back
