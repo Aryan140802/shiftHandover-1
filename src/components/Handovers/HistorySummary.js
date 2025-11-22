@@ -6,7 +6,6 @@ import './HistorySummary.css';
 
 // Acknowledge Timeline Component with Individual Scroll
 const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
-  // Attach scroll ref to the individual scroll wrapper, not to the parent container
   const timelineScrollRef = useRef(null);
   const autoScrollRef = useRef(null);
 
@@ -74,6 +73,10 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
   return (
     <div className="timeline-container">
       <h4 className="timeline-title">📅 Acknowledgment History</h4>
+      <div
+        ref={timelineScrollRef}
+        className="timeline-scroll-wrapper"
+      >
         <div className="timeline-horizontal">
           {acknowledgeDetails.map((ack, index) => (
             <div key={ack.ackId || index} className="timeline-item">
@@ -98,6 +101,7 @@ const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
               </div>
             </div>
           ))}
+        </div>
       </div>
     </div>
   );
@@ -201,6 +205,7 @@ const HistoryTasksTable = ({ tasks }) => {
   );
 };
 
+// Main HistorySummary Component
 const HistorySummary = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -276,7 +281,7 @@ const HistorySummary = () => {
       status: task.status || 'unknown',
       priority: task.priority || 'Medium'
     }))
-    .sort((a, b) => b.ackCount - a.ackCount);
+      .sort((a, b) => b.ackCount - a.ackCount);
 
     return {
       totalTasks,
