@@ -387,7 +387,7 @@
   content: '📋';
   font-size: 1.2rem;
 }
-
+/*
 .timeline-horizontal {
   display: flex;
   overflow-x: auto;
@@ -395,24 +395,24 @@
   gap: 0;
   position: relative;
   min-height: 200px;
+  overflow-x: auto;
 }
 
-/* Main Timeline Line - FIXED POSITION */
+/* Main Timeline Line - FIXED POSITION
 .timeline-horizontal::before {
-  content: '';
   position: absolute;
   top: 2.5rem;
   left: 0;
   right: 0;
   height: 3px;
+  overflow-x:auto;
   background: linear-gradient(90deg,
     rgba(46, 213, 255, 0.6) 0%,
     rgba(138, 43, 226, 0.6) 50%,
     rgba(46, 213, 255, 0.6) 100%);
   box-shadow: 0 0 15px rgba(46, 213, 255, 0.4);
   z-index: 1;
-}
-
+*/
 .timeline-item {
   display: flex;
   flex-direction: column;
@@ -899,5 +899,3 @@ body.modal-open {
   cursor: not-allowed;
   transform: none;
 }
-
-
