@@ -15,9 +15,9 @@
   margin-top: 20px;
   position: relative;
   
-  /* Fixed background image */
+  /* Fixed background image at 50% size */
   background-image: url('./assets/Graident\ Ai\ Robot-Photoroom.png');
-  background-size: cover;
+  background-size: 50%; /* 50% of container size */
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -100,7 +100,7 @@
   transform: scale(1.1);
 }
 
-/* Messages container with fixed background */
+/* Messages container - background image removed */
 .messages-container {
   position: relative;
   flex: 1;
@@ -111,29 +111,15 @@
   gap: 6px;
   min-height: 0;
   margin-top: 10px;
-  
-  /* Make the background fixed relative to the viewport */
-  background-image: url('./assets/Graident\ Ai\ Robot-Photoroom.png');
-  background-size: 450px 782px; /* Match container size */
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: local; /* Keeps background in place while scrolling */
+  background: transparent; /* Remove background image */
 }
 
-/* Add transparent overlay to messages container */
+/* Remove the overlay from messages container since background image is gone */
 .messages-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.3); /* Adjust transparency */
-  z-index: 0;
-  pointer-events: none;
+  content: none; /* Remove the overlay */
 }
 
-/* Ensure messages appear above the overlay */
+/* Ensure messages appear above any potential background */
 .message {
   position: relative;
   z-index: 1;
@@ -241,10 +227,6 @@
     width: 300px;
     height: 420px;
   }
-  
-  .messages-container {
-    background-size: 300px 420px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -253,10 +235,6 @@
     height: 70vh;
     right: 5%;
     bottom: 10px;
-  }
-  
-  .messages-container {
-    background-size: 90vw 70vh;
   }
 }
 
