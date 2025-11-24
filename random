@@ -6,7 +6,7 @@ import Dashboard from './components/Dashboard';
 import Chatbot from './components/ChatBot';
 import Login from './components/Login';
 import './App.css';
-import { fetchLatestAnnouncement,  } from './api/PostApi';
+import { fetchLatestAnnouncement } from './api/PostApi';
 
 // Robust function to clear all cookies (within JS limitations)
 function clearAllCookies() {
@@ -75,9 +75,7 @@ function useDisableInspectElement(enabled) {
 
 // Login API call to get userLevel and other details
 async function loginApi(username, password) {
-  const response = await fetch('https://10.191.171.12:5443/EISHOME/awthenticationService/newLogin/',
- // const response = await fetch('https://10.191.171.12:5443/EISHOME/EISHome/newLogin/',
-          {
+  const response = await fetch('https://10.191.171.12:5443/EISHOME/awthenticationService/newLogin/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -90,27 +88,20 @@ async function loginApi(username, password) {
 // Logout API call
 async function callLogoutAPI(username) {
   try {
-    // 1. Retrieve the session ID from local storage
     const sessionId = localStorage.getItem('sessionid');
 
-    // Check if session ID exists before proceeding
     if (!sessionId) {
       console.warn('No session ID found in local storage. Skipping API call.');
-      // Optional: Handle the case where user isn't logged in
       return;
     }
 
-    // 2. Prepare the headers object with the correct Authorization format
     const headers = {
       'Content-Type': 'application/json',
-      // CORRECT FORMAT: Use template literals correctly with backticks ` `
       'Authorization': `Bearer ${sessionId}`
     };
 
-    const response = await fetch('https://10.191.171.12:5443/EISHOME/awthenticationService/newLogout/',
-            {
+    const response = await fetch('https://10.191.171.12:5443/EISHOME/awthenticationService/newLogout/', {
       method: 'POST',
-      // 3. Use the headers object in the fetch call
       headers: headers,
       credentials: 'include',
       body: JSON.stringify({
@@ -121,15 +112,12 @@ async function callLogoutAPI(username) {
 
     if (!response.ok) {
       console.warn('Logout API call failed:', response.status, response.statusText);
-      // Optional: Handle specific error responses if needed
     } else {
       console.log('Logout API call successful');
-      // Optional: Clear the session ID from local storage after successful logout
-      localStorage.removeItem('sessionId');
+      localStorage.removeItem('sessionid');
     }
   } catch (error) {
     console.error('Error calling logout API:', error);
-    // Don't prevent logout even if API call fails
   }
 }
 
@@ -142,6 +130,7 @@ function App() {
   const [announcement, setAnnouncement] = useState('');
   const [showAnnouncementPopup, setShowAnnouncementPopup] = useState(false);
   const [userLevel, setUserLevel] = useState('');
+  const [isInitializing, setIsInitializing] = useState(true);
   const inactivityTimer = useRef(null);
 
   // Inactivity time limit in ms (60 minutes)
@@ -158,108 +147,114 @@ function App() {
   // Only disable inspect for users other than ADMIN
   useDisableInspectElement(userLevel && userLevel !== 'ADMIN');
 
-  // Check for existing login session on app load
+  // CHECK FOR EXISTING SESSION ON APP LOAD
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('username');
+    const storedLoginTime = localStorage.getItem('loginTime');
+    const storedUserLevel = localStorage.getItem('userLevel'); // FIXED: consistent key
+    
+    console.log('Checking stored session:', { storedUsername, storedUserLevel, storedLoginTime });
 
-  // Set login timestamp and userLevel on login
+    if (storedUsername && storedLoginTime && storedUserLevel) {
+      // Check if session is still valid (not expired)
+      const loginTime = parseInt(storedLoginTime, 10);
+      const currentTime = Date.now();
+      const timeDiff = currentTime - loginTime;
 
+      if (timeDiff < INACTIVITY_LIMIT) {
+        // Session is valid, restore it
+        console.log('Valid session found, restoring...');
+        setUsername(storedUsername);
+        setUserLevel(storedUserLevel);
+        setIsLoggedIn(true);
+      } else {
+        // Session expired, clear storage
+        console.log('Session expired, clearing...');
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+    }
+    
+    setIsInitializing(false);
+  }, []);
+
+  // Fetch announcement when logged in
+  useEffect(() => {
+    if (isLoggedIn && !announcement) {
+      (async () => {
+        try {
+          const ann = await fetchLatestAnnouncement();
+          setAnnouncement(ann);
+          if (ann) setShowAnnouncementPopup(true);
+        } catch (error) {
+          console.error('Error fetching announcement:', error);
+        }
+      })();
+    }
+  }, [isLoggedIn, announcement]);
+
+  // HANDLE LOGIN - REMOVED AUTO-REFRESH
   const handleLogin = async (user, password) => {
     try {
       const loginData = await loginApi(user, password);
-      console.log(loginData);
+      console.log('Login response:', loginData);
 
-      // Assume loginData contains necessary user info and a session ID/token
-      // which should be handled by loginApi function implicitly (via cookies/credentials: 'include')
-      // or explicitly passed back in the response.
+      if (!loginData.userLevel) {
+        throw new Error('Invalid login response - missing userLevel');
+      }
 
       const now = Date.now();
 
-      // 1. Set local state (these might be lost on reload but good practice)
+      // Store to localStorage with CONSISTENT KEYS
+      localStorage.setItem('username', user);
+      localStorage.setItem('userLevel', loginData.userLevel); // FIXED: consistent key
+      localStorage.setItem('loginTime', now.toString());
+      
+      // Store session ID if provided
+      if (loginData.sessionId) {
+        localStorage.setItem('sessionid', loginData.sessionId);
+      }
+
+      // Update state - this will trigger re-render
       setUsername(user);
       setUserLevel(loginData.userLevel);
       setIsLoggedIn(true);
 
-      // 2. IMPORTANT: Save data to localStorage/sessionStorage FIRST
-      localStorage.setItem('username', user);
-      localStorage.setItem('userLevel', loginData.userLevel); // Make sure 'userLevel' key is consistent
-      localStorage.setItem('loginTime', now.toString());
-      sessionStorage.setItem('loginTime', now.toString());
-
-      // If your API call also returns a specific session ID to store, add it here:
-      // localStorage.setItem('sessionid', loginData.sessionId);
-
-      // 3. ADD THE AUTO-REFRESH HERE
-      window.location.reload();
-
-      // 4. The following code will execute extremely briefly, if at all,
-      //    before the browser reloads the page.
-      //    The fetching of announcements should probably be moved to a useEffect hook
-      //    that runs AFTER a successful login (on mount, checking localStorage).
-
-      /*
+      // Fetch announcement
       const ann = await fetchLatestAnnouncement();
       setAnnouncement(ann);
       if (ann) setShowAnnouncementPopup(true);
-      */
 
     } catch (err) {
+      console.error('Login error:', err);
       alert('Login failed: ' + err.message);
     }
   };
 
-useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
-    const storedLoginTime = localStorage.getItem('loginTime');
-    const storedUserLevel = localStorage.getItem('userlevel');
-    console.log(storedUserLevel);
-
-    if (storedUsername && storedLoginTime && storedUserLevel) {
-      setUsername(storedUsername);
-      setUserLevel(storedUserLevel); // <- ensure userLevel is set!
-      setIsLoggedIn(true);
-    }
-  }, []);
-
-
-  // On login from persisted session, fetch announcement
-  useEffect(() => {
-    if (isLoggedIn && !announcement) {
-      (async () => {
-        const ann = await fetchLatestAnnouncement();
-        setAnnouncement(ann);
-        if (ann) setShowAnnouncementPopup(true);
-      })();
-    }
-    // eslint-disable-next-line
-  }, [isLoggedIn]);
-
-  // Logout and flush session storage, local storage, cookies, and caches
+  // HANDLE LOGOUT
   const handleLogout = async () => {
     await callLogoutAPI(username);
 
+    // Clear all state
     setIsLoggedIn(false);
     setUsername('');
     setUserLevel('');
-     localStorage.clear();
+    setAnnouncement('');
+    setShowAnnouncementPopup(false);
+    
+    // Clear storage
+    localStorage.clear();
     sessionStorage.clear();
     clearAllCookies();
-
-
-    // Optionally, redirect or show a message here
   };
 
-
- // --- START of New Cross-Tab Storage Listener Logic ---
+  // Cross-tab logout detection
   useEffect(() => {
     const handleStorageChange = (event) => {
-      // Check if the specific key for the session ID was changed
-      // Note: I'm assuming your key is 'sessionid' based on callLogoutAPI function
-      if (event.key === 'sessionid') {
-        // If newValue is null/empty, the user logged out in another tab
-        if (!event.newValue) {
-          console.log("Session ID removed in another tab. Triggering logout.");
-          // Call your existing logout handler
-          handleLogout();
-        }
+      // If username is cleared, logout
+      if (event.key === 'username' && !event.newValue) {
+        console.log('Session cleared in another tab. Triggering logout.');
+        handleLogout();
       }
     };
 
@@ -268,8 +263,7 @@ useEffect(() => {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [handleLogout]); // Dependency on handleLogout ensures we call the correct function instance
-
+  }, []);
 
   // Auto logout after 60 min of inactivity
   useEffect(() => {
@@ -303,11 +297,27 @@ useEffect(() => {
     };
   }, [isLoggedIn]);
 
+  // Show loading state while checking for existing session
+  if (isInitializing) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Loading...
+      </div>
+    );
+  }
+
+  // Show login if not logged in
   if (!isLoggedIn) {
-    // Login component must now provide both username and password to handleLogin
     return <Login onLogin={handleLogin} />;
   }
 
+  // Show app if logged in
   return (
     <div>
       <Header
@@ -316,8 +326,9 @@ useEffect(() => {
         username={username}
         onLogout={handleLogout}
       />
+      
       {/* Announcement Popup */}
-      {showAnnouncementPopup && announcement &&
+      {showAnnouncementPopup && announcement && (
         <div className="announcement-popup-overlay">
           <div className="announcement-popup">
             <button
@@ -333,348 +344,24 @@ useEffect(() => {
             </div>
           </div>
         </div>
-      }
+      )}
+      
       {!chatbotMinimized && <div className="app-background" />}
+      
       <div className={`main ${isSidebarOpen ? "sidebar-open" : "sidebar-collapsed"}`}>
         <Menu
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
         />
         <Dashboard isSidebarOpen={isSidebarOpen} />
-        {/* Conditionally render Chatbot only for specific user levels */}
         {hasChatbotAccess && (
           <Chatbot setChatbotMinimized={setChatbotMinimized} username={username} />
         )}
       </div>
+      
       <Footer />
     </div>
   );
 }
 
 export default App;
-
-
-
-
-
-
-import React, { useState, useEffect } from 'react';
-import '../styles/Login.css';
-import Header from './Header';
-import Footer from './Footer';
-import { postLogin } from "../api/loginApi";
-import { postGetSecurityQuestion, postForgotPassword } from "../api/PostApi";
-
-function Login({ onLogin }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  // Forgot password popup states
-  const [showEmpIdModal, setShowEmpIdModal] = useState(false);
-  const [empId, setEmpId] = useState('');
-  const [secQLoading, setSecQLoading] = useState(false);
-  const [securityQ, setSecurityQ] = useState('');
-  const [showSecQModal, setShowSecQModal] = useState(false);
-  const [securityAnswer, setSecurityAnswer] = useState('');
-  const [newPwd, setNewPwd] = useState('');
-  const [forgotPwdMsg, setForgotPwdMsg] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    if (forgotPwdMsg) {
-      const timer = setTimeout(() => {
-        setForgotPwdMsg('');
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [forgotPwdMsg]);
-
-  // Check for redirect URL on component mount
-  useEffect(() => {
-    console.log("Login page loaded - checking for redirect URL");
-    const urlParams = new URLSearchParams(window.location.search);
-    const returnUrl = urlParams.get('return_url');
-
-    if (returnUrl) {
-      console.log("Found return URL in parameters:", returnUrl);
-      localStorage.setItem('post_login_redirect', returnUrl);
-    } else {
-      console.log("No return URL found in parameters");
-    }
-  }, []);
-
-  const handleLoginSuccess = (username) => {
-    // Check if there's a redirect URL stored
-    const redirectUrl = localStorage.getItem('post_login_redirect');
-    console.log("Login successful - checking redirect URL:", redirectUrl);
-
-    if (redirectUrl) {
-      // Clear the stored URL and redirect back
-      localStorage.removeItem('post_login_redirect');
-      console.log("Redirecting back to:", redirectUrl);
-      window.location.href = redirectUrl;
-    } else {
-      // No redirect URL, proceed with normal login flow
-      console.log("No redirect URL - proceeding with normal login");
-      onLogin(username);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      const response = await postLogin(username, password);
-      if (response.data.status === 302) {
-        handleLoginSuccess(response.data.username);
-      } else {
-        setError('Invalid credentials');
-      }
-    } catch (error) {
-      setError('Invalid credentials');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // --- Forgot Password Flow ---
-  // Open Modal 1 (enter Employee ID)
-  const openForgotPwdModal = () => {
-    setShowEmpIdModal(true);
-    setEmpId('');
-    setForgotPwdMsg('');
-  };
-
-  // Submit Employee ID, get security question
-  const handleEmpIdSubmit = async (e) => {
-    e.preventDefault();
-    setSecQLoading(true);
-    setForgotPwdMsg('');
-    try {
-      const res = await postGetSecurityQuestion(empId);
-      const secQ = res.data.securityQuestion;
-
-      if (res.data && (secQ !== null && secQ !== '')) {
-        setSecurityQ(secQ);
-        setShowEmpIdModal(false);
-        setShowSecQModal(true);
-        setSecurityAnswer('');
-        setNewPwd('');
-        setForgotPwdMsg('');
-      } else {
-        if (res.data && (secQ === '' || secQ === null)) {
-          setSecurityQ('');
-          setShowEmpIdModal(false);
-          setShowSecQModal(true);
-          setSecurityAnswer('');
-          setNewPwd('');
-          setForgotPwdMsg('');
-        } else {
-          setForgotPwdMsg(res.data?.msg || 'Invalid employee ID. Please try again.');
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching security question:', err);
-      setForgotPwdMsg('Invalid employee ID. Please try again.');
-    } finally {
-      setSecQLoading(false);
-    }
-  };
-
-  // Submit Security Answer, New Password
-  const handleSecQSubmit = async (e) => {
-    e.preventDefault();
-    setSecQLoading(true);
-    setForgotPwdMsg('');
-    try {
-      const res = await postForgotPassword({
-        uid: empId,
-        securityQuestion: securityQ,
-        password: newPwd,
-        answer: securityAnswer
-      });
-      if (res.data.msg && res.data.msg.toLowerCase().includes('success')) {
-        setForgotPwdMsg('Password updated successfully. You can now login.');
-        setShowSecQModal(false);
-      } else {
-        setForgotPwdMsg(res.data.msg || 'Failed to reset password. Please check your answer.');
-      }
-    } catch (err) {
-      setForgotPwdMsg('Failed to reset password. Please check your answer.');
-    } finally {
-      setSecQLoading(false);
-    }
-  };
-
-  // Close all modals
-  const closeModals = () => {
-    setShowEmpIdModal(false);
-    setShowSecQModal(false);
-    setForgotPwdMsg('');
-  };
-
-  const handleRegisterRedirect = () => {
-    window.open('https://10.191.171.12:5443/EISInfra/EIS/EIS/Registration.php', '_blank');
-  };
-
-  return (
-    <div className={darkMode ? 'dark-mode' : ''}>
-      <Header darkMode={darkMode} setDarkMode={setDarkMode} hideMarqueeAndAlertIcon={true} />
-      <div className="login-container">
-        <div className="bubble"></div>
-        <div className="bubble"></div>
-        <form className="login-form" onSubmit={handleSubmit}>
-          <h2>Login</h2>
-          {error && <div className="error-message">{error}</div>}
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-
-          <div className="password-wrapper">
-            <input
-              type={showPassword ? "text" : "password"}
-              className="password-input"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <span
-              className={`toggle-password ${showPassword ? "active" : ""}`}
-              onClick={() => setShowPassword(!showPassword)}
-            ></span>
-          </div>
-
-          <button type="submit" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-          <button type="button" onClick={handleRegisterRedirect}>
-            Register
-          </button>
-          {/* Forgot Password link always visible */}
-          <div style={{ marginTop: "10px" }}>
-            <a
-              href="#"
-              onClick={e => { e.preventDefault(); openForgotPwdModal(); }}
-              style={{
-                color: '#007bff',
-                cursor: 'pointer',
-                textDecoration: 'underline',
-                fontSize: '0.95em',
-                display: 'inline-block'
-              }}
-            >
-              Forgot Password?
-            </a>
-          </div>
-        </form>
-        {forgotPwdMsg && !showEmpIdModal && !showSecQModal && (
-          <div className="info-message">{forgotPwdMsg}</div>
-        )}
-      </div>
-      <Footer />
-
-      {/* Employee ID Modal */}
-      {showEmpIdModal && (
-        <div className="modal-overlay">
-          <div className="modal-box">
-            <h3>Forgot Password</h3>
-            <form onSubmit={handleEmpIdSubmit}>
-              <label>Enter your Employee ID:</label>
-              <input
-                type="text"
-                value={empId}
-                onChange={(e) => setEmpId(e.target.value)}
-                required
-                autoFocus
-                className="modal-input"
-              />
-              <div className="modal-actions">
-                <button className="modal-btn" type="submit" disabled={secQLoading}>
-                  {secQLoading ? 'Loading...' : 'Next'}
-                </button>
-                <button className="modal-btn cancel" type="button" onClick={closeModals}>Cancel</button>
-              </div>
-            </form>
-            {forgotPwdMsg && <div className="modal-error-message">{forgotPwdMsg}</div>}
-          </div>
-        </div>
-      )}
-
-      {/* Security Question Modal */}
-      {showSecQModal && (
-        <div className="modal-overlay">
-          <div className="modal-box security-modal">
-            <h3>Reset Password</h3>
-            <form onSubmit={handleSecQSubmit}>
-              {forgotPwdMsg && <div className="modal-error-message">{forgotPwdMsg}</div>}
-
-              <label>Employee ID:</label>
-              <input
-                type="text"
-                value={empId}
-                readOnly
-                className="modal-input readonly"
-              />
-
-              <label>Security Question:</label>
-              <input
-                type="text"
-                value={securityQ || 'No security question set'}
-                readOnly
-                className="modal-input readonly"
-              />
-
-              {securityQ === "" && (
-                <div className="modal-info-message">
-                  No security question set for this user. Please contact admin if you cannot reset your password.
-                </div>
-              )}
-
-              <label>Your Answer:</label>
-              <input
-                type="password"
-                placeholder="Enter your answer"
-                value={securityAnswer}
-                onChange={e => setSecurityAnswer(e.target.value)}
-                required={securityQ !== ""}
-                disabled={securityQ === ""}
-                className="modal-input"
-              />
-
-              <label>New Password:</label>
-              <input
-                type="password"
-                placeholder="Enter new password"
-                value={newPwd}
-                onChange={e => setNewPwd(e.target.value)}
-                required
-                className="modal-input"
-              />
-
-              <div className="modal-actions">
-                <button className="modal-btn" type="submit" disabled={secQLoading || !securityQ}>
-                  {secQLoading ? 'Submitting...' : 'Submit'}
-                </button>
-                <button className="modal-btn cancel" type="button" onClick={closeModals}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-    </div>
-  );
-}
-
-export default Login;
-
