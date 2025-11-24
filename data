@@ -15,12 +15,41 @@
   margin-top: 20px;
   position: relative;
   
-  /* Fixed background image at 50% size */
-  background-image: url('./assets/Graident\ Ai\ Robot-Photoroom.png');
-  background-size: 50%; /* 50% of container size */
+  /* Background image - removed fixed attachment for better compatibility */
+  background-image: url('./assets/Graident Ai Robot-Photoroom.png');
+  background-size: 50%;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: scroll; /* Changed from fixed */
+}
+
+/* Alternative background approaches - try one of these: */
+
+/* Option 1: Using a div for background */
+.chat-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('./assets/Graident Ai Robot-Photoroom.png');
+  background-size: 50%;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+  opacity: 0.7; /* Adjust opacity as needed */
+}
+
+/* Option 2: Using img element */
+.chat-background-img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;
+  height: auto;
+  z-index: 0;
+  opacity: 0.7;
 }
 
 /* Add a transparent overlay to the container */
@@ -31,8 +60,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Adjust transparency here (0.5 = 50% opacity) */
-  z-index: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1; /* Increased z-index */
   pointer-events: none;
 }
 
@@ -41,7 +70,7 @@
 .messages-container,
 .message-form {
   position: relative;
-  z-index: 1;
+  z-index: 2; /* Increased z-index */
 }
 
 /* Header */
@@ -100,7 +129,7 @@
   transform: scale(1.1);
 }
 
-/* Messages container - background image removed */
+/* Messages container - clean background */
 .messages-container {
   position: relative;
   flex: 1;
@@ -111,18 +140,14 @@
   gap: 6px;
   min-height: 0;
   margin-top: 10px;
-  background: transparent; /* Remove background image */
-}
-
-/* Remove the overlay from messages container since background image is gone */
-.messages-container::before {
-  content: none; /* Remove the overlay */
+  background: transparent;
+  z-index: 2;
 }
 
 /* Ensure messages appear above any potential background */
 .message {
   position: relative;
-  z-index: 1;
+  z-index: 3;
 }
 
 /* Scrollbar Styling */
@@ -238,7 +263,6 @@
   }
 }
 
-/* Rest of your original CSS continues below... */
 .options-list {
   display: flex;
   flex-wrap: wrap;
@@ -256,7 +280,7 @@
   font-size: 1rem;
   transition: background-color 0.3s ease;
   position: relative;
-  z-index: 1;
+  z-index: 3;
 }
 
 .option-button:hover {
@@ -271,11 +295,9 @@
   gap: 4px;
   line-height: 1.4;
   position: relative;
-  z-index: 1;
+  z-index: 3;
 }
 
 .formatted-card strong {
   font-weight: 600;
 }
-
-/* All remaining CSS from your original file continues here... */
