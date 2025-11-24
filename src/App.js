@@ -1,26 +1,44 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { dummyShifts } from './data/dummyShifts';
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
-// Import Components
-import Header from './components/UI/Header';
-import Sidebar from './components/UI/Sidebar';
-import HandoverList from './components/Handovers/HandoverList';
-import CreateHandover from './components/Handovers/CreateHandover';
-import HandoverDetail from './components/Handovers/HandoverDetail';
-import HandoverReports from './components/Reports/HandoverReports';
+import { dummyShifts } from "./data/dummyShifts";
 
-import BillingAnalysis from './components/BillingAnalysis/BillingAnalysis';
-// Add import at the top
-import HistorySummary from './components/Handovers/HistorySummary';
+// Components
+import Header from "./components/UI/Header";
+import Sidebar from "./components/UI/Sidebar";
+import HandoverList from "./components/Handovers/HandoverList";
+import CreateHandover from "./components/Handovers/CreateHandover";
+import HandoverDetail from "./components/Handovers/HandoverDetail";
+import HandoverReports from "./components/Reports/HandoverReports";
+import BillingAnalysis from "./components/BillingAnalysis/BillingAnalysis";
+import HistorySummary from "./components/Handovers/HistorySummary";
 
-// Main CSS
-import './App.css';
+import "./App.css";
 
-// Protected Route Component - Updated to block L1 users
+/* -------------------------------------------------------
+    REQUIRE AUTH WRAPPER (GLOBAL CHECK BEFORE APP LOADS)
+---------------------------------------------------------*/
+const RequireAuth = ({ children }) => {
+  const username = localStorage.getItem("username");
+  const sessionId = localStorage.getItem("sessionid");
+  const userlevel = localStorage.getItem("userlevel");
+
+  // If not logged in → redirect to SSO login
+  if (!username || !sessionId || !userlevel) {
+    const currentUrl = encodeURIComponent(window.location.href);
+
+    window.location.href = `https://10.191.171.12:5443/EISHOME/?return_url=${currentUrl}`;
+    return null; // stop rendering React
+  }
+
+  return children;
+};
+
+/* -------------------------------------------------------
+    PROTECTED ROUTE FOR ROLE-BASED ACCESS
+---------------------------------------------------------*/
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const userLevel = localStorage.getItem('userlevel');
+  const userLevel = localStorage.getItem("userlevel");
 
   if (!allowedRoles.includes(userLevel)) {
     return <Navigate to="/dashboard" replace />;
@@ -29,108 +47,107 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
+/* -------------------------------------------------------
+                    MAIN APP COMPONENT
+---------------------------------------------------------*/
 function App() {
-  // State for handovers and shifts
   const [handovers, setHandovers] = useState([]);
   const [shifts, setShifts] = useState(dummyShifts);
-  const [userLevel, setUserLevel] = useState('');
+  const [userLevel, setUserLevel] = useState("");
 
   useEffect(() => {
-    // Get user level from localStorage
-    const level = localStorage.getItem('userlevel') || 'L2';
+    const level = localStorage.getItem("userlevel") || "L2";
     setUserLevel(level);
   }, []);
 
-  // Function to add new handover
+  // Add new handover
   const addHandover = (newHandover) => {
     setHandovers([
       {
         ...newHandover,
         id: `handover-${Date.now()}`,
         createdAt: new Date().toISOString(),
-        createdBy: { name: "System User" }
+        createdBy: { name: "System User" },
       },
-      ...handovers
+      ...handovers,
     ]);
   };
 
-  // Function to update handovers (including tasks)
+  // Update existing handovers
   const updateHandovers = (updatedHandovers) => {
     setHandovers(updatedHandovers);
   };
 
   return (
     <Router basename="/shiftHandoverFrontend">
-      <div className="app-container">
-        <Header />
-        <div className="main-content">
-          <Sidebar userLevel={userLevel} />
-          <div className="content-area">
-            <Routes>
-              {/* Add root route that redirects to dashboard */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-              <Route
-                path="/dashboard"
-                element={
-                  <HandoverList
-                    onHandoversUpdate={updateHandovers}
-                    userLevel={userLevel}
-                  />
-                }
-              />
-              <Route
-                path="/create"
-                element={
-                  <CreateHandover
-                    shifts={shifts}
-                    onSubmit={addHandover}
-                  />
-                }
-              />
-              <Route
-                path="/handover/:id"
-                element={
-                  <HandoverDetail
-                    handovers={handovers}
-                    userLevel={userLevel}
-                  />
-                }
-              />
+      {/* 🔐 Wrap the entire app with RequireAuth */}
+      <RequireAuth>
+        <div className="app-container">
+          <Header />
 
-              {/* Protected Routes - Only accessible by ADMIN and L2 (NOT L1) */}
-              <Route
-                path="/reports"
-                element={
-                  <ProtectedRoute allowedRoles={['ADMIN', 'L2']}>
-                    <HandoverReports handovers={handovers} />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/billing-analysis"
-                element={
-                  <ProtectedRoute allowedRoles={['ADMIN', 'L2']}>
-                    <BillingAnalysis />
-                  </ProtectedRoute>
-                }
-              />
+          <div className="main-content">
+            <Sidebar userLevel={userLevel} />
+
+            <div className="content-area">
+              <Routes>
+                {/* Redirect root → dashboard */}
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
                 <Route
-  path="/history-summary"
-  element={
-    <ProtectedRoute allowedRoles={['ADMIN', 'L2']}>
-      <HistorySummary />
-    </ProtectedRoute>
-  }
-/>
+                  path="/dashboard"
+                  element={
+                    <HandoverList
+                      onHandoversUpdate={updateHandovers}
+                      userLevel={userLevel}
+                    />
+                  }
+                />
 
-            </Routes>
+                <Route
+                  path="/create"
+                  element={<CreateHandover shifts={shifts} onSubmit={addHandover} />}
+                />
+
+                <Route
+                  path="/handover/:id"
+                  element={<HandoverDetail handovers={handovers} userLevel={userLevel} />}
+                />
+
+                {/* Admin & L2 Restricted Routes */}
+                <Route
+                  path="/reports"
+                  element={
+                    <ProtectedRoute allowedRoles={["ADMIN", "L2"]}>
+                      <HandoverReports handovers={handovers} />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/billing-analysis"
+                  element={
+                    <ProtectedRoute allowedRoles={["ADMIN", "L2"]}>
+                      <BillingAnalysis />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/history-summary"
+                  element={
+                    <ProtectedRoute allowedRoles={["ADMIN", "L2"]}>
+                      <HistorySummary />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </div>
           </div>
         </div>
-      </div>
+      </RequireAuth>
     </Router>
   );
 }
 
-export default App
+export default App;
