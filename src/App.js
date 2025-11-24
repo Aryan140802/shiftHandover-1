@@ -10,7 +10,7 @@ import HandoverList from './components/Handovers/HandoverList';
 import CreateHandover from './components/Handovers/CreateHandover';
 import HandoverDetail from './components/Handovers/HandoverDetail';
 import HandoverReports from './components/Reports/HandoverReports';
-import DeploymentLogger from './components/DeploymentLogger/DeploymentLogger';
+
 import BillingAnalysis from './components/BillingAnalysis/BillingAnalysis';
 // Add import at the top
 import HistorySummary from './components/Handovers/HistorySummary';
@@ -21,11 +21,11 @@ import './App.css';
 // Protected Route Component - Updated to block L1 users
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const userLevel = localStorage.getItem('userlevel');
-  
+
   if (!allowedRoles.includes(userLevel)) {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return children;
 };
 
@@ -91,13 +91,13 @@ function App() {
               <Route
                 path="/handover/:id"
                 element={
-                  <HandoverDetail 
+                  <HandoverDetail
                     handovers={handovers}
                     userLevel={userLevel}
                   />
                 }
               />
-              
+
               {/* Protected Routes - Only accessible by ADMIN and L2 (NOT L1) */}
               <Route
                 path="/reports"
@@ -124,11 +124,7 @@ function App() {
     </ProtectedRoute>
   }
 />
-              
-              <Route
-                path="/deployment-logger"
-                element={<DeploymentLogger />}
-              />
+
             </Routes>
           </div>
         </div>
@@ -137,4 +133,4 @@ function App() {
   );
 }
 
-export default App;
+export default App
