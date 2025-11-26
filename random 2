@@ -186,39 +186,32 @@ function App() {
     }
   }, [isLoggedIn, announcement]);
 
-  // Handle login from Login component
-  const handleLogin = async (user, password) => {
+  // Handle login from Login component (receives username and response data)
+  const handleLogin = async (user, loginData = {}) => {
     try {
-      const loginData = await loginApi(user, password);
-      console.log('Login response:', loginData);
+      console.log('handleLogin called with:', { user, loginData });
 
-      // Check if login was successful
-      if (loginData.status === 302 || loginData.status === 200) {
-        const now = Date.now();
+      const now = Date.now();
 
-        // Store all data to localStorage FIRST (BEFORE any reload)
-        localStorage.setItem('username', user);
-        localStorage.setItem('userLevel', loginData.userLevel || ''); // Fixed: Consistent key name
-        localStorage.setItem('loginTime', now.toString());
+      // Store all data to localStorage FIRST
+      localStorage.setItem('username', user);
+      localStorage.setItem('userLevel', loginData.userLevel || ''); // Consistent key name
+      localStorage.setItem('loginTime', now.toString());
 
-        // If API returns sessionid, store it
-        if (loginData.sessionid) {
-          localStorage.setItem('sessionid', loginData.sessionid);
-        }
-
-        // Set local state
-        setUsername(user);
-        setUserLevel(loginData.userLevel);
-        setIsLoggedIn(true);
-
-        console.log('Login successful and data saved to localStorage');
-
-        // DO NOT call window.location.reload() - it will clear localStorage
-        // The state updates above will trigger the UI to show the dashboard
-      } else {
-        console.error('Login failed with status:', loginData.status);
-        alert('Login failed. Please check your credentials.');
+      // If API returns sessionid, store it
+      if (loginData.sessionid) {
+        console.log('Storing sessionid:', loginData.sessionid);
+        localStorage.setItem('sessionid', loginData.sessionid);
       }
+
+      // Set local state
+      setUsername(user);
+      setUserLevel(loginData.userLevel || '');
+      setIsLoggedIn(true);
+
+      console.log('Login successful and data saved to localStorage');
+      console.log('Updated state - isLoggedIn: true, username:', user, 'userLevel:', loginData.userLevel);
+
     } catch (err) {
       console.error('Login error:', err);
       alert('Login failed: ' + err.message);
