@@ -49,6 +49,8 @@ function Login({ onLogin }) {
         const sessionId = localStorage.getItem('sessionid');
         const uid = localStorage.getItem('uidd');
 
+        console.log("Checking for existing session - sessionId:", !!sessionId, "uid:", !!uid);
+
         if (sessionId && uid) {
           console.log("Found session credentials in localStorage");
           setSessionLoading(true);
@@ -67,11 +69,14 @@ function Login({ onLogin }) {
             );
 
             const data = await response.json();
-            console.log("Session validation response:", data);
+            console.log("Session validation response:", data, "Status:", response.status);
 
-            if (response.ok && data.status === 200) {
+            if (response.ok && (data.status === 200 || data.status === 302)) {
               console.log("Session is valid - proceeding with auto-login");
-              handleLoginSuccess(data.username || uid);
+              // Extract username from response, fallback to uid
+              const responseUsername = data.username || data.user || uid;
+              console.log("Auto-login with username:", responseUsername);
+              handleLoginSuccess(responseUsername, data);
             } else {
               console.log("Session validation failed - clearing invalid session");
               localStorage.removeItem('sessionid');
@@ -97,10 +102,12 @@ function Login({ onLogin }) {
     validateAndRestoreSession();
   }, []);
 
-  const handleLoginSuccess = (username) => {
+  const handleLoginSuccess = (username, responseData = {}) => {
+    console.log("handleLoginSuccess called with:", { username, responseData });
+
     // Check if there's a redirect URL stored
     const redirectUrl = localStorage.getItem('post_login_redirect');
-    console.log("Login successful - checking redirect URL:", redirectUrl);
+    console.log("Checking for redirect URL:", redirectUrl);
 
     if (redirectUrl) {
       // Clear the stored URL and redirect back
@@ -109,8 +116,10 @@ function Login({ onLogin }) {
       window.location.href = redirectUrl;
     } else {
       // No redirect URL, proceed with normal login flow
-      console.log("No redirect URL - proceeding with normal login");
-      onLogin(username);
+      console.log("No redirect URL - calling onLogin with username:", username);
+      
+      // Pass both username and response data to parent
+      onLogin(username, responseData);
     }
   };
 
@@ -118,21 +127,39 @@ function Login({ onLogin }) {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
+    console.log("Form submitted with username:", username);
+
     try {
       const response = await postLogin(username, password);
-      if (response.data.status === 302) {
-        // Store session credentials when login is successful
+      
+      console.log("Login API response:", response);
+      console.log("Response data:", response.data);
+      console.log("Response status:", response.data?.status);
+
+      // Check for successful login status codes
+      if (response.data.status === 302 || response.data.status === 200) {
+        console.log("Login successful! Status:", response.data.status);
+
+        // Store session credentials from response if available
         if (response.data.sessionid) {
+          console.log("Storing sessionid from response");
           localStorage.setItem('sessionid', response.data.sessionid);
         }
+
         if (response.data.uid) {
+          console.log("Storing uid from response");
           localStorage.setItem('uidd', response.data.uid);
         }
-        handleLoginSuccess(response.data.username);
+
+        // Call handleLoginSuccess with full response data
+        handleLoginSuccess(response.data.username || username, response.data);
       } else {
+        console.error("Login failed - invalid status:", response.data.status);
         setError('Invalid credentials');
       }
     } catch (error) {
+      console.error('Login error:', error);
       setError('Invalid credentials');
     } finally {
       setLoading(false);
