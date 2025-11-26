@@ -1,303 +1,664 @@
-/* Chatbot Wrapper */
-.chat-container {
-  position: fixed;
-  width: 450px;
-  height: 782px;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  border: 2px solid var(--border-color);
-  border-radius: 10px;
-  box-shadow: 0 0 30px rgba(145, 145, 145, 0.4);
-  overflow: hidden;
-  font-size: 14px;
-  margin-right: 25px;
-  margin-top: 20px;
-  position: relative;
-  
-  /* Background image - removed fixed attachment for better compatibility */
-  background-image: url('./assets/Graident Ai Robot-Photoroom.png');
-  background-size: 50%;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: scroll; /* Changed from fixed */
-}
+PostApi.jsx
+-rwxr-x--- 1 root    root    11643 Nov  6 18:53 PostApi.jsx_061125
+-rwxr-xr-x 1 root    root     8240 Jun 25 13:11 PostApi.jsx_250625
+-rwxr-xr-x 1 eisuser eisuser  1378 Nov 10 17:21 loginApi.jsx
+-rwxr-x--- 1 root    root     1227 Nov  6 18:58 loginApi.jsx_061125
+[root@eispr-prt1-01 api]# cat loginApi.jsx
+import axios from 'axios';
 
-/* Alternative background approaches - try one of these: */
+// Create axios instance with proper configuration
+const api = axios.create({
+  baseURL: 'https://10.191.171.12:5443/EISHOME/',
+ // baseURL: 'https://10.191.171.12:5443/EISHOME/',
+  timeout: 10000,  // Reasonable timeout
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
 
-/* Option 1: Using a div for background */
-.chat-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('./assets/Graident Ai Robot-Photoroom.png');
-  background-size: 50%;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: 0;
-  opacity: 0.7; /* Adjust opacity as needed */
-}
 
-/* Option 2: Using img element */
-.chat-background-img {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 50%;
-  height: auto;
-  z-index: 0;
-  opacity: 0.7;
-}
+// Login API function - clean implementation
+//
+export const postLogin = async (uid, password) => {
+  try {
+    const response = await api.post('awthenticationService/newLogin/', { "uid":uid, "password":password });
+    const uidd = response.data.userId;
+    const passwordd=response.data.password;
+    console.log("this is username ")
+    console.log(response.data.username)
+    const username=response.data.username;
+    const userlevel=response.data.userLevel;
+    const sessionToken = response.data.session_token;
+    console.log("this is runign");
+     console.log(userlevel);
 
-/* Add a transparent overlay to the container */
-.chat-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1; /* Increased z-index */
-  pointer-events: none;
-}
+    if(uidd && passwordd){
+      localStorage.setItem('uidd',uidd);
+      localStorage.setItem('password',passwordd);
+      localStorage.setItem('username',username);
+      localStorage.setItem('userlevel',userlevel);
+      console.log(localStorage.getItem('uidd'));
+      localStorage.setItem('sessionid', sessionToken);
+    }
+    return response;
 
-/* Ensure all child elements are above the background overlay */
-.chat-header,
-.messages-container,
-.message-form {
-  position: relative;
-  z-index: 2; /* Increased z-index */
-}
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error; // Re-throw to allow component-level handling
+  }
+};
 
-/* Header */
-.chat-header {
-  background: transparent;
-  padding: 8px 5px;
-  text-align: center;
-  font-weight: bold;
-  border-bottom: 2px solid #444;
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  height: 80px;
-  border-bottom: 1px solid #ddd;
-}
+[root@eispr-prt1-01 api]# cat PostApi.jsx
+import axios from 'axios';
 
-.chat-title h1 {
-  margin: 0;
-  font-size: 24px;
-}
+// Create axios instance with custom configuration
+const api = axios.create({
+  baseURL: 'https://10.191.171.12:5443/EISHOME/',
+ // baseURL: 'https://10.191.171.12:5443/EISHOME/'
+  timeout: 100000,
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
 
-.chat-title h5 {
-  margin: 0;
-  font-weight: normal;
-  font-size: 12px;
-  color: #aaa;
-}
 
-.chat-logo {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 30px;
-  margin-left: 5px;
-}
 
-.minimize-button {
-  margin-left: 28px;
-  background: transparent;
-  border: 2px solid var(--border-color);
-  border-radius: 5px;
-  font-size: 26px;
-  cursor: pointer;
-  color: #ffffff;
-  font-weight: bolder;
-  padding: 1px 10px;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+// === AXIOS REQUEST INTERCEPTOR ===
+// Add a request interceptor to attach the Authorization header automatically
+api.interceptors.request.use(
+  (config) => {
+    // Get the session ID from localStorage just before the request is made
+    const sessionId = localStorage.getItem('sessionid');
 
-.minimize-button:hover {
-  background-color: rgba(0, 123, 255, 0.1);
-  transform: scale(1.1);
-}
+    // If a sessionId exists, attach the Authorization header
+    if (sessionId) {
+      config.headers.Authorization = `Bearer ${sessionId}`;
+    }
 
-/* Messages container - clean background */
-.messages-container {
-  position: relative;
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-height: 0;
-  margin-top: 10px;
-  background: transparent;
-  z-index: 2;
-}
+    return config;
+  },
+  (error) => {
+    // Do something with request error
+    return Promise.reject(error);
+  }
+);
+// === END INTERCEPTOR ===
 
-/* Ensure messages appear above any potential background */
-.message {
-  position: relative;
-  z-index: 3;
-}
 
-/* Scrollbar Styling */
-.messages-container::-webkit-scrollbar {
-  width: 6px;
-}
 
-.messages-container::-webkit-scrollbar-thumb {
-  background-color: #666;
-  border-radius: 4px;
-}
+// Modified postMessage to always send data under "message"
+export const postMessage = (data) => {
+  if (typeof data === 'string') {
+    return api.post('EIS-GINI/', { "message": data }, { timeout: 100000 });
+  }
+  if (Array.isArray(data)) {
+    return api.post('EIS-GINI/', { "message": data }, { timeout: 100000 });
+  }
+  if (typeof data === 'object' && data !== null) {
+    if (data.hasOwnProperty('message')) {
+      return api.post('EIS-GINI/', data, { timeout: 100000 });
+    }
+    return api.post('EIS-GINI/', { "message": data }, { timeout: 100000 });
+  }
+  return api.post('EIS-GINI/', { "message": data }, { timeout: 100000 });
+};
 
-/* Input Form */
-.message-form {
-  display: flex;
-  padding: 6px 8px;
-  border-top: 1px solid #444;
-  background: transparent;
-}
+// All other API functions remain unchanged
+export const getPost = () => {
+  return api.get('EIS-GINI/', { timeout: 100000 });
+};
 
-.message-input {
-  flex: 1;
-  padding: 5px 8px;
-  border-radius: 5px;
-  border: none;
-  font-size: 0.85rem;
-  outline: none;
-}
+export const getServiceSys = () => {
+  return api.get('EISHome/servicewise_sys/');
+};
 
-.send-button {
-  margin-left: 5px;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  background-color: #ffffff;
-}
+export const getServiceExp = () => {
+  return api.get('EISHome/servicewise_exp/');
+};
 
-/* Message Bubbles */
-.message {
-  max-width: 80%;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 1rem;
-  line-height: 1.3;
-  word-wrap: break-word;
-}
+export const getIpwiseSys = () => {
+  return api.get('EISHome/ipwise_sys/');
+};
 
-.user-message {
-  background-color: #4875a6;
-  color: white;
-  align-self: flex-end;
-  justify-content: flex-end;
-}
+export const getIpwiseExp = () => {
+  return api.get('EISHome/ipwise_exp/');
+};
 
-.bot-message {
-  background-color: rgb(137, 74, 137);
-  color: white;
-  align-self: flex-start;
-}
+export const getPortwiseSys = () => {
+  return api.get('EISHome/portwise_sys/');
+};
 
-.message-time {
-  font-size: 0.65rem;
-  text-align: right;
-  color: #aaa;
-  margin-top: 2px;
-}
+export const getPortwiseExp = () => {
+  return api.get('EISHome/portwise_exp/');
+};
 
-.chat-container.minimized {
-  width: 60px;
-  height: 60px;
-  padding: 5px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
+export const getServiceWiseExp5 = () => {
+  return api.get('EISHome/servicewise_top5_exp/');
+};
 
-.chat-container.minimized .chat-header {
-  width: 100%;
-  justify-content: center;
-}
+export const getServiceWiseSys5 = () => {
+  return api.get('EISHome/servicewise_top5_sys/');
+};
 
-.chat-container.minimized .chat-logo {
-  margin: 0 auto;
-  width: 50px;
-  height: 50px;
-}
+export const getIpWiseExp5 = () => {
+  return api.get('EISHome/ipwise_exp_top5/');
+};
 
-.chat-container.minimized .chat-title,
-.chat-container.minimized .minimize-button,
-.chat-container.minimized .messages-container,
-.chat-container.minimized .message-form {
-  display: none;
-}
+export const getIpWiseSys5 = () => {
+  return api.get('EISHome/ipwise_sys_top5/');
+};
 
-@media (max-height: 800px) {
-  .chat-container {
-    width: 300px;
-    height: 420px;
+export const getPortWiseExp5 = () => {
+  return api.get('EISHome/portwise_top5_exp/');
+};
+
+export const getPortWiseSys5 = () => {
+  return api.get('EISHome/portwise_top5_sys/');
+};
+
+/*export const getFARExpires = () => {
+  return api.get('EISHome/farExpiresNext5M/');
+};*/
+
+
+
+// NEW: Add the FAR details specific API function
+export const getFARExpires = async (dataFilter) => {
+  try {
+    const userId = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+
+    const response = await api.post('EISHome/farExpiresNext5M/', {
+      "data_filter": dataFilter,
+      "userId": userId,
+      "password": password
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not fetch FAR details:', error);
+    throw error;
+  }
+};
+
+
+
+// NEW: Add the FAR details specific API function
+export const getFARDetailsSpecific = async (dataFilter) => {
+  try {
+    const userId = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+
+    const response = await api.post('EISHome/farSpecificAll/', {
+
+      "userId": userId,
+      "password": password,
+       "data_filter": dataFilter
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not fetch FAR details:', error);
+    throw error;
+  }
+};
+
+export const postGraphDownload = async ({ path, time }) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const payload = {
+      uid,
+      password,
+      time,
+      download: true
+    };
+    const response = await api.post(path, payload);
+    return response;
+  } catch (error) {
+    console.error("Error in postGraphDownload:", error);
+    throw error;
+  }
+};
+
+// Time-based post functions remain unchanged
+export const postServiceWiseExp5 = async (time) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const response = await api.post('EISHome/servicewise_top5_FiveM/EXP/', {
+      "time": time,
+      "uid": uid,
+      "password": password
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not fetch error:', error);
+    throw error;
+  }
+};
+
+export const postServiceWiseSys5 = async (time) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const response = await api.post('EISHome/servicewise_top5_FiveM/SYS/', {
+      "time": time,
+      "uid": uid,
+      "password": password
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not fetch error:', error);
+    throw error;
+  }
+};
+
+export const postIpWiseExp5 = async (time) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const response = await api.post('EISHome/ipwise_top5_FiveM/EXP/', {
+      "time": time,
+      "uid": uid,
+      "password": password
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not fetch error:', error);
+    throw error;
+  }
+};
+
+export const postIpWiseSys5 = async (time) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const response = await api.post('EISHome/ipwise_top5_FiveM/SYS/', {
+      "time": time,
+      "uid": uid,
+      "password": password
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not fetch error:', error);
+    throw error;
+  }
+};
+
+export const postPortWiseExp5 = async (time) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const response = await api.post('EISHome/portwise_top5_FiveM/EXP/', {
+      "time": time,
+      "uid": uid,
+      "password": password
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not fetch error:', error);
+    throw error;
+  }
+};
+
+export const postPortWiseSys5 = async (time) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const response = await api.post('EISHome/portwise_top5_FiveM/SYS/', {
+      "time": time,
+      "uid": uid,
+      "password": password
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not fetch error:', error);
+    throw error;
+  }
+};
+
+// === UPDATED MQ API FUNCTIONS BELOW ===
+
+// POST to EISHome/mqOverall/<layer>/ with { username, password }
+export const postMqOverall = async (layer) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const response = await api.post(`EISHome/mqOverall/${layer}/`, {
+      uid,
+      password,
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not fetch mqOverall:', error);
+    throw error;
+  }
+};
+
+// POST to EISHome/mqSource/<layer>/ with { username, password }
+export const postMqSource = async (layer) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const response = await api.post(`EISHome/mqSource/${layer}/`, {
+      uid,
+      password,
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not fetch mqSource:', error);
+    throw error;
+  }
+};
+
+// POST to EISHome/mqHourly/<layer>/ with { username, password, hour }
+export const postMqHourly = async (layer, hour) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const response = await api.post(`EISHome/mqHourly/${layer}/`, {
+      uid,
+      password,
+      hour,
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not fetch mqHourly:', error);
+    throw error;
+  }
+};
+
+// Download mqgraph (source or overall) given a path ending with /layer/
+export const downloadMqGraph = async (path) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    // Ensure the path ends with a slash
+    if (!path.endsWith('/')) {
+      path += '/';
+    }
+    const payload = {
+      uid,
+      password,
+      download: true
+    };
+    // If the API returns a file, use responseType: 'blob'
+    const response = await api.post(path, payload, { responseType: 'blob' });
+    return response;
+  } catch (error) {
+    console.error('Could not download mqgraph:', error);
+    throw error;
+  }
+};
+
+// Download mqHourly given a path ending with /layer/ and an hour
+export const downloadMqHourly = async (path, hour) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    // Ensure the path ends with a slash
+    if (!path.endsWith('/')) {
+      path += '/';
+    }
+    const payload = {
+      uid,
+      password,
+      hour,
+      download: true
+    };
+    // If the API returns a file, use responseType: 'blob'
+    const response = await api.post(path, payload, { responseType: 'blob' });
+    return response;
+  } catch (error) {
+    console.error('Could not download mqHourly:', error);
+    throw error;
+  }
+};
+
+// === ANNOUNCEMENT API ===
+export const postAnnouncement = async (announcement, time) => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const payload = {
+      announcement,
+      time: time && !isNaN(Number(time)) ? Number(time) : 24,
+      uid,
+      password,
+    };
+    const response = await api.post('EISHome/announcement/', payload, {
+      timeout: 30000,
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not post announcement:', error);
+    throw error;
+  }
+};
+
+export const fetchLatestAnnouncement = async () => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const res = await api.post('EISHome/announcement/', { uid, password });
+    // Assuming the response is { announcement: "..." }
+    return res.data.announcement || "";
+  } catch (error) {
+    console.error('Could not fetch announcement:', error);
+    return "";
+  }
+};
+
+// === ALERT MODAL API ===
+export const fetchPortalAlerts = async () => {
+  try {
+    const uid = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+    const response = await api.post('EISHome/getPortalAlerts/', {
+      uid,
+      password
+    });
+    return response;
+  } catch (error) {
+    console.error('Could not fetch portal alerts:', error);
+    throw error;
+  }
+};
+
+// Add API for getting security question
+export const postGetSecurityQuestion = async (uid) => {
+  try {
+    const response = await axios.post(
+      'https://10.191.171.12:5443/EISHOME/EISHome/getSecurityQuestion/',
+    // const response = await axios.post(
+    //  'https://10.191.171.12:5443/EISHOME/EISHome/getSecurityQuestion/',
+
+      { uid },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Add API for forgot password
+export const postForgotPassword = async ({ uid, securityQuestion, password,answer }) => {
+  try {
+    const response = await axios.post(
+      'https://10.191.171.12:5443/EISHOME/EISHome/forgotPassword/',
+     // 'https://10.191.171.12:5443/EISHOME/EISHome/forgotPassword/',
+      { uid, securityQuestion, password ,answer },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+
+export const downloadSwagger1 = async ({ server , egName , apiName  }) => {
+  try {
+    const response = await axios.post(
+      'https://10.191.171.12:5443/EISHOME/EISHome/getDowloadSwagger/',
+     // 'https://10.191.171.12:5443/EISHOME/EISHome/forgotPassword/',
+      { server , egName , apiName   },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+export const downloadSwagger = async ({ server, egName, apiName }) => {
+  const response = await axios.post(
+    'https://10.191.171.12:5443/EISHOME/EISHome/getDowloadSwagger/',
+    { server, egName, apiName },
+    { responseType: 'json' }
+  );
+  return response.data;
+};
+
+
+
+
+
+export const apiFetchFavorites = async () => {
+  try {
+    const userId = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+
+    const res = await api.post('/EISHome/postFavourites/', {
+      userId: userId,
+      password: password,
+    });
+
+    // If using axios (which api.post likely is), response data is in res.data
+    const data = res.data;
+    const favData = data.favourites;
+    let favArray = [];
+
+    // Ensure favData is handled correctly whether it's an array or a comma-separated string
+    if (Array.isArray(favData)) {
+      favArray = favData;
+    } else if (typeof favData === 'string') {
+      favArray = favData.split(',').map(item => item.trim()).filter(Boolean);
+    }
+
+    return favArray;
+  } catch (err) {
+    console.error('Failed to load favorites:', err);
+    throw err;
+  }
+};
+
+export const apiUpdateFavorites = async (updatedFavorites) => {
+  try {
+    const userId = localStorage.getItem('uidd');
+    const password = localStorage.getItem('password');
+
+    // Ensure updatedFavorites is always an array
+    const favList = Array.isArray(updatedFavorites) ? updatedFavorites : [];
+
+    const res = await api.post('/EISHome/postFavourites/', {
+      userId: userId,
+      password: password,
+      favList: favList, // This must be an array
+    });
+
+    // If using axios, you don't need to check res.ok or call res.json()
+    return res.data;
+  } catch (error) {
+    console.error('Failed to update favorites:', error);
+    throw error;
+  }
+};
+
+
+
+export async function authenticatePortal() {
+  try {
+    const response = await fetch(
+      'https://10.191.171.12:5443/EISHOME/awthenticationService/authenticatePortal/',
+      {
+       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+
+      }
+    );
+
+    const data = await response.json();
+
+    return {
+      success: response.status === 302 && data.Response === "login successfull",
+      status: response.status,
+      message: data.Response,
+      data: data
+    };
+  } catch (error) {
+    console.error('Error authenticating portal:', error);
+    return {
+      success: false,
+      status: 0,
+      message: error.message,
+      data: null
+    };
   }
 }
 
-@media (max-width: 768px) {
-  .chat-container {
-    width: 90vw;
-    height: 70vh;
-    right: 5%;
-    bottom: 10px;
+export async function loginApi(username, password) {
+  const response = await fetch(
+    'https://10.191.171.12:5443/EISHOME/awthenticationService/newLogin/',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ username, password })
+    }
+  );
+
+  return response.json();
+}
+
+export async function callLogoutAPI(username) {
+  try {
+    const sessionId = localStorage.getItem('sessionid');
+
+    if (!sessionId) {
+      console.warn('No session ID found in local storage. Skipping API call.');
+      return;
+    }
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${sessionId}`
+    };
+
+    const response = await fetch(
+      'https://10.191.171.12:5443/EISHOME/awthenticationService/newLogout/',
+      {
+        method: 'POST',
+        headers: headers,
+        credentials: 'include',
+        body: JSON.stringify({
+          username: username,
+          timestamp: new Date().toISOString()
+        })
+      }
+    );
+
+    if (!response.ok) {
+      console.warn('Logout API call failed:', response.status, response.statusText);
+    } else {
+      console.log('Logout API call successful');
+      localStorage.removeItem('sessionId');
+    }
+  } catch (error) {
+    console.error('Error calling logout API:', error);
   }
-}
-
-.options-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.option-button {
-  background-color: rgb(172, 113, 172);
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-  position: relative;
-  z-index: 3;
-}
-
-.option-button:hover {
-  background-color: #f5f5f5;
-  color: #1e1e1e;
-  font-weight: 600;
-}
-
-.formatted-card {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  line-height: 1.4;
-  position: relative;
-  z-index: 3;
-}
-
-.formatted-card strong {
-  font-weight: 600;
 }
