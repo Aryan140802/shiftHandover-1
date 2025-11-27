@@ -98,11 +98,14 @@ const HandoverDetail = () => {
     // eslint-disable-next-line
   }, [id]);
 
-  // Check if user has admin access - FIXED: Check for both 'ADMIN' and 'L2'
-  const hasAdminAccess = userLevel === 'ADMIN' || userLevel === 'L2';
+  // Check if user has admin access - ONLY for ADMIN, NOT L2
+  const hasAdminAccess = userLevel === 'ADMIN';
+  
+  // L2 users can access dashboard and tasks but not admin features
+  const canAccessDashboard = userLevel === 'ADMIN' || userLevel === 'L2' || userLevel === 'L1';
   
   // Debug log
-  console.log('Current userLevel:', userLevel, 'hasAdminAccess:', hasAdminAccess);
+  console.log('Current userLevel:', userLevel, 'hasAdminAccess:', hasAdminAccess, 'canAccessDashboard:', canAccessDashboard);
 
   const fetchHandoverData = async () => {
     setLoading(true);
@@ -280,7 +283,7 @@ const HandoverDetail = () => {
         <h2>{handover.role} Team Handover</h2>
         {/* Debug info - remove after testing */}
         <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
-          User Level: {userLevel} | Admin Access: {hasAdminAccess ? 'Yes' : 'No'}
+          User Level: {userLevel} | Admin Access: {hasAdminAccess ? 'Yes' : 'No'} | Dashboard Access: {canAccessDashboard ? 'Yes' : 'No'}
         </div>
       </div>
 
@@ -328,7 +331,7 @@ const HandoverDetail = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <h3>Tasks ({tasks.length})</h3>
-              {/* Only show History Summary button for ADMIN and L2 users */}
+              {/* Only show History Summary button for ADMIN users (NOT L2) */}
               {hasAdminAccess && (
                 <button
                   className="summary-button"
