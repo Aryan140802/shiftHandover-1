@@ -77,7 +77,7 @@ const HandoverDetail = () => {
   const [ackStatus, setAckStatus] = useState('in progress');
   const [error, setError] = useState('');
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
-  const [showHistorySummary, setShowHistorySummary] = useState(false);
+  //const [showHistorySummary, setShowHistorySummary] = useState(false);
 
   const [newTask, setNewTask] = useState({
     taskTitle: '',
@@ -94,11 +94,10 @@ const HandoverDetail = () => {
   }, []);
 
   useEffect(() => {
-    if (!showHistorySummary) {
-      fetchHandoverData();
-    }
-    // eslint-disable-next-line
-  }, [id, showHistorySummary]);
+        fetchHandoverData();
+  // eslint-disable-next-line
+}, [id]);
+
 
   // Check if user has admin access
   const hasAdminAccess = userLevel === 'ADMIN' || userLevel === 'L2';
@@ -245,10 +244,6 @@ const HandoverDetail = () => {
     };
   };
 
-  // Show History Summary if showHistorySummary is true
-  if (showHistorySummary) {
-    return <HistorySummary />;
-  }
 
   if (loading) {
     return (
@@ -329,15 +324,15 @@ const HandoverDetail = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <h3>Tasks ({tasks.length})</h3>
               {/* Only show History Summary button for ADMIN and L2 users */}
-              {hasAdminAccess && (
-                <button
-                  className="summary-button"
-                  onClick={() => setShowHistorySummary(true)}
-                >
-                  📊 View History Summary
-                </button>
-              )}
-            </div>
+          {hasAdminAccess && (
+  <button
+    className="summary-button"
+    onClick={() => navigate('/history-summary', { state: { handoverId: id } })}
+  >
+    📊 View History Summary
+  </button>
+)}
+          </div>
             <button className="create-task-btn" onClick={handleCreateTask}>
               + Create New Task
             </button>
@@ -395,10 +390,16 @@ const HandoverDetail = () => {
           )}
         </div>
 
-        {modalOpen && selectedTask && (
+          {modalOpen && selectedTask && (
           <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
             <div className="modal-form-container">
-              <h2 className="modal-title">Acknowledge Task</h2>
+
+              {/* Added a container div to hold the title and the button */}
+              <div className="modal-header-container">
+                <h2 className="modal-title">Acknowledge Task</h2>
+              </div>
+
+
 
               <div className="task-info-horizontal">
                 <div className="info-column">
@@ -469,12 +470,18 @@ const HandoverDetail = () => {
           </Modal>
         )}
 
-        {showCreateTaskModal && (
+
+          {showCreateTaskModal && (
           <Modal open={showCreateTaskModal} onClose={() => setShowCreateTaskModal(false)}>
             <form onSubmit={handleCreateTaskSubmit} className="modal-form-container">
-              <h2 className="modal-title">Create New Task</h2>
 
-              <div className="form-group">
+              {/* Added a container div to hold the title and the button */}
+              <div className="modal-header-container">
+                <h2 className="modal-title">Create New Task</h2>
+
+              </div>
+
+          <div className="form-group">
                 <label>
                   Title <span className="required">*</span>
                 </label>
@@ -487,6 +494,7 @@ const HandoverDetail = () => {
                   required
                 />
               </div>
+
 
               <div className="form-group">
                 <label>Description</label>
