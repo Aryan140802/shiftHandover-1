@@ -77,7 +77,6 @@ const HandoverDetail = () => {
   const [ackStatus, setAckStatus] = useState('in progress');
   const [error, setError] = useState('');
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
-  //const [showHistorySummary, setShowHistorySummary] = useState(false);
 
   const [newTask, setNewTask] = useState({
     taskTitle: '',
@@ -88,19 +87,22 @@ const HandoverDetail = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get user level from localStorage
-    const level = localStorage.getItem('userlevel') || 'L1';
+    // Get user level from localStorage and normalize it
+    const level = (localStorage.getItem('userlevel') || 'L1').toUpperCase().trim();
+    console.log('User Level from localStorage:', level); // Debug log
     setUserLevel(level);
   }, []);
 
   useEffect(() => {
-        fetchHandoverData();
-  // eslint-disable-next-line
-}, [id]);
+    fetchHandoverData();
+    // eslint-disable-next-line
+  }, [id]);
 
-
-  // Check if user has admin access
+  // Check if user has admin access - FIXED: Check for both 'ADMIN' and 'L2'
   const hasAdminAccess = userLevel === 'ADMIN' || userLevel === 'L2';
+  
+  // Debug log
+  console.log('Current userLevel:', userLevel, 'hasAdminAccess:', hasAdminAccess);
 
   const fetchHandoverData = async () => {
     setLoading(true);
@@ -244,7 +246,6 @@ const HandoverDetail = () => {
     };
   };
 
-
   if (loading) {
     return (
       <div className="handover-detail-container">
@@ -277,6 +278,10 @@ const HandoverDetail = () => {
     <div className="handover-detail-container">
       <div className="handover-detail-header">
         <h2>{handover.role} Team Handover</h2>
+        {/* Debug info - remove after testing */}
+        <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+          User Level: {userLevel} | Admin Access: {hasAdminAccess ? 'Yes' : 'No'}
+        </div>
       </div>
 
       <div className="handover-detail-content">
@@ -324,15 +329,15 @@ const HandoverDetail = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <h3>Tasks ({tasks.length})</h3>
               {/* Only show History Summary button for ADMIN and L2 users */}
-          {hasAdminAccess && (
-  <button
-    className="summary-button"
-    onClick={() => navigate('/history-summary', { state: { handoverId: id } })}
-  >
-    📊 View History Summary
-  </button>
-)}
-          </div>
+              {hasAdminAccess && (
+                <button
+                  className="summary-button"
+                  onClick={() => navigate('/history-summary', { state: { handoverId: id } })}
+                >
+                  📊 View History Summary
+                </button>
+              )}
+            </div>
             <button className="create-task-btn" onClick={handleCreateTask}>
               + Create New Task
             </button>
@@ -390,16 +395,12 @@ const HandoverDetail = () => {
           )}
         </div>
 
-          {modalOpen && selectedTask && (
+        {modalOpen && selectedTask && (
           <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
             <div className="modal-form-container">
-
-              {/* Added a container div to hold the title and the button */}
               <div className="modal-header-container">
                 <h2 className="modal-title">Acknowledge Task</h2>
               </div>
-
-
 
               <div className="task-info-horizontal">
                 <div className="info-column">
@@ -470,18 +471,14 @@ const HandoverDetail = () => {
           </Modal>
         )}
 
-
-          {showCreateTaskModal && (
+        {showCreateTaskModal && (
           <Modal open={showCreateTaskModal} onClose={() => setShowCreateTaskModal(false)}>
             <form onSubmit={handleCreateTaskSubmit} className="modal-form-container">
-
-              {/* Added a container div to hold the title and the button */}
               <div className="modal-header-container">
                 <h2 className="modal-title">Create New Task</h2>
-
               </div>
 
-          <div className="form-group">
+              <div className="form-group">
                 <label>
                   Title <span className="required">*</span>
                 </label>
@@ -494,7 +491,6 @@ const HandoverDetail = () => {
                   required
                 />
               </div>
-
 
               <div className="form-group">
                 <label>Description</label>
