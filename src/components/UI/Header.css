@@ -1,3 +1,14 @@
+Header.css
+-rwxrwxrwx 1 root root 5687 Nov  8 16:46 Header.css_081125
+-rwxrwxrwx 1 root root 4549 Nov 24 15:13 Header.js
+-rwxrwxrwx 1 root root  403 Oct  3 17:27 Header.js_081025
+-rwxrwxrwx 1 root root 1736 Oct 31 18:25 Header.js_081125
+-rwxrwxrwx 1 root root 3921 Nov 24 15:08 Header.js_24112025
+-rwxrwxrwx 1 root root 5495 Nov 27 18:17 Modal.css
+-rwxrwxrwx 1 root root  646 Nov 24 13:48 Modal.js
+-rwxrwxrwx 1 root root  687 Oct 22 14:30 Sidebar.css
+-rwxrwxrwx 1 root root 1431 Nov  3 13:39 Sidebar.js
+[root@eispr-prt1-01 UI]# cat Header.css
 /* Header Container */
 .app-header {
   display: flex;
@@ -6,9 +17,8 @@
   padding: 1.5rem 2rem;
   background: linear-gradient(90deg, rgba(26, 26, 62, 0.9) 0%, rgba(15, 15, 35, 0.9) 100%);
   border-bottom: 1px solid rgba(46, 213, 255, 0.2);
-  backdrop-filter: blur(10px);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   z-index: 10;
 }
 
@@ -90,7 +100,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid rgba(46, 213, 255, 0.3);
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(46, 213, 255, 0.2),
     inset 0 0 10px rgba(255, 255, 255, 0.2);
   letter-spacing: 0.5px;
@@ -118,7 +128,7 @@
 .user-avatar:hover {
   transform: scale(1.1) rotate(5deg);
   border-color: rgba(46, 213, 255, 0.6);
-  box-shadow: 
+  box-shadow:
     0 8px 25px rgba(46, 213, 255, 0.4),
     inset 0 0 15px rgba(255, 255, 255, 0.3);
 }
@@ -132,17 +142,24 @@
   border: 1px solid rgba(46, 213, 255, 0.3);
   border-radius: 12px;
   padding: 1rem 1.25rem;
-  min-width: 200px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 
+  min-width: 220px;
+  box-shadow:
     0 10px 40px rgba(2, 6, 23, 0.5),
     0 0 0 1px rgba(46, 213, 255, 0.2);
   z-index: 1000;
-  pointer-events: none;
   backdrop-filter: blur(12px);
+  animation: tooltipFadeIn 5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .user-tooltip::before {
@@ -156,12 +173,6 @@
   border-left: 1px solid rgba(46, 213, 255, 0.3);
   border-top: 1px solid rgba(46, 213, 255, 0.3);
   transform: rotate(45deg);
-}
-
-.user-avatar-container:hover .user-tooltip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
 }
 
 .tooltip-name {
@@ -182,10 +193,12 @@
   border: 1px solid rgba(46, 213, 255, 0.2);
   display: inline-block;
   white-space: nowrap;
+  margin-bottom: 1rem;
 }
 
-/* Logout Button Styles */
-.logout-btn {
+/* Tooltip Logout Button */
+.tooltip-logout-btn {
+  width: 100%;
   padding: 0.65rem 1.25rem;
   background: linear-gradient(90deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.15));
   color: #ffc4c4;
@@ -197,16 +210,17 @@
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(2, 6, 23, 0.3);
   font-family: 'Inter', sans-serif;
+  margin-top: 0.75rem;
 }
 
-.logout-btn:hover {
+.tooltip-logout-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(231, 76, 60, 0.25);
   background: linear-gradient(90deg, rgba(231, 76, 60, 0.3), rgba(192, 57, 43, 0.2));
   border-color: rgba(231, 76, 60, 0.5);
 }
 
-.logout-btn:active {
+.tooltip-logout-btn:active {
   transform: translateY(0);
 }
 
@@ -238,10 +252,10 @@
 
   .user-tooltip {
     right: -10px;
-    min-width: 180px;
+    min-width: 200px;
   }
 
-  .logout-btn {
+  .tooltip-logout-btn {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
   }
@@ -274,7 +288,7 @@
     right: 20px;
   }
 
-  .logout-btn {
+  .tooltip-logout-btn {
     padding: 0.45rem 0.85rem;
     font-size: 0.8rem;
   }
