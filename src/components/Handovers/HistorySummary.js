@@ -1,718 +1,389 @@
-HistorySummary.css
--rwxrwxrwx 1 root root 13048 Nov 24 15:04 HistorySummary.js
-[root@eispr-prt1-01 Handovers]# cat HistorySummary.css
-.history-summary-page {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, rgba(46, 213, 255, 0.08) 0%, rgba(138, 43, 226, 0.08) 100%);
-  border-radius: 16px;
-  border: 1px solid rgba(46, 213, 255, 0.2);
-  backdrop-filter: blur(12px);
-  position: relative;
-  overflow: hidden;
-}
-
-.history-header::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(138, 43, 226, 0.15) 0%, transparent 70%);
-  animation: pulse 6s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
-  50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
-}
-
-.header-content {
-  position: relative;
-  z-index: 1;
-}
-
-.header-content h1 {
-  margin: 0 0 0.5rem 0;
-  font-size: 2rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #2ed5ff 0%, #8a2be2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.header-content p {
-  margin: 0;
-  color: rgba(230, 238, 248, 0.7);
-  font-size: 0.95rem;
-}
-
-.back-button-header {
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(90deg, rgba(52, 152, 219, 0.2), rgba(41, 128, 185, 0.15));
-  color: #c7e7ff;
-  border: 1px solid rgba(52, 152, 219, 0.3);
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  z-index: 1;
-}
-
-.back-button-header:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.15);
-  background: linear-gradient(90deg, rgba(52, 152, 219, 0.3), rgba(41, 128, 185, 0.25));
-}
-
-/* Loading States */
-.loading-container {
-  text-align: center;
-  padding: 4rem 2rem;
-  background: linear-gradient(135deg, rgba(26, 26, 62, 0.4) 0%, rgba(15, 15, 35, 0.4) 100%);
-  border-radius: 16px;
-  border: 1px solid rgba(46, 213, 255, 0.15);
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(46, 213, 255, 0.2);
-  border-top-color: #2ed5ff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1.5rem;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.loading-text {
-  color: #2ed5ff;
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-.history-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.summary-section {
-  background: linear-gradient(135deg, rgba(26, 26, 62, 0.4) 0%, rgba(15, 15, 35, 0.4) 100%);
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(46, 213, 255, 0.15);
-  position: relative;
-  overflow: hidden;
-}
-
-.section-title {
-  margin: 0 0 1.5rem 0;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #2ed5ff;
-  border-bottom: 2px solid rgba(46, 213, 255, 0.2);
-  padding-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-}
-
-.summary-item {
-  padding: 1.5rem;
-  border-radius: 14px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.2s ease;
-}
-
-.summary-item::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
-  animation: rotate 8s linear infinite;
-}
-
-@keyframes rotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.summary-item:hover {
-  transform: translateY(-3px) scale(1.02);
-}
-
-.summary-item.total {
-  background: linear-gradient(135deg, rgba(46, 213, 255, 0.12) 0%, rgba(46, 213, 255, 0.06) 100%);
-  border-color: rgba(46, 213, 255, 0.2);
-  color: #c7e7ff;
-}
-
-.summary-item.active {
-  background: linear-gradient(135deg, rgba(76, 175, 80, 0.12) 0%, rgba(76, 175, 80, 0.06) 100%);
-  border-color: rgba(76, 175, 80, 0.2);
-  color: #bbf7d0;
-}
-
-.summary-item.completed {
-  background: linear-gradient(135deg, rgba(255, 193, 7, 0.12) 0%, rgba(255, 193, 7, 0.06) 100%);
-  border-color: rgba(255, 193, 7, 0.2);
-  color: #ffeaa7;
-}
-
-.summary-item.tasks {
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.12) 0%, rgba(33, 150, 243, 0.06) 100%);
-  border-color: rgba(33, 150, 243, 0.2);
-  color: #c7e7ff;
-}
-
-.summary-label {
-  display: block;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  opacity: 0.9;
-  margin-bottom: 0.5rem;
-  position: relative;
-  z-index: 1;
-}
-
-.summary-value {
-  display: block;
-  font-size: 2.5rem;
-  font-weight: 700;
-  position: relative;
-  z-index: 1;
-  text-shadow: 0 0 20px currentColor;
-}
-
-.teams-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.team-tag {
-  padding: 0.75rem 1.25rem;
-  background: rgba(46, 213, 255, 0.1);
-  border: 1px solid rgba(46, 213, 255, 0.3);
-  border-radius: 20px;
-  color: #2ed5ff;
-  font-weight: 500;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-}
-
-.team-tag:hover {
-  background: rgba(46, 213, 255, 0.2);
-  transform: translateY(-2px);
-}
-
-.team-tag.more {
-  background: rgba(138, 43, 226, 0.1);
-  border-color: rgba(138, 43, 226, 0.3);
-  color: #b87bff;
-}
-
-/* History Tasks Table */
-.history-tasks-table-container {
-
-  border-radius: 12px;
-}
-
-.history-tasks-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0.01));
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.history-tasks-table th {
-  background: rgba(255, 255, 255, 0.03);
-  color: #d7eaff;
-  font-weight: 600;
-  padding: 1rem;
-  text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.history-tasks-table td {
-  padding: 0.9rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-  color: rgba(230, 238, 248, 0.8);
-}
-
-.history-tasks-table tr:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.expand-button {
-  background: none;
-  border: none;
-  color: #2ed5ff;
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 0.25rem;
-  transition: all 0.2s ease;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.expand-button:hover {
-  transform: scale(1.2);
-  color: #8a2be2;
-}
-
-.task-row {
-  transition: background 0.2s ease;
-}
-
-.expanded-row td {
-  padding: 0;
-  background: rgba(46, 213, 255, 0.03);
-}
-
-.expanded-content {
-  padding: 1.5rem;
-  overflow: visible;
-}
-
-.task-id-cell {
-  font-weight: 600;
-  color: #2ed5ff;
-}
-
-.task-desc-cell {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.priority-badge {
-  display: inline-block;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.priority-badge.priority-low {
-  background: rgba(76, 175, 80, 0.15);
-  color: #a5d6a7;
-  border: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-.priority-badge.priority-medium {
-  background: rgba(255, 193, 7, 0.15);
-  color: #ffd54f;
-  border: 1px solid rgba(255, 193, 7, 0.3);
-}
-
-.priority-badge.priority-high {
-  background: rgba(255, 87, 34, 0.15);
-  color: #ffab91;
-  border: 1px solid rgba(255, 87, 34, 0.3);
-}
-
-.priority-badge.priority-critical {
-  background: rgba(233, 30, 99, 0.15);
-  color: #f48fb1;
-  border: 1px solid rgba(233, 30, 99, 0.3);
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.status-badge.status-open,
-.status-badge.status-pending {
-  background: rgba(255, 193, 7, 0.15);
-  color: #ffeaa7;
-  border: 1px solid rgba(255, 193, 7, 0.3);
-}
-
-.status-badge.status-in-progress {
-  background: rgba(33, 150, 243, 0.15);
-  color: #c7e7ff;
-  border: 1px solid rgba(33, 150, 243, 0.3);
-}
-
-.status-badge.status-completed {
-  background: rgba(76, 175, 80, 0.15);
-  color: #bbf7d0;
-  border: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-.ack-count-badge {
-  display: inline-block;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  background: rgba(46, 213, 255, 0.1);
-  color: #2ed5ff;
-  border: 1px solid rgba(46, 213, 255, 0.2);
-}
-
-.ack-count-badge.has-acks {
-  background: rgba(76, 175, 80, 0.1);
-  color: #bbf7d0;
-  border-color: rgba(76, 175, 80, 0.2);
-}
-
-.latest-update-cell {
-  font-size: 0.85rem;
-}
-
-.update-time {
-  color: #2ed5ff;
-  font-weight: 500;
-}
-
-.update-user {
-  color: rgba(230, 238, 248, 0.6);
-  font-size: 0.8rem;
-}
-
-.no-update {
-  color: rgba(230, 238, 248, 0.4);
-  font-style: italic;
-}
-
-/* Timeline Styles */
-.timeline-container {
-  margin-top: 1rem;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(46, 213, 255, 0.03) 0%, rgba(138, 43, 226, 0.03) 100%);
-  border: 1px solid rgba(46, 213, 255, 0.15);
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
-}
-
-.timeline-title {
-  margin: 0 0 1.5rem 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #2ed5ff;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Individual timeline wrapper with horizontal scroll only */
-.timeline-scroll-wrapper {
-
-    /* overflow-x: auto; */
-    overflow-y: auto;
-    padding: 1rem 0;
-    position: relative;
-    width: 1200px;
-
-}
-
-
-.timeline-horizontal {
-  display: flex;
-  min-width: max-content;
-  padding: 1rem 0;
-  gap: 0;
-  position: relative;
-  align-items: flex-start;
-  white-space: nowrap;
-}
-
-.timeline-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 320px;
-  max-width: 320px;
-  flex-shrink: 0;
-  position: relative;
-  padding: 0 1.5rem;
-}
-
-.timeline-marker {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1rem;
-  position: relative;
-  z-index: 2;
-  width: 120%;
-}
-
-.timeline-dot {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #2ed5ff 0%, #8a2be2 100%);
-  border: 3px solid rgba(26, 26, 62, 0.9);
-  box-shadow: 0 0 0 3px rgba(46, 213, 255, 0.3), 0 0 25px rgba(46, 213, 255, 0.7);
-  z-index: 3;
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(46, 213, 255, 0.3), 0 0 25px rgba(46, 213, 255, 0.7); }
-  50% { box-shadow: 0 0 0 5px rgba(46, 213, 255, 0.4), 0 0 35px rgba(46, 213, 255, 0.9); }
-}
-
-.timeline-connector {
-  position: absolute;
-  top: 0.5rem;
-  left: 50%;
-  right: -50%;
-  height: 3px;
-  background: linear-gradient(90deg, rgba(46, 213, 255, 0.8), rgba(138, 43, 226, 0.8));
-  z-index: 2;
-  opacity: 0.7;
-}
-
-.timeline-item:last-child .timeline-connector {
-  display: none;
-}
-
-.timeline-content {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 1px solid rgba(46, 213, 255, 0.15);
-  box-shadow: 0 4px 20px rgba(2, 6, 23, 0.4);
-  transition: all 0.3s ease;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-}
-
-.timeline-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(180deg, #2ed5ff 0%, #8a2be2 100%);
-}
-
-.timeline-content:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
-  border-color: rgba(46, 213, 255, 0.4);
-}
-
-.timeline-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.timeline-time {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #2ed5ff;
-  white-space: nowrap;
-  background: rgba(46, 213, 255, 0.1);
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  border: 1px solid rgba(46, 213, 255, 0.2);
-}
-
-.timeline-user {
-  font-size: 0.85rem;
-  color: rgba(230, 238, 248, 0.9);
-  background: rgba(138, 43, 226, 0.1);
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  white-space: nowrap;
-  border: 1px solid rgba(138, 43, 226, 0.2);
-  font-weight: 500;
-}
-
-.timeline-description {
-  font-size: 0.95rem;
-  color: rgba(230, 238, 248, 0.9);
-  line-height: 1.6;
-  word-wrap: break-word;
-  background: rgba(255, 255, 255, 0.02);
-  padding: 0.75rem;
-  border-radius: 6px;
-  border-left: 2px solid rgba(46, 213, 255, 0.3);
-}
-
-.no-timeline-data {
-  text-align: center;
-  padding: 2rem;
-  color: rgba(230, 238, 248, 0.5);
-  font-style: italic;
-}
-
-/* Enhanced Scrollbar for Individual Timelines */
-.timeline-scroll-wrapper::-webkit-scrollbar {
-  height: 10px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 10px;
-}
-
-.timeline-scroll-wrapper::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  margin: 0 1rem;
-}
-
-.timeline-scroll-wrapper::-webkit-scrollbar-thumb {
-  background: linear-gradient(90deg,
-    rgba(46, 213, 255, 0.4) 0%,
-    rgba(138, 43, 226, 0.4) 50%,
-    rgba(46, 213, 255, 0.4) 100%);
-  border-radius: 10px;
-  border: 2px solid rgba(26, 26, 62, 0.8);
-  box-shadow: 0 0 10px rgba(46, 213, 255, 0.3);
-}
-
-.timeline-scroll-wrapper::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(90deg,
-    rgba(46, 213, 255, 0.6) 0%,
-    rgba(138, 43, 226, 0.6) 50%,
-    rgba(46, 213, 255, 0.6) 100%);
-  box-shadow: 0 0 15px rgba(46, 213, 255, 0.5);
-}
-
-/* Scroll Hint */
-.scroll-hint {
-  text-align: center;
-  padding: 0.5rem;
-  color: rgba(46, 213, 255, 0.6);
-  font-size: 0.85rem;
-  font-style: italic;
-  margin-top: 0.5rem;
-}
-
-/* Error and State Messages */
-.error-message {
-  background: linear-gradient(90deg, rgba(231, 76, 60, 0.12), rgba(231, 76, 60, 0.06));
-  border: 1px solid rgba(231, 76, 60, 0.3);
-  color: #ffc4c4;
-  padding: 1.5rem;
-  border-radius: 10px;
-  margin-bottom: 2rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.error-message span {
-  font-size: 1.3rem;
-  flex-shrink: 0;
-}
-
-.error-message strong {
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-.no-data-container {
-  text-align: center;
-  padding: 3rem 2rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  border: 1px dashed rgba(46, 213, 255, 0.2);
-}
-
-.no-data-message,
-.no-tasks-message {
-  text-align: center;
-  padding: 2rem;
-  color: rgba(230, 238, 248, 0.5);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .history-summary-page {
-    padding: 1rem;
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { format } from 'date-fns';
+import { getHistoryHandovers } from '../../Api/HandOverApi';
+import './HistorySummary.css';
+
+// Acknowledge Timeline Component with Horizontal Scroll
+const AcknowledgeTimeline = ({ acknowledgeDetails }) => {
+  const timelineScrollRef = useRef(null);
+
+  if (!acknowledgeDetails || acknowledgeDetails.length === 0) {
+    return (
+      <div className="timeline-container">
+        <div className="no-timeline-data">
+          <p>No acknowledgment history available</p>
+        </div>
+      </div>
+    );
   }
 
-  .history-header {
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1.5rem;
+  return (
+    <div className="timeline-container">
+      <h4 className="timeline-title">📅 Acknowledgment History</h4>
+      <div
+        ref={timelineScrollRef}
+        className="timeline-scroll-wrapper"
+      >
+        <div className="timeline-horizontal">
+          {acknowledgeDetails.map((ack, index) => (
+            <div key={ack.ackId || index} className="timeline-item">
+              <div className="timeline-marker">
+                <div className="timeline-dot"></div>
+                {index < acknowledgeDetails.length - 1 && (
+                  <div className="timeline-connector"></div>
+                )}
+              </div>
+              <div className="timeline-content">
+                <div className="timeline-header">
+                  <span className="timeline-time">
+                    {format(new Date(ack.acknowledgeTime), 'MMM d, yyyy h:mm a')}
+                  </span>
+                  <span className="timeline-user">
+                    👤 User ID: {ack.userAcknowleged_id}
+                  </span>
+                </div>
+                <div className="timeline-description">
+                  {ack.ackDesc}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// History Tasks Table Component with Expandable Rows
+const HistoryTasksTable = ({ tasks }) => {
+  const [expandedRows, setExpandedRows] = useState({});
+
+  const toggleRow = (taskId) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [taskId]: !prev[taskId]
+    }));
+  };
+
+  if (!tasks || tasks.length === 0) {
+    return (
+      <div className="no-tasks-message">
+        <p>📭 No tasks found in history</p>
+      </div>
+    );
   }
 
-  .header-content h1 {
-    font-size: 1.5rem;
+  return (
+    <div className="history-tasks-table-container">
+      <table className="history-tasks-table">
+        <thead>
+          <tr>
+            <th style={{ width: '50px' }}>📌</th>
+            <th>Task ID</th>
+            <th>Description</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Acknowledgments</th>
+            <th>Latest Update</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tasks.map((task) => (
+            <React.Fragment key={task.taskId}>
+              <tr className="task-row">
+                <td>
+                  {task.ackCount > 0 && (
+                    <button
+                      className="expand-button"
+                      onClick={() => toggleRow(task.taskId)}
+                      aria-label={expandedRows[task.taskId] ? 'Collapse' : 'Expand'}
+                      title="Click to view acknowledgment details"
+                    >
+                      {expandedRows[task.taskId] ? '▼' : '▶'}
+                    </button>
+                  )}
+                </td>
+                <td className="task-id-cell">#{task.taskId}</td>
+                <td className="task-desc-cell">{task.taskDesc || 'No description'}</td>
+                <td>
+                  <span className={`priority-badge priority-${(task.priority || 'medium').toLowerCase()}`}>
+                    {task.priority || 'Medium'}
+                  </span>
+                </td>
+                <td>
+                  <span className={`status-badge status-${(task.status || 'unknown').toLowerCase()}`}>
+                    {task.status || 'Unknown'}
+                  </span>
+                </td>
+                <td>
+                  <span className={`ack-count-badge ${task.ackCount > 0 ? 'has-acks' : 'no-acks'}`}>
+                    {task.ackCount} {task.ackCount === 1 ? 'ack' : 'acks'}
+                  </span>
+                </td>
+                <td className="latest-update-cell">
+                  {task.latestAck ? (
+                    <div>
+                      <div className="update-time">
+                        {format(new Date(task.latestAck.acknowledgeTime), 'MMM d, h:mm a')}
+                      </div>
+                      <div className="update-user">
+                        👤 User {task.latestAck.userAcknowleged_id}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="no-update">No updates</span>
+                  )}
+                </td>
+              </tr>
+              {expandedRows[task.taskId] && task.acknowledgeDetails && task.acknowledgeDetails.length > 0 && (
+                <tr className="expanded-row">
+                  <td colSpan="7">
+                    <div className="expanded-content">
+                      <AcknowledgeTimeline acknowledgeDetails={task.acknowledgeDetails} />
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+// Main HistorySummary Component
+const HistorySummary = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [historyData, setHistoryData] = useState(null);
+  const [handoverId, setHandoverId] = useState(null);
+
+  // Fetch data on page load (component mount)
+  useEffect(() => {
+    // Get handover ID from location state or route params
+    const stateHandoverId = location.state?.handoverId;
+    if (stateHandoverId) {
+      setHandoverId(stateHandoverId);
+    }
+
+    handleFetchHistory();
+    // eslint-disable-next-line
+  }, []);
+
+  // Function to fetch history data from API
+  const handleFetchHistory = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      console.log('Fetching history data from API...');
+      const data = await getHistoryHandovers();
+      console.log('API Response:', data);
+
+      if (data && data.TeamHandoverDetails && data.Tasksdata) {
+        setHistoryData(data);
+      } else {
+        throw new Error('Invalid history data structure - missing TeamHandoverDetails or Tasksdata');
+      }
+    } catch (err) {
+      console.error('Error fetching history:', err);
+      setError(err.message || 'Failed to load history data');
+      setHistoryData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBackClick = () => {
+    // If we have a handover ID, navigate directly to that handover
+    if (handoverId) {
+      navigate(`/handover/${handoverId}`);
+    } else {
+      // Otherwise go back to dashboard
+      navigate('/dashboard');
+    }
+  };
+
+  const calculateSummary = (data) => {
+    if (!data || !data.TeamHandoverDetails || !data.Tasksdata) {
+      return {
+        totalTasks: 0,
+        acknowledgedTasks: 0,
+        pendingTasks: 0,
+        totalAcknowledgment: 0,
+        teams: [],
+        teamCount: 0,
+        tasksBreakdown: []
+      };
+    }
+
+    const tasks = data.Tasksdata || [];
+    const teamHandovers = data.TeamHandoverDetails || [];
+
+    const totalTasks = tasks.length;
+    const acknowledgedTasks = tasks.filter(task =>
+      task.acknowledgeDetails && task.acknowledgeDetails.length > 0
+    ).length;
+    const pendingTasks = totalTasks - acknowledgedTasks;
+
+    const totalAcknowledgment = tasks.reduce((sum, task) => {
+      return sum + (task.acknowledgeDetails?.length || 0);
+    }, 0);
+
+    const teams = [...new Set(teamHandovers.map(item => item.role).filter(Boolean))];
+
+    const tasksBreakdown = tasks.map(task => ({
+      taskId: task.historyTaskId || task.Taskid,
+      taskDesc: task.task || task.taskDesc,
+      ackCount: task.acknowledgeDetails?.length || 0,
+      latestAck: task.acknowledgeDetails && task.acknowledgeDetails.length > 0
+        ? task.acknowledgeDetails[task.acknowledgeDetails.length - 1]
+        : null,
+      acknowledgeDetails: task.acknowledgeDetails || [],
+      status: task.status || 'unknown',
+      priority: task.priority || 'Medium'
+    }))
+      .sort((a, b) => b.ackCount - a.ackCount);
+
+    return {
+      totalTasks,
+      acknowledgedTasks,
+      pendingTasks,
+      totalAcknowledgment,
+      teams: teams.slice(0, 5),
+      teamCount: teams.length,
+      tasksBreakdown
+    };
+  };
+
+  const summary = calculateSummary(historyData);
+
+  if (loading) {
+    return (
+      <div className="history-summary-page">
+        <div className="history-header">
+          <div className="header-content">
+            <h1>Handover History Summary</h1>
+            <p>Comprehensive overview of all historical handover data and acknowledgments</p>
+          </div>
+          <button
+            className="back-button-header"
+            onClick={handleBackClick}
+            aria-label="Go back"
+          >
+            ← Back
+          </button>
+        </div>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p className="loading-text">Loading history data...</p>
+        </div>
+      </div>
+    );
   }
 
-  .summary-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  return (
+    <div className="history-summary-page">
+      {/* Header */}
+      <div className="history-header">
+        <div className="header-content">
+          <h1>📊 Handover History Summary</h1>
+          <p>Comprehensive overview of all historical handover data and acknowledgments</p>
+        </div>
+        <button
+          className="back-button-header"
+          onClick={handleBackClick}
+          aria-label="Go back"
+        >
+          ← Back
+        </button>
+      </div>
 
-  .history-tasks-table {
-    font-size: 0.85rem;
-  }
+      {/* Error Message */}
+      {error && (
+        <div className="error-message">
+          <span>⚠️</span>
+          <div>
+            <strong>Error:</strong> {error}
+          </div>
+        </div>
+      )}
 
-  .history-tasks-table th,
-  .history-tasks-table td {
-    padding: 0.6rem 0.8rem;
-  }
+      {/* Results Display */}
+      {historyData ? (
+        <div className="history-content">
+          {/* Key Metrics */}
+          <section className="summary-section">
+            <h2 className="section-title">📈 Key Metrics</h2>
+            <div className="summary-grid">
+              <div className="summary-item total">
+                <span className="summary-label">Total Tasks</span>
+                <span className="summary-value">{summary.totalTasks}</span>
+              </div>
+              <div className="summary-item active">
+                <span className="summary-label">✅ Acknowledged</span>
+                <span className="summary-value">{summary.acknowledgedTasks}</span>
+              </div>
+              <div className="summary-item completed">
+                <span className="summary-label">⏳ Pending</span>
+                <span className="summary-value">{summary.pendingTasks}</span>
+              </div>
+              <div className="summary-item tasks">
+                <span className="summary-label">Total Acks</span>
+                <span className="summary-value">{summary.totalAcknowledgment}</span>
+              </div>
+            </div>
+          </section>
 
-  .timeline-item {
-    min-width: 280px;
-    max-width: 280px;
-    padding: 0 1rem;
-  }
+          {/* Teams Overview
+          {summary.teams.length > 0 && (
+            <section className="summary-section">
+              <h2 className="section-title">👥 Teams/Roles ({summary.teamCount} total)</h2>
+              <div className="teams-overview">
+                <div className="teams-list">
+                  {summary.teams.map((team, index) => (
+                    <div key={index} className="team-tag">
+                      {team}
+                    </div>
+                  ))}
+                  {summary.teamCount > 5 && (
+                    <div className="team-tag more">
+                      +{summary.teamCount - 5} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+           */}
+          {/* Tasks Breakdown Table */}
+          {summary.tasksBreakdown && summary.tasksBreakdown.length > 0 && (
+            <section className="summary-section">
+              <h2 className="section-title">📋 Tasks History Details ({summary.tasksBreakdown.length} tasks)</h2>
+              <HistoryTasksTable tasks={summary.tasksBreakdown} />
+            </section>
+          )}
 
-  .timeline-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-}
+          {/* No Tasks Message */}
+          {summary.totalTasks === 0 && (
+            <section className="summary-section">
+              <div className="no-data-message">
+                <p>📭 No tasks found in the history data</p>
+              </div>
+            </section>
+          )}
+        </div>
+      ) : !error && (
+        <div className="no-data-container">
+          <p>❌ No data available</p>
+        </div>
+      )}
+    </div>
+  );
+};
 
-@media (max-width: 480px) {
-  .timeline-item {
-    min-width: 260px;
-    max-width: 260px;
-  }
-}
+export default HistorySummary;
