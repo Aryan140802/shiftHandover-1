@@ -1,28 +1,24 @@
-import React, { useEffect } from 'react';
+
+import React from 'react';
 import './Modal.css';
 
-const Modal = ({ open, onClose, children }) => {
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [open]);
-
+// Add 'actionButton' to the destructuring of props
+const Modal = ({ open, onClose, children, actionButton }) => { // <-- Added actionButton
   if (!open) return null;
-
+  console.log('Modal is open');
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose} aria-label="Close modal">
-          ×
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+
+        {/* The existing close button remains at the top right */}
+        <button className="modal-close" onClick={onClose}>
+          &times;
         </button>
+
         {children}
+
+
+
       </div>
     </div>
   );
